@@ -7,8 +7,8 @@ const filled = (s: string) => s.trim().length > 0;
 export async function getBrand(): Promise<BrandProfile> {
   return {
     stats: BRAND.stats.filter((s): s is BrandStat & { value: number } => typeof s.value === "number" && filled(s.label)).slice(0, 4),
-    clients: BRAND.clients.filter((c) => filled(c.name) && filled(c.logo)),
-    recognition: BRAND.recognition.filter((c) => filled(c.name) && filled(c.logo)),
+    clients: BRAND.clients.filter((c) => filled(c.name)),
+    recognition: BRAND.recognition.filter((c) => filled(c.name)),
     milestones: BRAND.milestones.filter((m) => filled(m.year) && filled(m.line)),
     founder: { ...BRAND.founder, note: BRAND.founder.note.filter(filled) },
     reviews: BRAND.reviews.filter((r) => filled(r.name) && filled(r.text)),
@@ -19,3 +19,4 @@ export async function getBrand(): Promise<BrandProfile> {
 
 export const hasFounder = (b: BrandProfile) => filled(b.founder.name) && b.founder.note.length > 0;
 export const formatStat = (s: BrandStat) => `${(s.value ?? 0).toLocaleString("en-GB")}${s.suffix ?? ""}`;
+export const anySample = (items: { sample?: boolean }[]) => items.some((i) => i.sample);

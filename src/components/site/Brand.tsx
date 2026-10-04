@@ -12,6 +12,8 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { formatNaira } from "@/lib/format";
 import { PlaceholderTile } from "./PlaceholderTile";
+import { Photo } from "@/components/home/Photo";
+import type { ImageKey } from "@/data/images";
 import type { Product } from "@/types/home";
 
 export { Button };
@@ -60,7 +62,7 @@ export function EmptyState({ line, action }: { line: string; action: ReactNode }
   return <div className="flex flex-col items-center border border-border bg-ivory px-6 py-12 text-center"><div className="pattern-bow size-20 opacity-20" /><p className="mt-4 text-muted-foreground">{line}</p><div className="mt-5">{action}</div></div>;
 }
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, variant = "default", image, image2 }: { product: Product; variant?: "default" | "home"; image?: ImageKey; image2?: ImageKey }) {
   const wishlist = useWishlist();
   const liked = wishlist.includes(product.id);
   const soldOut = product.inStock === false;
@@ -69,6 +71,20 @@ export function ProductCard({ product }: { product: Product }) {
     openCart();
   };
   const tile = <PlaceholderTile label={product.name} className="aspect-[4/5] w-full transition-transform duration-500 group-hover:scale-[1.01]" />;
+  if (variant === "home") {
+    const pic = image ? <div className="relative aspect-[4/5] w-full overflow-hidden rounded-md"><Photo name={image} className="absolute inset-0" sizes="(min-width: 1024px) 25vw, 50vw" />{image2 && <Photo name={image2} decorative className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" sizes="(min-width: 1024px) 25vw, 50vw" />}</div> : tile;
+    return <article className="zoom-host group relative">
+      <div className="relative">
+        {product.slug ? <Link to="/shop/$slug" params={{ slug: product.slug }} aria-label={product.name} tabIndex={-1}>{pic}</Link> : pic}
+        {product.badge && <span className={cn("absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider", product.badge === "Bestseller" ? "bg-gold text-nero" : "bg-nero text-on-dark")}>{product.badge}</span>}
+        <Button type="button" size="icon" variant="ghost" className="absolute right-2 top-2 size-11 rounded-full bg-paper/90" aria-pressed={liked} aria-label={liked ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`} onClick={() => toggleWishlist(product.id)}><Heart className={liked ? "fill-current" : ""} /></Button>
+      </div>
+      <div className="mt-4 flex items-start justify-between gap-3">
+        <div className="min-w-0"><h3 className="text-sm">{product.slug ? <Link to="/shop/$slug" params={{ slug: product.slug }} className="hover:text-muted-foreground">{product.name}</Link> : product.name}</h3><p className="mt-1 text-sm text-muted-foreground">{product.line}</p><p className="mt-2 font-semibold">{formatNaira(product.price)}</p></div>
+        {soldOut ? <span className="shrink-0 text-xs text-muted-foreground">Sold out</span> : <button type="button" onClick={quickAdd} aria-label={`Add ${product.name} to bag`} className="flex size-11 shrink-0 items-center justify-center rounded-full border border-nero/30 text-nero transition-colors hover:border-gold hover:bg-gold"><ShoppingBag className="size-4" /></button>}
+      </div>
+    </article>;
+  }
   return <article className="group relative">
     <div className="relative">
       {product.slug ? <Link to="/shop/$slug" params={{ slug: product.slug }} aria-label={product.name} tabIndex={-1}>{tile}</Link> : tile}
