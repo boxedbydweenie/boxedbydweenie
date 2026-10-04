@@ -20,7 +20,8 @@ export function SantaShell({ title, children, tabs, activeTab, onTab, light }: {
   const preview = async (r: "organiser" | "participant") => {
     await setRole(r);
     if (r === "participant") santaStore.set({ ...santaStore.get(), session: { ...santaStore.get().session, [DEMO_EXCHANGE_ID]: DEMO_PARTICIPANT_ID } });
-    navigate(r === "organiser" ? { to: "/secret-santa/$id/manage", params: { id: DEMO_EXCHANGE_ID } } : { to: "/secret-santa/$id", params: { id: DEMO_EXCHANGE_ID } });
+    if (r === "organiser") navigate({ to: "/secret-santa/$id/manage", params: { id: DEMO_EXCHANGE_ID } });
+    else navigate({ to: "/secret-santa/$id", params: { id: DEMO_EXCHANGE_ID } });
   };
   return <div className={cn("min-h-screen", light ? "bg-paper" : "surface-dark")}>
     <header className="surface-dark sticky top-0 z-40 border-b border-line-dark">
