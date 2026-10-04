@@ -1,17 +1,17 @@
+import { Link } from "@tanstack/react-router";
+import { Facebook, Instagram, MessageCircle } from "lucide-react";
 import logo from "@/assets/bbd-logo.png.asset.json";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const columns = [
+  ["Shop", [["All gifts", "/shop"], ["Gift Dispenser", "/dispenser"], ["Gift cards", "/shop"]]],
+  ["Corporate", [["Corporate gifting", "/corporate"], ["Instant quote", "/corporate/quote"], ["Look Book", "/look-book"]]],
+  ["Company", [["About", "/about"], ["Contact", "/contact"], ["Delivery and returns", "/delivery-returns"], ["Privacy", "/privacy"], ["Terms", "/terms"]]],
+] as const;
 
 export function SiteFooter() {
-  return (
-    <footer className="surface-dark border-t border-line-dark">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-12 md:flex-row md:items-center md:justify-between">
-        <div>
-          <img src={logo.url} alt="Boxed by Dweenie" className="h-10 w-auto" loading="lazy" />
-          <p className="mt-3 font-heading text-sm tracking-[0.2em] text-gold">MOMENTS, BOXED.</p>
-        </div>
-        <p className="text-sm text-on-dark-muted">
-          Boxed by Dweenie is a product of The Plug Shop Limited. Lagos, Nigeria.
-        </p>
-      </div>
-    </footer>
-  );
+  return <footer className="surface-dark relative overflow-hidden border-t border-line-dark"><div className="pattern-leaf pointer-events-none absolute inset-x-0 bottom-0 h-28 opacity-[0.08]" /><div className="relative mx-auto max-w-7xl px-5 py-16"><div className="grid gap-12 lg:grid-cols-[1.3fr_2fr]"><div><img src={logo.url} alt="Boxed by Dweenie" className="h-11 w-auto" loading="lazy" /><p className="mt-5 max-w-sm text-on-dark-muted">Thoughtful gifts and exquisite packaging, created to deliver a guaranteed wow.</p><p className="mt-8 eyebrow text-gold">Be first to know about new collections and offers.</p><form className="mt-3 flex max-w-md gap-2" onSubmit={(e) => e.preventDefault()}><Input type="email" required aria-label="Email address" placeholder="Email address" className="min-h-11 border-line-dark bg-nero-soft text-on-dark"/><Button type="submit">Join</Button></form></div><div className="grid grid-cols-2 gap-8 sm:grid-cols-4">{columns.map(([title, links]) => <div key={title}><h2 className="text-sm">{title}</h2><ul className="mt-4 space-y-3 text-sm text-on-dark-muted">{links.map(([label,to]) => <li key={to}><Link to={to} className="hover:text-gold">{label}</Link></li>)}</ul></div>)}<div><h2 className="text-sm">Contact</h2><div className="mt-4 space-y-3 text-sm text-on-dark-muted"><a className="block hover:text-gold" href="tel:+2349092125960">0909 212 5960</a><a className="block break-all hover:text-gold" href="mailto:info@boxedbydweenie.com">info@boxedbydweenie.com</a><a className="block hover:text-gold" href="https://wa.me/2349092125960">WhatsApp</a><div className="flex gap-1 pt-2"><Button asChild size="icon" variant="ghost"><a href="https://instagram.com/boxedbydweenie" aria-label="Instagram"><Instagram /></a></Button><Button asChild size="icon" variant="ghost"><a href="https://facebook.com/boxedbydweenie" aria-label="Facebook"><Facebook /></a></Button><Button asChild size="icon" variant="ghost"><a href="https://x.com/boxedbydweenie" aria-label="X">X</a></Button><Button asChild size="icon" variant="ghost"><a href="https://tiktok.com/@boxedbydweenie" aria-label="TikTok">T</a></Button></div><span>@boxedbydweenie</span></div></div></div></div><div className="mt-12 border-t border-line-dark pt-6 text-xs text-on-dark-muted">Boxed by Dweenie is a product of The Plug Shop Limited.</div></div></footer>;
 }
+
+export function FloatingWhatsApp() { return <Button asChild size="icon" className="fixed bottom-5 right-5 z-30 rounded-full shadow-soft" aria-label="Chat on WhatsApp"><a href="https://wa.me/2349092125960"><MessageCircle /></a></Button>; }
