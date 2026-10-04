@@ -346,7 +346,7 @@ function SelectedWork() {
           <DialogTitle className="sr-only">{open !== null ? WORK[open] : ""}</DialogTitle>
           {open !== null && (
             <div className="relative">
-              <PlaceholderTile label={WORK[open]} tone="ivory" className="aspect-[4/3] w-full" />
+              <PlaceholderTile label={WORK[open] ?? ""} tone="ivory" className="aspect-[4/3] w-full" />
               <button onClick={() => setOpen(null)} aria-label="Close" className="absolute right-3 top-3 flex size-11 items-center justify-center rounded-full bg-nero text-on-dark">
                 <X className="size-5" />
               </button>
