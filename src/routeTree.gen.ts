@@ -28,6 +28,7 @@ import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
+import { Route as CorporateQuoteIndexRouteImport } from './routes/corporate.quote.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -124,6 +125,11 @@ const ShopSlugRoute = ShopSlugRouteImport.update({
   path: '/shop/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CorporateQuoteIndexRoute = CorporateQuoteIndexRouteImport.update({
+  id: '/corporate/quote/',
+  path: '/corporate/quote/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/shop/$slug': typeof ShopSlugRoute
   '/corporate/': typeof CorporateIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/corporate/quote/': typeof CorporateQuoteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/shop/$slug': typeof ShopSlugRoute
   '/corporate': typeof CorporateIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/corporate/quote': typeof CorporateQuoteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/shop/$slug': typeof ShopSlugRoute
   '/corporate/': typeof CorporateIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/corporate/quote/': typeof CorporateQuoteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/corporate/'
     | '/shop/'
+    | '/corporate/quote/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/corporate'
     | '/shop'
+    | '/corporate/quote'
   id:
     | '__root__'
     | '/'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/corporate/'
     | '/shop/'
+    | '/corporate/quote/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
   CorporateIndexRoute: typeof CorporateIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
+  CorporateQuoteIndexRoute: typeof CorporateQuoteIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -412,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/corporate/quote/': {
+      id: '/corporate/quote/'
+      path: '/corporate/quote'
+      fullPath: '/corporate/quote/'
+      preLoaderRoute: typeof CorporateQuoteIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -435,6 +455,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopSlugRoute: ShopSlugRoute,
   CorporateIndexRoute: CorporateIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
+  CorporateQuoteIndexRoute: CorporateQuoteIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
