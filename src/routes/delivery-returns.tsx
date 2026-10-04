@@ -1,1 +1,5 @@
-import {createFileRoute} from "@tanstack/react-router"; import {ComingSoon} from "@/components/site/ComingSoon"; export const Route=createFileRoute("/delivery-returns")({head:()=>({meta:[{title:"Delivery and Returns — Boxed by Dweenie"},{name:"description",content:"Delivery and returns information for Boxed by Dweenie orders."},{property:"og:title",content:"Delivery and Returns — Boxed by Dweenie"},{property:"og:description",content:"Helpful information for receiving and returning gifts."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <ComingSoon eyebrow="Helpful information" title="Delivery and returns" line="Full delivery and returns information is coming soon."/>});
+import { createFileRoute, redirect } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/delivery-returns")({
+  beforeLoad: () => { throw redirect({ to: "/delivery-and-returns", statusCode: 301 }); },
+});

@@ -1,1 +1,7 @@
-import {createFileRoute} from "@tanstack/react-router"; import {ComingSoon} from "@/components/site/ComingSoon"; export const Route=createFileRoute("/terms")({head:()=>({meta:[{title:"Terms — Boxed by Dweenie"},{name:"description",content:"Boxed by Dweenie's website and order terms."},{property:"og:title",content:"Terms — Boxed by Dweenie"},{property:"og:description",content:"Terms for using Boxed by Dweenie."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <ComingSoon eyebrow="Legal" title="Terms" line="Our full terms are coming soon."/>});
+import { createFileRoute } from "@tanstack/react-router";
+import { LegalPage, legalHead } from "@/components/site/LegalPage";
+
+export const Route = createFileRoute("/terms")({
+  head: () => legalHead("Terms and Conditions", "The terms that apply when you shop, request a quote or run a Secret Santa with Boxed by Dweenie."),
+  component: () => <LegalPage title="Terms and conditions" sections={["About these terms", "Orders and payment", "Personalised and corporate orders", "Gift cards", "Secret Santa", "Liability", "Governing law"]} />,
+});

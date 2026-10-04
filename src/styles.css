@@ -102,8 +102,15 @@
     line-height: 1.15;
   }
   :focus-visible {
-    outline: 2px solid var(--gold);
+    outline: 2px solid var(--nero);
     outline-offset: 3px;
+  }
+  :where(.surface-dark, .bg-nero, .bg-nero-soft, header, footer) :focus-visible,
+  :where(.surface-dark, .bg-nero, .bg-nero-soft):focus-visible {
+    outline-color: var(--gold);
+  }
+  :where(.surface-dark, .bg-nero, .bg-nero-soft) :where(.bg-paper, .bg-ivory, .bg-background) :focus-visible {
+    outline-color: var(--nero);
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }

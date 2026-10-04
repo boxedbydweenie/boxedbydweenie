@@ -65,7 +65,7 @@ export const SEARCH_PAGES = [
   { name: "Instant quote", to: "/corporate/quote" },
   { name: "Gift cards", to: "/gift-cards" },
   { name: "Gift Dispenser", to: "/dispenser" },
-  { name: "Delivery and returns", to: "/delivery-returns" },
+  { name: "Delivery and returns", to: "/delivery-and-returns" },
   { name: "Contact", to: "/contact" },
 ] as const;
 

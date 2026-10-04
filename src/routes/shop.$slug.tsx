@@ -123,7 +123,7 @@ function ProductPage() {
         <Accordion type="multiple" defaultValue={["inside"]} className="mt-6">
           <AccordionItem value="inside"><AccordionTrigger>What's inside</AccordionTrigger><AccordionContent><ul className="list-disc space-y-1 pl-5">{p.inside.map((i) => <li key={i}>{i}</li>)}</ul></AccordionContent></AccordionItem>
           <AccordionItem value="delivery"><AccordionTrigger>Delivery</AccordionTrigger><AccordionContent>{p.sameDay ? "Same-day delivery within Lagos for orders placed before 12 noon. " : ""}Next-day delivery across Lagos and Abuja, and two to four working days elsewhere in Nigeria. Fees are calculated at checkout by state.</AccordionContent></AccordionItem>
-          <AccordionItem value="returns"><AccordionTrigger>Returns</AccordionTrigger><AccordionContent>Because every gift is hand-finished and often personalised, we cannot accept returns. If anything arrives damaged, tell us within 24 hours and we will make it right. <Link to="/delivery-returns" className="underline underline-offset-4">Read the full policy</Link>.</AccordionContent></AccordionItem>
+          <AccordionItem value="returns"><AccordionTrigger>Returns</AccordionTrigger><AccordionContent>Because every gift is hand-finished and often personalised, we cannot accept returns. If anything arrives damaged, tell us within 24 hours and we will make it right. <Link to="/delivery-and-returns" className="underline underline-offset-4">Read the full policy</Link>.</AccordionContent></AccordionItem>
         </Accordion>
       </div>
     </div>
