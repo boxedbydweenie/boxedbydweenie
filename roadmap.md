@@ -6,3 +6,4 @@
 - [x] Build About, Contact, branded 404 and supporting coming-soon routes.
 - [x] Refactor Corporate and Corporate Quote onto the shared shell and controls.
 - [x] Verify metadata, build diagnostics, primary interactions and responsive layouts.
+- [x] Build the digital Look Book library, viewer, shoppable hotspots and quote list.

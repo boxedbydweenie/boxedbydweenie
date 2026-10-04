@@ -137,9 +137,9 @@ function Hero() {
             <Link to="/corporate/quote" className={btnPrimary}>Get an instant quote <ArrowRight className="size-4" /></Link>
             <a href="#consultation" className={btnOutlineDark}>Book a consultation</a>
           </div>
-          <a href="#selected-work" className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-on-dark underline decoration-gold underline-offset-4 hover:text-gold">
+          <Link to="/lookbook/$edition" params={{ edition: "the-corporate-edit" }} className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-on-dark underline decoration-gold underline-offset-4 hover:text-gold">
             <FileDown className="size-4 text-gold" /> Download the corporate look book
-          </a>
+          </Link>
         </div>
         <PlaceholderTile tone="dark" label="Stack of branded gift boxes" className="aspect-[4/3] w-full" />
       </div>
@@ -324,9 +324,9 @@ function SelectedWork() {
       <div className="mx-auto max-w-7xl px-5">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHead dark eyebrow="Selected work" title="Boxes we are proud of" />
-          <a href="#selected-work" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-gold hover:underline">
+          <Link to="/lookbook" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-gold hover:underline">
             View the Look Book <ArrowRight className="size-4" />
-          </a>
+          </Link>
         </div>
         <ul className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
           {WORK.map((w, i) => (
