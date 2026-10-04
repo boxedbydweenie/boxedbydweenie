@@ -21,7 +21,6 @@ import { Route as LookBookRouteImport } from './routes/look-book'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SecretSantaRouteImport } from './routes/secret-santa'
-import { Route as ShopRouteImport } from './routes/shop'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
 import { Route as CorporateQuoteRouteImport } from './routes/corporate.quote'
@@ -86,11 +85,6 @@ const SecretSantaRoute = SecretSantaRouteImport.update({
   path: '/secret-santa',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShopRoute = ShopRouteImport.update({
-  id: '/shop',
-  path: '/shop',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -120,7 +114,6 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
-  '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
   '/corporate/quote': typeof CorporateQuoteRoute
   '/corporate/': typeof CorporateIndexRoute
@@ -138,7 +131,6 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
-  '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
   '/corporate/quote': typeof CorporateQuoteRoute
   '/corporate': typeof CorporateIndexRoute
@@ -157,7 +149,6 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
-  '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
   '/corporate/quote': typeof CorporateQuoteRoute
   '/corporate/': typeof CorporateIndexRoute
@@ -177,7 +168,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/search'
     | '/secret-santa'
-    | '/shop'
     | '/terms'
     | '/corporate/quote'
     | '/corporate/'
@@ -195,7 +185,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/search'
     | '/secret-santa'
-    | '/shop'
     | '/terms'
     | '/corporate/quote'
     | '/corporate'
@@ -213,7 +202,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/search'
     | '/secret-santa'
-    | '/shop'
     | '/terms'
     | '/corporate/quote'
     | '/corporate/'
@@ -232,7 +220,6 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SearchRoute: typeof SearchRoute
   SecretSantaRoute: typeof SecretSantaRoute
-  ShopRoute: typeof ShopRoute
   TermsRoute: typeof TermsRoute
   CorporateQuoteRoute: typeof CorporateQuoteRoute
   CorporateIndexRoute: typeof CorporateIndexRoute
@@ -324,13 +311,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SecretSantaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/shop': {
-      id: '/shop'
-      path: '/shop'
-      fullPath: '/shop'
-      preLoaderRoute: typeof ShopRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -368,7 +348,6 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SearchRoute: SearchRoute,
   SecretSantaRoute: SecretSantaRoute,
-  ShopRoute: ShopRoute,
   TermsRoute: TermsRoute,
   CorporateQuoteRoute: CorporateQuoteRoute,
   CorporateIndexRoute: CorporateIndexRoute,
