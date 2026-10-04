@@ -25,12 +25,15 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as SecretSantaRouteImport } from './routes/secret-santa'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CalendarIndexRouteImport } from './routes/calendar.index'
+import { Route as CalendarOccasionRouteImport } from './routes/calendar.$occasion'
 import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
 import { Route as LookbookIndexRouteImport } from './routes/lookbook.index'
 import { Route as LookbookEditionRouteImport } from './routes/lookbook.$edition'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
+import { Route as CalendarMyDatesIndexRouteImport } from './routes/calendar.my-dates.index'
+import { Route as CalendarMyDatesPersonIdRouteImport } from './routes/calendar.my-dates.$personId'
 import { Route as CorporateQuoteIndexRouteImport } from './routes/corporate.quote.index'
 import { Route as CorporateQuoteRefRouteImport } from './routes/corporate.quote.$ref'
 
@@ -114,6 +117,11 @@ const CalendarIndexRoute = CalendarIndexRouteImport.update({
   path: '/calendar/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalendarOccasionRoute = CalendarOccasionRouteImport.update({
+  id: '/calendar/$occasion',
+  path: '/calendar/$occasion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CorporateIndexRoute = CorporateIndexRouteImport.update({
   id: '/corporate/',
   path: '/corporate/',
@@ -144,6 +152,16 @@ const ShopSlugRoute = ShopSlugRouteImport.update({
   path: '/shop/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalendarMyDatesIndexRoute = CalendarMyDatesIndexRouteImport.update({
+  id: '/calendar/my-dates/',
+  path: '/calendar/my-dates/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarMyDatesPersonIdRoute = CalendarMyDatesPersonIdRouteImport.update({
+  id: '/calendar/my-dates/$personId',
+  path: '/calendar/my-dates/$personId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CorporateQuoteIndexRoute = CorporateQuoteIndexRouteImport.update({
   id: '/corporate/quote/',
   path: '/corporate/quote/',
@@ -171,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
+  '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -178,7 +197,9 @@ export interface FileRoutesByFullPath {
   '/corporate/': typeof CorporateIndexRoute
   '/lookbook/': typeof LookbookIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
+  '/calendar/my-dates/': typeof CalendarMyDatesIndexRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
 }
 export interface FileRoutesByTo {
@@ -197,6 +218,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
+  '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -204,7 +226,9 @@ export interface FileRoutesByTo {
   '/corporate': typeof CorporateIndexRoute
   '/lookbook': typeof LookbookIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
+  '/calendar/my-dates': typeof CalendarMyDatesIndexRoute
   '/corporate/quote': typeof CorporateQuoteIndexRoute
 }
 export interface FileRoutesById {
@@ -224,6 +248,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
+  '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -231,7 +256,9 @@ export interface FileRoutesById {
   '/corporate/': typeof CorporateIndexRoute
   '/lookbook/': typeof LookbookIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
+  '/calendar/my-dates/': typeof CalendarMyDatesIndexRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
 }
 export interface FileRouteTypes {
@@ -252,6 +279,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/secret-santa'
     | '/terms'
+    | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
     | '/shop/$slug'
@@ -259,7 +287,9 @@ export interface FileRouteTypes {
     | '/corporate/'
     | '/lookbook/'
     | '/shop/'
+    | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
+    | '/calendar/my-dates/'
     | '/corporate/quote/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -278,6 +308,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/secret-santa'
     | '/terms'
+    | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
     | '/shop/$slug'
@@ -285,7 +316,9 @@ export interface FileRouteTypes {
     | '/corporate'
     | '/lookbook'
     | '/shop'
+    | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
+    | '/calendar/my-dates'
     | '/corporate/quote'
   id:
     | '__root__'
@@ -304,6 +337,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/secret-santa'
     | '/terms'
+    | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
     | '/shop/$slug'
@@ -311,7 +345,9 @@ export interface FileRouteTypes {
     | '/corporate/'
     | '/lookbook/'
     | '/shop/'
+    | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
+    | '/calendar/my-dates/'
     | '/corporate/quote/'
   fileRoutesById: FileRoutesById
 }
@@ -331,6 +367,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SecretSantaRoute: typeof SecretSantaRoute
   TermsRoute: typeof TermsRoute
+  CalendarOccasionRoute: typeof CalendarOccasionRoute
   LookbookEditionRoute: typeof LookbookEditionRoute
   OrderIdRoute: typeof OrderIdRoute
   ShopSlugRoute: typeof ShopSlugRoute
@@ -338,7 +375,9 @@ export interface RootRouteChildren {
   CorporateIndexRoute: typeof CorporateIndexRoute
   LookbookIndexRoute: typeof LookbookIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
+  CalendarMyDatesPersonIdRoute: typeof CalendarMyDatesPersonIdRoute
   CorporateQuoteRefRoute: typeof CorporateQuoteRefRoute
+  CalendarMyDatesIndexRoute: typeof CalendarMyDatesIndexRoute
   CorporateQuoteIndexRoute: typeof CorporateQuoteIndexRoute
 }
 
@@ -456,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CalendarIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calendar/$occasion': {
+      id: '/calendar/$occasion'
+      path: '/calendar/$occasion'
+      fullPath: '/calendar/$occasion'
+      preLoaderRoute: typeof CalendarOccasionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/corporate/': {
       id: '/corporate/'
       path: '/corporate'
@@ -498,6 +544,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calendar/my-dates/': {
+      id: '/calendar/my-dates/'
+      path: '/calendar/my-dates'
+      fullPath: '/calendar/my-dates/'
+      preLoaderRoute: typeof CalendarMyDatesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar/my-dates/$personId': {
+      id: '/calendar/my-dates/$personId'
+      path: '/calendar/my-dates/$personId'
+      fullPath: '/calendar/my-dates/$personId'
+      preLoaderRoute: typeof CalendarMyDatesPersonIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/corporate/quote/': {
       id: '/corporate/quote/'
       path: '/corporate/quote'
@@ -531,6 +591,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SecretSantaRoute: SecretSantaRoute,
   TermsRoute: TermsRoute,
+  CalendarOccasionRoute: CalendarOccasionRoute,
   LookbookEditionRoute: LookbookEditionRoute,
   OrderIdRoute: OrderIdRoute,
   ShopSlugRoute: ShopSlugRoute,
@@ -538,7 +599,9 @@ const rootRouteChildren: RootRouteChildren = {
   CorporateIndexRoute: CorporateIndexRoute,
   LookbookIndexRoute: LookbookIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
+  CalendarMyDatesPersonIdRoute: CalendarMyDatesPersonIdRoute,
   CorporateQuoteRefRoute: CorporateQuoteRefRoute,
+  CalendarMyDatesIndexRoute: CalendarMyDatesIndexRoute,
   CorporateQuoteIndexRoute: CorporateQuoteIndexRoute,
 }
 export const routeTree = rootRouteImport

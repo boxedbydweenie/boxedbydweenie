@@ -49,7 +49,7 @@ function OrderPage() {
       </div>
       <div className="mt-10 flex flex-wrap justify-center gap-3">
         <Button asChild><a href={wa} target="_blank" rel="noreferrer">Track on WhatsApp</a></Button>
-        <Button asChild variant="outline"><Link to="/gift-calendar">Save this date in my Gift Calendar</Link></Button>
+        <Button asChild variant="outline"><Link to="/calendar/my-dates" search={{ add: true, name: order.recipient.name, day: Number(order.recipient.deliveryDate.slice(8, 10)), month: Number(order.recipient.deliveryDate.slice(5, 7)), label: "Gift delivered" }}>Save this date in my Gift Calendar</Link></Button>
         <Button asChild variant="ghost"><Link to="/shop">Continue shopping</Link></Button>
       </div>
     </div>
