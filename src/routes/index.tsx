@@ -172,7 +172,7 @@ function Calendar({ data }: { data: HomeData }) {
     <div className="mt-10 grid gap-4 md:grid-cols-3" data-reveal>{data.moments.map((m, i) => {
       const dt = new Date(`${m.date}T00:00:00`);
       const days = today ? Math.max(0, Math.round((dt.getTime() - today.getTime()) / 86400000)) : null;
-      return <article key={m.date} className={cn("lift rounded-md bg-paper p-6", i === 0 ? "border border-gold" : "hairline")}>
+      return <article key={m.date + m.name} className={cn("lift rounded-md bg-paper p-6", i === 0 ? "border border-gold" : "hairline")}>
         <div className="flex items-baseline gap-3"><span className="font-heading text-5xl leading-none">{dt.getDate()}</span><span className="eyebrow text-muted-foreground">{dt.toLocaleDateString("en-GB", { month: "long" })}</span></div>
         <h3 className="mt-5 text-lg">{m.slug ? <Link to="/calendar/$occasion" params={{ occasion: m.slug }} className="hover:underline">{m.name}</Link> : m.name}</h3>
         <p className="mt-2 text-sm text-muted-foreground">{m.note}</p>
