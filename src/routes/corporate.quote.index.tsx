@@ -56,8 +56,9 @@ const blank = (): QuoteRequest => ({
   contact: { name: "", company: "", email: "", phone: "", role: "", notes: "", consent: false },
 });
 
-function validate(step: number, r: QuoteRequest): Record<string, string> {
-  const e: Record<string, string> = {};
+type Errors = Partial<Record<"purpose" | "quantity" | "budget" | "selections" | "locations" | "requiredBy" | "name" | "company" | "email" | "phone" | "consent", string>>;
+function validate(step: number, r: QuoteRequest): Errors {
+  const e: Errors = {};
   if (step === 0 && !r.purpose) e.purpose = "Choose what the gifts are for.";
   if (step === 1) {
     if (!r.quantity || r.quantity < MIN_QUANTITY) e.quantity = `Enter at least ${MIN_QUANTITY} gifts.`;
@@ -93,7 +94,7 @@ function QuoteBuilder() {
     return r;
   });
   const [step, setStep] = useState(0);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Errors>({});
   const [estimate, setEstimate] = useState<Estimate | null>(null);
   const [estimateError, setEstimateError] = useState(false);
   const [draft, setDraft] = useState<Awaited<ReturnType<typeof getDraft>>>(null);
