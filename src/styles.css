@@ -179,3 +179,18 @@
   #quote-print { position: absolute; inset: 0 auto auto 0; width: 210mm; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Gift Dispenser */
+@keyframes box-drop { 0% { transform: translateY(-140px); opacity: 0; } 15% { opacity: 1; } 70% { transform: translateY(0); } 82% { transform: translateY(-8px); } 100% { transform: translateY(0); opacity: 1; } }
+@keyframes bow-untie-l { 0%, 60% { transform: rotate(0); opacity: 1; } 100% { transform: rotate(-40deg) translateX(-10px); opacity: 0; } }
+@keyframes bow-untie-r { 0%, 60% { transform: rotate(0); opacity: 1; } 100% { transform: rotate(40deg) translateX(10px); opacity: 0; } }
+@keyframes panel-glow { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 24px 2px rgba(255, 189, 27, .55); } }
+@keyframes slide-up-in { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+@utility animate-box-drop { animation: box-drop 1300ms cubic-bezier(.3,.7,.4,1) both; }
+@utility animate-bow-untie-l { animation: bow-untie-l 2000ms ease-in-out both; transform-origin: right center; }
+@utility animate-bow-untie-r { animation: bow-untie-r 2000ms ease-in-out both; transform-origin: left center; }
+@utility animate-panel-glow { animation: panel-glow 900ms ease-in-out infinite; }
+@utility animate-slide-up-in { animation: slide-up-in 500ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-box-drop, .animate-bow-untie-l, .animate-bow-untie-r, .animate-panel-glow, .animate-slide-up-in { animation: rise-in 400ms ease-out both !important; }
+}
