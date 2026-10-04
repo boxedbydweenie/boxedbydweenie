@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { BRAND } from "@/data/brand";
+import { formatStat } from "@/services/brand";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   Gift, Award, Briefcase, Handshake, Crown, PartyPopper, Shirt, CreditCard,
@@ -73,11 +75,6 @@ const WORK = [
   "Staff reward, FMCG team",
 ];
 
-const TESTIMONIALS = [
-  { quote: "REPLACE: Every one of our 300 staff boxes arrived on time and looked exactly like the sample.", name: "REPLACE Name", title: "HR Manager", company: "REPLACE Company" },
-  { quote: "REPLACE: Our clients still mention the year-end gift. The branding was subtle and very classy.", name: "REPLACE Name", title: "Head of Marketing", company: "REPLACE Company" },
-  { quote: "REPLACE: A formal quote within hours and invoicing that made procurement easy.", name: "REPLACE Name", title: "Procurement Lead", company: "REPLACE Company" },
-];
 
 const FAQS = [
   { q: "What is the minimum order quantity?", a: "Corporate orders start from 25 gifts. Smaller orders are welcome through our online shop." },
@@ -147,31 +144,35 @@ function Hero() {
   );
 }
 
+const BRAND_PROFILE = {
+  stats: BRAND.stats.filter((s) => typeof s.value === "number"),
+  clients: BRAND.clients.filter((c) => c.name && c.logo),
+  corporateTestimonials: BRAND.corporateTestimonials.filter((t) => t.name && t.quote),
+};
+
 function TrustStrip() {
-  const proofs = [
-    { value: "REPLACE", label: "Gifts delivered" },
-    { value: "REPLACE", label: "Companies served" },
-    { value: "REPLACE", label: "On-time delivery rate" },
-  ];
+  const proofs = BRAND_PROFILE.stats.slice(0, 3).map((s) => ({ value: formatStat(s), label: s.label }));
+  const clients = BRAND_PROFILE.clients.slice(0, 6);
+  if (!proofs.length && !clients.length) return null;
   return (
     <section className="bg-ivory py-12">
       <div className="mx-auto max-w-7xl px-5">
         <p className="eyebrow text-center text-muted-foreground">Trusted by teams across Nigeria</p>
-        <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <li key={i} className="flex h-16 items-center justify-center rounded-md border border-dashed border-input text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              Client logo
+        {clients.length > 0 && <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {clients.map((c) => (
+            <li key={c.name} className="flex h-16 items-center justify-center rounded-md border border-input">
+              <img src={c.logo} alt={c.name} loading="lazy" className="logo-mono h-8 w-auto max-w-[120px] object-contain" />
             </li>
           ))}
-        </ul>
-        <dl className="mt-10 grid gap-6 border-t border-border pt-8 sm:grid-cols-3">
+        </ul>}
+        {proofs.length > 0 && <dl className="mt-10 grid gap-6 border-t border-border pt-8 sm:grid-cols-3">
           {proofs.map((p) => (
             <div key={p.label} className="text-center">
               <dt className="eyebrow text-muted-foreground">{p.label}</dt>
               <dd className="mt-2 font-heading text-2xl text-nero">{p.value}</dd>
             </div>
           ))}
-        </dl>
+        </dl>}
       </div>
     </section>
   );
@@ -360,6 +361,8 @@ function SelectedWork() {
 }
 
 function Testimonials() {
+  const TESTIMONIALS = BRAND_PROFILE.corporateTestimonials;
+  if (!TESTIMONIALS.length) return null;
   return (
     <section className="bg-paper py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-5">

@@ -10,3 +10,4 @@
 - [x] Build the Gift Calendar, occasion pages and My dates.
 - [x] Build the Secret Santa app (landing, create, dashboard, join, participant home).
 - [x] Polish and handoff pass (responsive, a11y, legal pages, BACKEND_HANDOFF.md).
+- [x] Homepage restructure with company introduction; About rebuilt; corporate trust fed from brand data.
