@@ -30,6 +30,7 @@ import { Route as LookbookIndexRouteImport } from './routes/lookbook.index'
 import { Route as LookbookEditionRouteImport } from './routes/lookbook.$edition'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as SecretSantaIndexRouteImport } from './routes/secret-santa.index'
+import { Route as SecretSantaNewRouteImport } from './routes/secret-santa.new'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as CalendarMyDatesIndexRouteImport } from './routes/calendar.my-dates.index'
@@ -142,6 +143,11 @@ const SecretSantaIndexRoute = SecretSantaIndexRouteImport.update({
   path: '/secret-santa/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SecretSantaNewRoute = SecretSantaNewRouteImport.update({
+  id: '/secret-santa/new',
+  path: '/secret-santa/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopIndexRoute = ShopIndexRouteImport.update({
   id: '/shop/',
   path: '/shop/',
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
+  '/secret-santa/new': typeof SecretSantaNewRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/calendar/': typeof CalendarIndexRoute
   '/corporate/': typeof CorporateIndexRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
+  '/secret-santa/new': typeof SecretSantaNewRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/calendar': typeof CalendarIndexRoute
   '/corporate': typeof CorporateIndexRoute
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
+  '/secret-santa/new': typeof SecretSantaNewRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/calendar/': typeof CalendarIndexRoute
   '/corporate/': typeof CorporateIndexRoute
@@ -281,6 +290,7 @@ export interface FileRouteTypes {
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
+    | '/secret-santa/new'
     | '/shop/$slug'
     | '/calendar/'
     | '/corporate/'
@@ -310,6 +320,7 @@ export interface FileRouteTypes {
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
+    | '/secret-santa/new'
     | '/shop/$slug'
     | '/calendar'
     | '/corporate'
@@ -339,6 +350,7 @@ export interface FileRouteTypes {
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
+    | '/secret-santa/new'
     | '/shop/$slug'
     | '/calendar/'
     | '/corporate/'
@@ -369,6 +381,7 @@ export interface RootRouteChildren {
   CalendarOccasionRoute: typeof CalendarOccasionRoute
   LookbookEditionRoute: typeof LookbookEditionRoute
   OrderIdRoute: typeof OrderIdRoute
+  SecretSantaNewRoute: typeof SecretSantaNewRoute
   ShopSlugRoute: typeof ShopSlugRoute
   CalendarIndexRoute: typeof CalendarIndexRoute
   CorporateIndexRoute: typeof CorporateIndexRoute
@@ -530,6 +543,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SecretSantaIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/secret-santa/new': {
+      id: '/secret-santa/new'
+      path: '/secret-santa/new'
+      fullPath: '/secret-santa/new'
+      preLoaderRoute: typeof SecretSantaNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop/': {
       id: '/shop/'
       path: '/shop'
@@ -593,6 +613,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarOccasionRoute: CalendarOccasionRoute,
   LookbookEditionRoute: LookbookEditionRoute,
   OrderIdRoute: OrderIdRoute,
+  SecretSantaNewRoute: SecretSantaNewRoute,
   ShopSlugRoute: ShopSlugRoute,
   CalendarIndexRoute: CalendarIndexRoute,
   CorporateIndexRoute: CorporateIndexRoute,
