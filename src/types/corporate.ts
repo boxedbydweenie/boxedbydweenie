@@ -9,6 +9,9 @@ export type CorporatePurpose =
   | "gift-cards";
 
 export interface CorporatePackage {
+  /** Per-recipient price range shown in the Look Book. */
+  toPrice?: number;
+  branding?: string[];
   id: "essential" | "signature" | "prestige";
   name: string;
   fromPrice: number;

@@ -194,3 +194,12 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-box-drop, .animate-bow-untie-l, .animate-bow-untie-r, .animate-panel-glow, .animate-slide-up-in { animation: rise-in 400ms ease-out both !important; }
 }
+
+/* Look Book */
+@keyframes page-in-next { from { opacity: 0; transform: perspective(1600px) rotateY(-10deg) translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes page-in-prev { from { opacity: 0; transform: perspective(1600px) rotateY(10deg) translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes hotspot-pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 189, 27, .7); } 70% { box-shadow: 0 0 0 12px rgba(255, 189, 27, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 189, 27, 0); } }
+@utility animate-page-next { animation: page-in-next 450ms ease both; transform-origin: left center; }
+@utility animate-page-prev { animation: page-in-prev 450ms ease both; transform-origin: right center; }
+@utility animate-hotspot { animation: hotspot-pulse 2000ms ease-out infinite; }
+@media (prefers-reduced-motion: reduce) { .animate-page-next, .animate-page-prev, .animate-hotspot { animation: none; } }

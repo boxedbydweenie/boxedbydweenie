@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 
 const columns = [
   ["Shop", [["All gifts", "/shop"], ["Gift Dispenser", "/dispenser"], ["Gift cards", "/gift-cards"]]],
-  ["Corporate", [["Corporate gifting", "/corporate"], ["Instant quote", "/corporate/quote"], ["Look Book", "/look-book"]]],
+  ["Corporate", [["Corporate gifting", "/corporate"], ["Instant quote", "/corporate/quote"], ["Look Book", "/lookbook"]]],
   ["Company", [["About", "/about"], ["Contact", "/contact"], ["Delivery and returns", "/delivery-returns"], ["Privacy", "/privacy"], ["Terms", "/terms"]]],
 ] as const;
 
