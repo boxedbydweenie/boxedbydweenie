@@ -11,12 +11,18 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AccountRouteImport } from './routes/account'
+import { Route as CartRouteImport } from './routes/cart'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DeliveryReturnsRouteImport } from './routes/delivery-returns'
 import { Route as DispenserRouteImport } from './routes/dispenser'
 import { Route as GiftCalendarRouteImport } from './routes/gift-calendar'
 import { Route as LookBookRouteImport } from './routes/look-book'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as SecretSantaRouteImport } from './routes/secret-santa'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
 import { Route as CorporateQuoteRouteImport } from './routes/corporate.quote'
 
@@ -30,9 +36,24 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeliveryReturnsRoute = DeliveryReturnsRouteImport.update({
+  id: '/delivery-returns',
+  path: '/delivery-returns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DispenserRoute = DispenserRouteImport.update({
@@ -50,6 +71,16 @@ const LookBookRoute = LookBookRouteImport.update({
   path: '/look-book',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SecretSantaRoute = SecretSantaRouteImport.update({
   id: '/secret-santa',
   path: '/secret-santa',
@@ -58,6 +89,11 @@ const SecretSantaRoute = SecretSantaRouteImport.update({
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CorporateIndexRoute = CorporateIndexRouteImport.update({
@@ -74,24 +110,36 @@ const CorporateQuoteRoute = CorporateQuoteRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/account': typeof AccountRoute
+  '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
+  '/delivery-returns': typeof DeliveryReturnsRoute
   '/dispenser': typeof DispenserRoute
   '/gift-calendar': typeof GiftCalendarRoute
   '/look-book': typeof LookBookRoute
+  '/privacy': typeof PrivacyRoute
+  '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
   '/shop': typeof ShopRoute
+  '/terms': typeof TermsRoute
   '/corporate/quote': typeof CorporateQuoteRoute
   '/corporate/': typeof CorporateIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/account': typeof AccountRoute
+  '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
+  '/delivery-returns': typeof DeliveryReturnsRoute
   '/dispenser': typeof DispenserRoute
   '/gift-calendar': typeof GiftCalendarRoute
   '/look-book': typeof LookBookRoute
+  '/privacy': typeof PrivacyRoute
+  '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
   '/shop': typeof ShopRoute
+  '/terms': typeof TermsRoute
   '/corporate/quote': typeof CorporateQuoteRoute
   '/corporate': typeof CorporateIndexRoute
 }
@@ -99,12 +147,18 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/account': typeof AccountRoute
+  '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
+  '/delivery-returns': typeof DeliveryReturnsRoute
   '/dispenser': typeof DispenserRoute
   '/gift-calendar': typeof GiftCalendarRoute
   '/look-book': typeof LookBookRoute
+  '/privacy': typeof PrivacyRoute
+  '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
   '/shop': typeof ShopRoute
+  '/terms': typeof TermsRoute
   '/corporate/quote': typeof CorporateQuoteRoute
   '/corporate/': typeof CorporateIndexRoute
 }
@@ -113,36 +167,54 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/account'
+    | '/cart'
     | '/contact'
+    | '/delivery-returns'
     | '/dispenser'
     | '/gift-calendar'
     | '/look-book'
+    | '/privacy'
+    | '/search'
     | '/secret-santa'
     | '/shop'
+    | '/terms'
     | '/corporate/quote'
     | '/corporate/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/account'
+    | '/cart'
     | '/contact'
+    | '/delivery-returns'
     | '/dispenser'
     | '/gift-calendar'
     | '/look-book'
+    | '/privacy'
+    | '/search'
     | '/secret-santa'
     | '/shop'
+    | '/terms'
     | '/corporate/quote'
     | '/corporate'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/account'
+    | '/cart'
     | '/contact'
+    | '/delivery-returns'
     | '/dispenser'
     | '/gift-calendar'
     | '/look-book'
+    | '/privacy'
+    | '/search'
     | '/secret-santa'
     | '/shop'
+    | '/terms'
     | '/corporate/quote'
     | '/corporate/'
   fileRoutesById: FileRoutesById
@@ -150,12 +222,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AccountRoute: typeof AccountRoute
+  CartRoute: typeof CartRoute
   ContactRoute: typeof ContactRoute
+  DeliveryReturnsRoute: typeof DeliveryReturnsRoute
   DispenserRoute: typeof DispenserRoute
   GiftCalendarRoute: typeof GiftCalendarRoute
   LookBookRoute: typeof LookBookRoute
+  PrivacyRoute: typeof PrivacyRoute
+  SearchRoute: typeof SearchRoute
   SecretSantaRoute: typeof SecretSantaRoute
   ShopRoute: typeof ShopRoute
+  TermsRoute: typeof TermsRoute
   CorporateQuoteRoute: typeof CorporateQuoteRoute
   CorporateIndexRoute: typeof CorporateIndexRoute
 }
@@ -176,11 +254,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contact': {
       id: '/contact'
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delivery-returns': {
+      id: '/delivery-returns'
+      path: '/delivery-returns'
+      fullPath: '/delivery-returns'
+      preLoaderRoute: typeof DeliveryReturnsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dispenser': {
@@ -204,6 +303,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LookBookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/secret-santa': {
       id: '/secret-santa'
       path: '/secret-santa'
@@ -216,6 +329,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/corporate/': {
@@ -238,12 +358,18 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AccountRoute: AccountRoute,
+  CartRoute: CartRoute,
   ContactRoute: ContactRoute,
+  DeliveryReturnsRoute: DeliveryReturnsRoute,
   DispenserRoute: DispenserRoute,
   GiftCalendarRoute: GiftCalendarRoute,
   LookBookRoute: LookBookRoute,
+  PrivacyRoute: PrivacyRoute,
+  SearchRoute: SearchRoute,
   SecretSantaRoute: SecretSantaRoute,
   ShopRoute: ShopRoute,
+  TermsRoute: TermsRoute,
   CorporateQuoteRoute: CorporateQuoteRoute,
   CorporateIndexRoute: CorporateIndexRoute,
 }
