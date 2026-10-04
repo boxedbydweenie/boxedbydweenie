@@ -1,1 +1,7 @@
-import {createFileRoute} from "@tanstack/react-router"; import {ComingSoon} from "@/components/site/ComingSoon"; export const Route=createFileRoute("/privacy")({head:()=>({meta:[{title:"Privacy — Boxed by Dweenie"},{name:"description",content:"Boxed by Dweenie's privacy information."},{property:"og:title",content:"Privacy — Boxed by Dweenie"},{property:"og:description",content:"How Boxed by Dweenie handles your information."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <ComingSoon eyebrow="Legal" title="Privacy" line="Our full privacy information is coming soon."/>});
+import { createFileRoute } from "@tanstack/react-router";
+import { LegalPage, legalHead } from "@/components/site/LegalPage";
+
+export const Route = createFileRoute("/privacy")({
+  head: () => legalHead("Privacy Policy", "How Boxed by Dweenie collects, uses and protects your personal information."),
+  component: () => <LegalPage title="Privacy policy" sections={["Information we collect", "How we use your information", "Sharing with delivery partners", "Cookies", "Your rights", "Contact us"]} />,
+});

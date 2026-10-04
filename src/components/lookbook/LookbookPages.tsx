@@ -60,7 +60,7 @@ export function LookbookPageView({ page, edition }: { page: LookbookPage; editio
     case "cover":
       return <Paper dark className="overflow-hidden"><ImageSlot label={page.image} tone="dark" className="absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-t from-nero via-nero/40 to-transparent" />
-        <div className="absolute inset-x-0 top-0 p-6"><img src={logo.url} alt="Boxed by Dweenie" className="h-8 w-auto" /></div>
+        <div className="absolute inset-x-0 top-0 p-6"><img src={logo.url} alt="Boxed by Dweenie" loading="lazy" className="h-8 w-auto" /></div>
         <div className="absolute inset-x-0 bottom-0 p-6"><p className="eyebrow text-gold">{edition.season}</p><div className="foil mt-3 h-px w-14" /><h2 className="mt-4 font-display text-2xl leading-tight text-on-dark md:text-3xl">{edition.title}</h2></div>
       </Paper>;
     case "note":
@@ -98,9 +98,9 @@ export function LookbookPageView({ page, edition }: { page: LookbookPage; editio
         <Button asChild size="sm" className="mt-5"><Link to="/corporate/quote">Get an instant quote</Link></Button></Paper>;
     case "back":
       return <Paper dark className="flex flex-col items-center justify-center p-8 text-center"><div className="pattern-bow-light pointer-events-none absolute inset-0 opacity-[0.06]" />
-        <img src={logo.url} alt="Boxed by Dweenie" className="relative h-10 w-auto" />
+        <img src={logo.url} alt="Boxed by Dweenie" loading="lazy" className="relative h-10 w-auto" />
         <h2 className="relative mt-8 text-2xl text-on-dark">Let's create a wow.</h2><div className="foil relative mt-5 h-px w-14" />
-        <div className="relative mt-6 space-y-1 text-sm text-on-dark-muted"><a className="block hover:text-gold" href="tel:+2349092125960">0909 212 5960</a><a className="block hover:text-gold" href="mailto:info@boxedbydweenie.com">info@boxedbydweenie.com</a><p>@boxedbydweenie</p></div>
+        <div className="relative mt-6 space-y-1 text-sm text-on-dark-muted"><a className="block py-3 hover:text-gold" href="tel:+2349092125960">0909 212 5960</a><a className="block py-3 hover:text-gold" href="mailto:info@boxedbydweenie.com">info@boxedbydweenie.com</a><p>@boxedbydweenie</p></div>
         <div className="relative mt-8 flex size-24 items-center justify-center border border-dashed border-line-dark text-[10px] uppercase tracking-[0.2em] text-on-dark-muted">QR code</div></Paper>;
   }
 }

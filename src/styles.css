@@ -102,8 +102,15 @@
     line-height: 1.15;
   }
   :focus-visible {
-    outline: 2px solid var(--gold);
+    outline: 2px solid var(--nero);
     outline-offset: 3px;
+  }
+  :where(.surface-dark, .bg-nero, .bg-nero-soft, header, footer) :focus-visible,
+  :where(.surface-dark, .bg-nero, .bg-nero-soft):focus-visible {
+    outline-color: var(--gold);
+  }
+  :where(.surface-dark, .bg-nero, .bg-nero-soft) :where(.bg-paper, .bg-ivory, .bg-background) :focus-visible {
+    outline-color: var(--nero);
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -219,4 +226,10 @@
   .animate-card-drop, .animate-lid-close, .animate-lid-lift, .animate-sparkle { animation: none !important; }
   .animate-card-drop { display: none; }
   .ribbon-draw path, .ribbon-draw circle { animation: none; stroke-dasharray: none; }
+}
+
+/* Lift the floating WhatsApp button above mobile bottom bars and reserve space so they never cover content. */
+@media (max-width: 1023px) {
+  body:has([data-bottom-bar]) .floating-whatsapp { bottom: 6.5rem; }
+  body:has([data-bottom-bar]) footer { padding-bottom: 5.5rem; }
 }

@@ -241,7 +241,7 @@ function QuoteBuilder() {
       <aside className="hidden lg:block"><div className="sticky top-32">{panel}</div></aside>
     </div>
 
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-paper px-5 py-3 shadow-soft lg:hidden">
+    <div data-bottom-bar className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-paper px-5 py-3 shadow-soft lg:hidden">
       <button type="button" onClick={() => setSheet(true)} className="flex min-h-12 w-full items-center justify-between gap-3 text-left" aria-label="Open your estimate">
         <span className="min-w-0"><span className="eyebrow block text-muted-foreground">Your estimate</span><span className="block truncate font-semibold">{estimateError ? "Unavailable" : estimate ? fmtRange(estimate.total) : "Calculating"}</span></span>
         <ChevronUp className="size-5 shrink-0" />

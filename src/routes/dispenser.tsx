@@ -88,7 +88,7 @@ function Machine({ glow, dropping, hideWindowOnMobile, children }: { glow: boole
     <div className="foil absolute inset-x-6 top-0 h-px" />
     <div className={cn(hideWindowOnMobile && "hidden sm:block")}><MachineWindow glow={glow} /></div>
     <div className={cn("mt-3 rounded-md border border-line-dark bg-nero-soft p-4 transition-shadow duration-500 sm:p-5", glow && "border-gold animate-panel-glow")}>{children}</div>
-    <div className="mt-3 flex h-16 items-end sm:h-20 justify-center overflow-hidden rounded-md border border-line-dark bg-[#1f1e1e] pb-2" aria-label="Collection tray">
+    <div className="mt-3 flex h-16 items-end sm:h-20 justify-center overflow-hidden rounded-md border border-line-dark bg-nero pb-2" aria-label="Collection tray">
       {(dropping || glow) ? <TrayBox dropping={dropping} /> : <span className="eyebrow mb-4 text-on-dark-muted sm:mb-5">Collect here</span>}
     </div>
     <div className="mx-auto mt-2 h-1.5 w-2/3 rounded-full foil opacity-70" />
