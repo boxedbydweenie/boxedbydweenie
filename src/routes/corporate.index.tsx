@@ -145,9 +145,9 @@ function Hero() {
 }
 
 const BRAND_PROFILE = {
-  stats: BRAND.stats.filter((s) => typeof s.value === "number"),
-  clients: BRAND.clients.filter((c) => c.name && c.logo),
-  corporateTestimonials: BRAND.corporateTestimonials.filter((t) => t.name && t.quote),
+  stats: BRAND.stats.filter((s) => typeof s.value === "number" && !s.sample),
+  clients: BRAND.clients.filter((c) => c.name && c.logo && !c.sample),
+  corporateTestimonials: BRAND.corporateTestimonials.filter((t) => t.name && t.quote && !t.sample),
 };
 
 function TrustStrip() {
