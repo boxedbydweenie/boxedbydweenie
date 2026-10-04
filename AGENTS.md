@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep business data in typed `src/data` modules and access it through async `src/services` functions so a future API can replace mocks without changing pages.
+- Wrap public content routes with the shared `SiteShell` so navigation, footer, announcement and WhatsApp behaviour stay consistent.
