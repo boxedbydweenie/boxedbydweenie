@@ -15,7 +15,7 @@ export const DELIVERY_FEES: Record<string, number> = {
 
 export const STATES = Object.keys(DELIVERY_FEES);
 
-export const deliveryFeeFor = (state: string) => DELIVERY_FEES[state] ?? DELIVERY_FEES["Other states"];
+export const deliveryFeeFor = (state: string): number => DELIVERY_FEES[state] ?? DELIVERY_FEES["Other states"] ?? 15000;
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 

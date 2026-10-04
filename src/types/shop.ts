@@ -26,13 +26,13 @@ export interface ShopProduct {
 }
 
 export interface ShopFilters {
-  occasion?: string;
-  recipient?: string;
-  type?: string;
-  budget?: string;
-  sameday?: boolean;
-  sort?: SortKey;
-  q?: string;
+  occasion?: string | undefined;
+  recipient?: string | undefined;
+  type?: string | undefined;
+  budget?: string | undefined;
+  sameday?: boolean | undefined;
+  sort?: SortKey | undefined;
+  q?: string | undefined;
 }
 
 export interface GiftCardDetails {
