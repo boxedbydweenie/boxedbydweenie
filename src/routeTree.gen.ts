@@ -15,6 +15,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DeliveryAndReturnsRouteImport } from './routes/delivery-and-returns'
 import { Route as DeliveryReturnsRouteImport } from './routes/delivery-returns'
 import { Route as DispenserRouteImport } from './routes/dispenser'
 import { Route as GiftCalendarRouteImport } from './routes/gift-calendar'
@@ -69,6 +70,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeliveryAndReturnsRoute = DeliveryAndReturnsRouteImport.update({
+  id: '/delivery-and-returns',
+  path: '/delivery-and-returns',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeliveryReturnsRoute = DeliveryReturnsRouteImport.update({
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
+  '/delivery-and-returns': typeof DeliveryAndReturnsRoute
   '/delivery-returns': typeof DeliveryReturnsRoute
   '/dispenser': typeof DispenserRoute
   '/gift-calendar': typeof GiftCalendarRoute
@@ -237,6 +244,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
+  '/delivery-and-returns': typeof DeliveryAndReturnsRoute
   '/delivery-returns': typeof DeliveryReturnsRoute
   '/dispenser': typeof DispenserRoute
   '/gift-calendar': typeof GiftCalendarRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
+  '/delivery-and-returns': typeof DeliveryAndReturnsRoute
   '/delivery-returns': typeof DeliveryReturnsRoute
   '/dispenser': typeof DispenserRoute
   '/gift-calendar': typeof GiftCalendarRoute
@@ -306,6 +315,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/contact'
+    | '/delivery-and-returns'
     | '/delivery-returns'
     | '/dispenser'
     | '/gift-calendar'
@@ -339,6 +349,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/contact'
+    | '/delivery-and-returns'
     | '/delivery-returns'
     | '/dispenser'
     | '/gift-calendar'
@@ -372,6 +383,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/contact'
+    | '/delivery-and-returns'
     | '/delivery-returns'
     | '/dispenser'
     | '/gift-calendar'
@@ -406,6 +418,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
+  DeliveryAndReturnsRoute: typeof DeliveryAndReturnsRoute
   DeliveryReturnsRoute: typeof DeliveryReturnsRoute
   DispenserRoute: typeof DispenserRoute
   GiftCalendarRoute: typeof GiftCalendarRoute
@@ -475,6 +488,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delivery-and-returns': {
+      id: '/delivery-and-returns'
+      path: '/delivery-and-returns'
+      fullPath: '/delivery-and-returns'
+      preLoaderRoute: typeof DeliveryAndReturnsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/delivery-returns': {
@@ -662,6 +682,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
+  DeliveryAndReturnsRoute: DeliveryAndReturnsRoute,
   DeliveryReturnsRoute: DeliveryReturnsRoute,
   DispenserRoute: DispenserRoute,
   GiftCalendarRoute: GiftCalendarRoute,
