@@ -29,6 +29,7 @@ import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as CorporateQuoteIndexRouteImport } from './routes/corporate.quote.index'
+import { Route as CorporateQuoteRefRouteImport } from './routes/corporate.quote.$ref'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -130,6 +131,11 @@ const CorporateQuoteIndexRoute = CorporateQuoteIndexRouteImport.update({
   path: '/corporate/quote/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CorporateQuoteRefRoute = CorporateQuoteRefRouteImport.update({
+  id: '/corporate/quote/$ref',
+  path: '/corporate/quote/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/shop/$slug': typeof ShopSlugRoute
   '/corporate/': typeof CorporateIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
 }
 export interface FileRoutesByTo {
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/shop/$slug': typeof ShopSlugRoute
   '/corporate': typeof CorporateIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/corporate/quote': typeof CorporateQuoteIndexRoute
 }
 export interface FileRoutesById {
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/shop/$slug': typeof ShopSlugRoute
   '/corporate/': typeof CorporateIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
 }
 export interface FileRouteTypes {
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/corporate/'
     | '/shop/'
+    | '/corporate/quote/$ref'
     | '/corporate/quote/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -242,6 +252,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/corporate'
     | '/shop'
+    | '/corporate/quote/$ref'
     | '/corporate/quote'
   id:
     | '__root__'
@@ -264,6 +275,7 @@ export interface FileRouteTypes {
     | '/shop/$slug'
     | '/corporate/'
     | '/shop/'
+    | '/corporate/quote/$ref'
     | '/corporate/quote/'
   fileRoutesById: FileRoutesById
 }
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
   CorporateIndexRoute: typeof CorporateIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
+  CorporateQuoteRefRoute: typeof CorporateQuoteRefRoute
   CorporateQuoteIndexRoute: typeof CorporateQuoteIndexRoute
 }
 
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorporateQuoteIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/corporate/quote/$ref': {
+      id: '/corporate/quote/$ref'
+      path: '/corporate/quote/$ref'
+      fullPath: '/corporate/quote/$ref'
+      preLoaderRoute: typeof CorporateQuoteRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -455,6 +475,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopSlugRoute: ShopSlugRoute,
   CorporateIndexRoute: CorporateIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
+  CorporateQuoteRefRoute: CorporateQuoteRefRoute,
   CorporateQuoteIndexRoute: CorporateQuoteIndexRoute,
 }
 export const routeTree = rootRouteImport
