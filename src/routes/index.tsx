@@ -145,7 +145,7 @@ function Bestsellers({ data }: { data: HomeData }) {
   return <section className={SECTION}><div className={WRAP}>
     <div className="flex items-end justify-between gap-5" data-reveal><HeadBlock eyebrow="Most loved" title="Bestsellers" /><Link to="/shop" className="link-draw hidden min-h-11 shrink-0 items-center text-sm font-semibold sm:inline-flex">View all gifts</Link></div>
     <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4 lg:gap-7" data-reveal>
-      {data.products.map((p, i) => <ProductCard key={p.id} product={p} variant="home" image={PROD_IMAGES[i % 4]} image2={PROD_IMAGES[(i + 1) % 4]} />)}
+      {data.products.map((p, i) => <ProductCard key={p.id} product={p} variant="home" image={PROD_IMAGES[i % 4]!} image2={PROD_IMAGES[(i + 1) % 4]!} />)}
     </div>
     <Link to="/shop" className="link-draw mt-8 inline-flex min-h-11 items-center text-sm font-semibold sm:hidden">View all gifts</Link>
   </div></section>;
