@@ -1,5 +1,4 @@
 import { useSyncExternalStore } from "react";
-import { createStore } from "@/lib/store";
 import { cartStore } from "@/services/cart";
 import { recipientsStore, userStore, wishlistStore } from "@/services/account";
 import { ordersStore } from "@/services/orders";
@@ -26,4 +25,3 @@ const ui = (() => {
 export const useUi = () => useSyncExternalStore(ui.subscribe, ui.get, ui.server);
 export const openCart = (open = true) => ui.set({ cart: open });
 export const openSearch = (open = true) => ui.set({ search: open });
-void createStore;
