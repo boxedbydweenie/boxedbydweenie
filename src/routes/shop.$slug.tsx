@@ -131,7 +131,7 @@ function ProductPage() {
     {related.pairs.length > 0 && <section className="bg-ivory py-16"><div className="mx-auto max-w-7xl px-5"><SectionHeading eyebrow="Complete the moment" title="Pairs well with" /><div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4">{related.pairs.map((r) => <ProductCard key={r.id} product={card(r)} />)}</div></div></section>}
     {related.occasion.length > 0 && <section className="py-16"><div className="mx-auto max-w-7xl px-5"><SectionHeading eyebrow="Same occasion" title="More for this occasion" /><div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4">{related.occasion.map((r) => <ProductCard key={r.id} product={card(r)} />)}</div></div></section>}
 
-    <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-4 border-t border-border bg-paper px-5 py-3 shadow-soft lg:hidden">
+    <div data-bottom-bar className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-4 border-t border-border bg-paper px-5 py-3 shadow-soft lg:hidden">
       <div className="min-w-0 flex-1"><p className="truncate text-xs text-muted-foreground">{p.name}</p><p className="font-semibold">{formatNaira(p.price * qty)}</p></div>
       <Button onClick={add} disabled={!p.inStock}><ShoppingBag />{p.inStock ? "Add to bag" : "Sold out"}</Button>
     </div>
