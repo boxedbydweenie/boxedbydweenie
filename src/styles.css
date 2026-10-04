@@ -164,3 +164,10 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' fill='none' stroke='%23FFBD1B' stroke-width='1.2' stroke-linejoin='round'%3E%3Cpath d='M36 30C28 22 16 18 12 22s0 14 8 16l-6 14 10-6 4 8 8-20M36 30c8-8 20-12 24-8s0 14-8 16l6 14-10-6-4 8-8-20'/%3E%3C/svg%3E");
   background-size: 72px 72px;
 }
+
+@keyframes bow-tie-draw { from { stroke-dashoffset: 320; opacity: .2; } to { stroke-dashoffset: 0; opacity: 1; } }
+.bow-tie path, .bow-tie circle { stroke-dasharray: 320; animation: bow-tie-draw 1400ms ease-out both; }
+.bow-tie path:nth-child(2) { animation-delay: 250ms; }
+.bow-tie path:nth-child(3) { animation-delay: 550ms; }
+.bow-tie circle { animation-delay: 800ms; }
+@media (prefers-reduced-motion: reduce) { .bow-tie path, .bow-tie circle { animation: none; stroke-dasharray: none; } }

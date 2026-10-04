@@ -1,5 +1,9 @@
 import { Heart, LoaderCircle, Minus, Plus, ShoppingBag } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
+import { addToCart } from "@/services/cart";
+import { toggleWishlist } from "@/services/account";
+import { openCart, useWishlist } from "@/hooks/use-shop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,15 +61,22 @@ export function EmptyState({ line, action }: { line: string; action: ReactNode }
 }
 
 export function ProductCard({ product }: { product: Product }) {
-  const [liked, setLiked] = useState(false);
+  const wishlist = useWishlist();
+  const liked = wishlist.includes(product.id);
+  const soldOut = product.inStock === false;
+  const quickAdd = async () => {
+    await addToCart({ kind: "product", productId: product.id, ...(product.slug ? { slug: product.slug } : {}), name: product.name, price: product.price, quantity: 1, packaging: "signature-black" });
+    openCart();
+  };
+  const tile = <PlaceholderTile label={product.name} className="aspect-[4/5] w-full transition-transform duration-500 group-hover:scale-[1.01]" />;
   return <article className="group relative">
     <div className="relative">
-      <PlaceholderTile label={product.name} className="aspect-[4/5] w-full" />
+      {product.slug ? <Link to="/shop/$slug" params={{ slug: product.slug }} aria-label={product.name} tabIndex={-1}>{tile}</Link> : tile}
       {product.badge && <span className="absolute left-3 top-3 rounded-sm bg-gold px-2 py-1 text-[10px] font-bold uppercase text-nero">{product.badge}</span>}
-      <Button type="button" size="icon" variant="ghost" className="absolute right-2 top-2 bg-paper/90" aria-label={liked ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`} onClick={() => setLiked(!liked)}><Heart className={liked ? "fill-current" : ""} /></Button>
+      <Button type="button" size="icon" variant="ghost" className="absolute right-2 top-2 bg-paper/90" aria-pressed={liked} aria-label={liked ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`} onClick={() => toggleWishlist(product.id)}><Heart className={liked ? "fill-current" : ""} /></Button>
     </div>
-    <h3 className="mt-4 text-sm">{product.name}</h3><p className="mt-1 text-sm text-muted-foreground">{product.line}</p>
-    <div className="mt-3 flex items-center justify-between gap-2"><span className="font-semibold">{formatNaira(product.price)}</span><Button size="sm" aria-label={`Quick add ${product.name}`}><ShoppingBag /> <span className="hidden sm:inline">Quick add</span></Button></div>
+    <h3 className="mt-4 text-sm">{product.slug ? <Link to="/shop/$slug" params={{ slug: product.slug }} className="hover:text-muted-foreground">{product.name}</Link> : product.name}</h3><p className="mt-1 text-sm text-muted-foreground">{product.line}</p>
+    <div className="mt-3 flex items-center justify-between gap-2"><span className="font-semibold">{formatNaira(product.price)}</span>{soldOut ? <span className="text-xs text-muted-foreground">Sold out</span> : <Button size="sm" aria-label={`Quick add ${product.name}`} onClick={quickAdd}><ShoppingBag /> <span className="hidden sm:inline">Quick add</span></Button>}</div>
   </article>;
 }
 
