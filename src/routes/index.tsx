@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Award, BriefcaseBusiness, Gift, Handshake, PackageCheck, PartyPopper, Sparkles, Star } from "lucide-react";
+import { Award, BriefcaseBusiness, Gift, Handshake, PartyPopper, Sparkles, Star } from "lucide-react";
 import { useState } from "react";
 import { getHomeData } from "@/services/home";
 import type { HomeData } from "@/types/home";
