@@ -171,3 +171,11 @@
 .bow-tie path:nth-child(3) { animation-delay: 550ms; }
 .bow-tie circle { animation-delay: 800ms; }
 @media (prefers-reduced-motion: reduce) { .bow-tie path, .bow-tie circle { animation: none; stroke-dasharray: none; } }
+
+@media print {
+  @page { size: A4; margin: 0; }
+  body * { visibility: hidden; }
+  #quote-print, #quote-print * { visibility: visible; }
+  #quote-print { position: absolute; inset: 0 auto auto 0; width: 210mm; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

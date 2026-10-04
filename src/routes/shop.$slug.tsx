@@ -118,7 +118,7 @@ function ProductPage() {
           <Button size="lg" className="flex-1" onClick={add} disabled={!p.inStock}><ShoppingBag />{p.inStock ? "Add to bag" : "Sold out"}</Button>
           <Button size="icon" variant="outline" aria-pressed={liked} aria-label={liked ? "Remove from wishlist" : "Add to wishlist"} onClick={() => toggleWishlist(p.id)}><Heart className={liked ? "fill-current" : ""} /></Button>
         </div>
-        <p className="mt-4 text-sm">Ordering {BULK_THRESHOLD} or more? <Link to="/corporate/quote" className="font-semibold underline underline-offset-4">Get an instant quote.</Link></p>
+        <p className="mt-4 text-sm">Ordering {BULK_THRESHOLD} or more? <Link to="/corporate/quote" search={{ items: p.corporateEligible ? p.id : undefined }} className="font-semibold underline underline-offset-4">Get an instant quote.</Link></p>
 
         <Accordion type="multiple" defaultValue={["inside"]} className="mt-6">
           <AccordionItem value="inside"><AccordionTrigger>What's inside</AccordionTrigger><AccordionContent><ul className="list-disc space-y-1 pl-5">{p.inside.map((i) => <li key={i}>{i}</li>)}</ul></AccordionContent></AccordionItem>
