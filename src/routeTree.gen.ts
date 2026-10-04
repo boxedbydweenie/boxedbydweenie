@@ -25,7 +25,6 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as SecretSantaRouteImport } from './routes/secret-santa'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
-import { Route as CorporateQuoteRouteImport } from './routes/corporate.quote'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
@@ -110,11 +109,6 @@ const CorporateIndexRoute = CorporateIndexRouteImport.update({
   path: '/corporate/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CorporateQuoteRoute = CorporateQuoteRouteImport.update({
-  id: '/corporate/quote',
-  path: '/corporate/quote',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OrderIdRoute = OrderIdRouteImport.update({
   id: '/order/$id',
   path: '/order/$id',
@@ -147,7 +141,6 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
-  '/corporate/quote': typeof CorporateQuoteRoute
   '/order/$id': typeof OrderIdRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/corporate/': typeof CorporateIndexRoute
@@ -169,7 +162,6 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
-  '/corporate/quote': typeof CorporateQuoteRoute
   '/order/$id': typeof OrderIdRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/corporate': typeof CorporateIndexRoute
@@ -192,7 +184,6 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
-  '/corporate/quote': typeof CorporateQuoteRoute
   '/order/$id': typeof OrderIdRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/corporate/': typeof CorporateIndexRoute
@@ -216,7 +207,6 @@ export interface FileRouteTypes {
     | '/search'
     | '/secret-santa'
     | '/terms'
-    | '/corporate/quote'
     | '/order/$id'
     | '/shop/$slug'
     | '/corporate/'
@@ -238,7 +228,6 @@ export interface FileRouteTypes {
     | '/search'
     | '/secret-santa'
     | '/terms'
-    | '/corporate/quote'
     | '/order/$id'
     | '/shop/$slug'
     | '/corporate'
@@ -260,7 +249,6 @@ export interface FileRouteTypes {
     | '/search'
     | '/secret-santa'
     | '/terms'
-    | '/corporate/quote'
     | '/order/$id'
     | '/shop/$slug'
     | '/corporate/'
@@ -283,7 +271,6 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SecretSantaRoute: typeof SecretSantaRoute
   TermsRoute: typeof TermsRoute
-  CorporateQuoteRoute: typeof CorporateQuoteRoute
   OrderIdRoute: typeof OrderIdRoute
   ShopSlugRoute: typeof ShopSlugRoute
   CorporateIndexRoute: typeof CorporateIndexRoute
@@ -404,13 +391,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorporateIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/corporate/quote': {
-      id: '/corporate/quote'
-      path: '/corporate/quote'
-      fullPath: '/corporate/quote'
-      preLoaderRoute: typeof CorporateQuoteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/order/$id': {
       id: '/order/$id'
       path: '/order/$id'
@@ -451,7 +431,6 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SecretSantaRoute: SecretSantaRoute,
   TermsRoute: TermsRoute,
-  CorporateQuoteRoute: CorporateQuoteRoute,
   OrderIdRoute: OrderIdRoute,
   ShopSlugRoute: ShopSlugRoute,
   CorporateIndexRoute: CorporateIndexRoute,
