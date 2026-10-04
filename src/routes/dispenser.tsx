@@ -51,7 +51,7 @@ const valid = (key: keyof DispenserAnswers, v?: string) => !!v && QUESTIONS.find
 /* ---------- Machine ---------- */
 
 function MachineWindow({ glow }: { glow: boolean }) {
-  return <svg viewBox="0 0 300 150" className="block h-auto w-full" role="img" aria-label="Gift vending machine window with rows of gold-bowed boxes">
+  return <svg viewBox="0 0 300 150" className="mx-auto block h-auto max-h-28 w-full sm:max-h-none" role="img" aria-label="Gift vending machine window with rows of gold-bowed boxes">
     <defs>
       <linearGradient id="foil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#C8922E" /><stop offset=".5" stopColor="#F6E3A1" /><stop offset="1" stopColor="#E0AE35" /></linearGradient>
       <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FBFAF2" stopOpacity=".10" /><stop offset=".5" stopColor="#FBFAF2" stopOpacity=".02" /><stop offset="1" stopColor="#FBFAF2" stopOpacity=".08" /></linearGradient>
@@ -88,8 +88,8 @@ function Machine({ glow, dropping, hideWindowOnMobile, children }: { glow: boole
     <div className="foil absolute inset-x-6 top-0 h-px" />
     <div className={cn(hideWindowOnMobile && "hidden sm:block")}><MachineWindow glow={glow} /></div>
     <div className={cn("mt-3 rounded-md border border-line-dark bg-nero-soft p-4 transition-shadow duration-500 sm:p-5", glow && "border-gold animate-panel-glow")}>{children}</div>
-    <div className="mt-3 flex h-20 items-end justify-center overflow-hidden rounded-md border border-line-dark bg-[#1f1e1e] pb-2" aria-label="Collection tray">
-      {(dropping || glow) ? <TrayBox dropping={dropping} /> : <span className="eyebrow mb-5 text-on-dark-muted">Collect here</span>}
+    <div className="mt-3 flex h-16 items-end sm:h-20 justify-center overflow-hidden rounded-md border border-line-dark bg-[#1f1e1e] pb-2" aria-label="Collection tray">
+      {(dropping || glow) ? <TrayBox dropping={dropping} /> : <span className="eyebrow mb-4 text-on-dark-muted sm:mb-5">Collect here</span>}
     </div>
     <div className="mx-auto mt-2 h-1.5 w-2/3 rounded-full foil opacity-70" />
   </div>;
@@ -158,6 +158,7 @@ function DispenserPage() {
   const again = () => { const r = round + 1; setRound(r); setResult(null); dispense(answers as DispenserAnswers, r); };
   const change = () => { setAnswers({}); setResult(null); setPhase("who"); };
 
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [phase]);
   const q = QUESTIONS.find((x) => x.key === phase);
   const qIndex = QUESTIONS.findIndex((x) => x.key === phase);
   const shopSearch = {
@@ -186,7 +187,7 @@ function DispenserPage() {
           </div>
           <h2 className="mt-2 text-center text-lg text-on-dark sm:text-2xl">{q.title}</h2>
           <div key={q.key} className={cn("mt-4 grid animate-rise-in gap-2 sm:gap-3", q.key === "budget" ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-2 sm:grid-cols-4")}>
-            {q.options.map((o) => <button key={o.slug} type="button" onClick={() => answer(q.key, o.slug)} aria-pressed={answers[q.key] === o.slug} className={cn("min-h-12 rounded-md border px-3 text-sm font-semibold transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold sm:min-h-14", answers[q.key] === o.slug ? "border-gold bg-gold text-nero" : "border-line-dark text-on-dark hover:border-gold")}>{o.name}</button>)}
+            {q.options.map((o) => <button key={o.slug} type="button" onClick={() => answer(q.key, o.slug)} aria-pressed={answers[q.key] === o.slug} className={cn("min-h-11 rounded-md border px-3 text-sm font-semibold transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold sm:min-h-14", answers[q.key] === o.slug ? "border-gold bg-gold text-nero" : "border-line-dark text-on-dark hover:border-gold")}>{o.name}</button>)}
           </div>
         </div>}
 
@@ -224,7 +225,7 @@ function PickCard({ pick, index, onSend }: { pick: Pick; index: number; onSend: 
   const earliest = earliestDelivery(p.sameDay);
   const today = earliest === toIso(new Date());
   return <article className="flex w-[78vw] max-w-xs shrink-0 snap-center animate-slide-up-in flex-col rounded-md border border-line-dark bg-nero-soft p-3 md:w-auto md:max-w-none" style={{ animationDelay: `${index * 120}ms` }}>
-    <div className="relative"><PlaceholderTile label={p.name} className="aspect-[5/4] w-full" /><span className="absolute left-2 top-2 rounded-sm bg-gold px-2 py-1 text-[10px] font-bold uppercase text-nero">{pick.label}</span></div>
+    <div className="relative"><PlaceholderTile label={p.name} className="aspect-[16/9] w-full md:aspect-[5/4]" /><span className="absolute left-2 top-2 rounded-sm bg-gold px-2 py-1 text-[10px] font-bold uppercase text-nero">{pick.label}</span></div>
     <h3 className="mt-3 text-sm text-on-dark">{p.name}</h3>
     <p className="mt-1 font-semibold text-on-dark">{formatNaira(p.price)}</p>
     <ul className="mt-2 space-y-0.5 text-xs text-on-dark-muted">{p.inside.slice(0, 3).map((i) => <li key={i}>· {i}</li>)}</ul>
