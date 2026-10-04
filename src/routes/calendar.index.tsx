@@ -94,7 +94,7 @@ function CalendarPage() {
           <p className="eyebrow text-gold">Next up</p>
           <h2 className="mt-4 text-2xl text-on-dark">{nextUp.occasion.name}</h2>
           <p className="mt-1 text-sm text-on-dark-muted">{formatLong(nextUp.date!)}</p>
-          <p className="mt-6 font-display text-5xl text-gold">{daysUntil(nextUp.date!)}<span className="ml-3 font-sans text-sm uppercase tracking-[0.3em] text-on-dark-muted">days to go</span></p>
+          <p className="mt-6 font-sans text-5xl font-light tabular-nums text-gold">{daysUntil(nextUp.date!)}<span className="ml-3 font-sans text-sm uppercase tracking-[0.3em] text-on-dark-muted">days to go</span></p>
           {nextUp.orderBy && <p className="mt-4 text-sm text-on-dark">{daysUntil(nextUp.orderBy) < 0 ? "Order today for the best chance of delivery." : <>Order by <strong>{formatLong(nextUp.orderBy)}</strong></>}</p>}
           <Button asChild className="mt-6"><Link to="/shop" search={nextUp.occasion.shop}>Shop this occasion</Link></Button>
         </article>}
@@ -196,7 +196,9 @@ function MonthNav({ cursor, setCursor }: { cursor: { y: number; m: number }; set
 const cells = (y: number, m: number) => {
   const lead = (new Date(y, m, 1).getDay() + 6) % 7;
   const days = new Date(y, m + 1, 0).getDate();
-  return [...Array(lead).fill(null), ...Array.from({ length: days }, (_, i) => `${y}-${String(m + 1).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`)] as (string | null)[];
+  const list = [...Array(lead).fill(null), ...Array.from({ length: days }, (_, i) => `${y}-${String(m + 1).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`)] as (string | null)[];
+  while (list.length % 7) list.push(null);
+  return list;
 };
 
 function MonthGrid({ y, m, byDate, today, onDay }: { y: number; m: number; byDate: Map<string, Entry[]>; today: string; onDay: (d: string) => void }) {
