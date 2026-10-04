@@ -13,8 +13,9 @@ export const getEdition = (slug: string): Promise<LookbookEdition | null> =>
 /** Cover first, then facing pairs; a final odd page stands alone. */
 export function buildSpreads(count: number): number[][] {
   const spreads: number[][] = [[1]];
-  for (let p = 2; p <= count; p += 2) spreads.push(p + 1 <= count && p + 1 !== count ? [p, p + 1] : p + 1 === count ? [p, p + 1].slice(0, count - p === 1 && count % 2 === 0 ? 1 : 2) : [p]);
-  return spreads.flatMap((s) => (s.length === 2 && s[1] === count && count % 2 === 0 ? [[s[0]!], [s[1]!]] : [s]));
+  for (let p = 2; p < count; p += 2) spreads.push(p + 1 < count ? [p, p + 1] : [p]);
+  if (count > 1) spreads.push([count]);
+  return spreads;
 }
 
 /** Quote list shared between Look Book pages; persisted on this device. */
