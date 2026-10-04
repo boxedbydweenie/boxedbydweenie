@@ -1,3 +1,6 @@
+import { usePeople } from "@/hooks/use-calendar";
+import { PersonAvatar } from "@/components/calendar/PersonAvatar";
+import { daysUntil, formatLong as calLong, nextDateFor } from "@/services/calendar";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -59,7 +62,7 @@ function AccountPage() {
 
         <TabsContent value="wishlist" className="mt-8">{wishlist.length === 0 ? <EmptyState line="Tap the heart on any gift to save it here." action={<Button asChild><Link to="/shop">Browse gifts</Link></Button>} /> : <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4">{wishlist.map(getProductById).filter((p) => p !== null).map((p) => <ProductCard key={p.id} product={{ id: p.id, slug: p.slug, name: p.name, line: p.line, price: p.price, inStock: p.inStock }} />)}</div>}</TabsContent>
 
-        <TabsContent value="my-dates" className="mt-8"><EmptyState line="Save birthdays and anniversaries and we will remind you in good time. Your Gift Calendar is coming soon." action={<Button asChild variant="outline"><Link to="/gift-calendar">Visit the Gift Calendar</Link></Button>} /></TabsContent>
+        <TabsContent value="my-dates" className="mt-8"><AccountDates /></TabsContent>
 
         <TabsContent value="details" className="mt-8"><form key={user.email} className="grid max-w-xl gap-4" onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); updateDetails({ name: String(fd.get("name")), email: String(fd.get("email")), phone: String(fd.get("phone")) }); }}>
           <FormField label="Name" name="name" defaultValue={user.name} /><FormField label="Email" name="email" type="email" defaultValue={user.email} /><FormField label="Phone" name="phone" type="tel" defaultValue={user.phone} />
@@ -68,4 +71,12 @@ function AccountPage() {
       </Tabs>}
     </div>
   </main></SiteShell>;
+}
+
+
+function AccountDates() {
+  const people = usePeople();
+  if (people.length === 0) return <EmptyState line="Save birthdays and anniversaries and we will remind you in good time." action={<Button asChild><Link to="/calendar/my-dates" search={{ add: true }}>Add your first person</Link></Button>} />;
+  return <div><ul className="divide-y divide-border border-y border-border">{people.map((p) => { const n = nextDateFor(p); return <li key={p.id}><Link to="/calendar/my-dates/$personId" params={{ personId: p.id }} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-4 hover:bg-ivory"><PersonAvatar person={p} /><div className="min-w-0"><p className="truncate font-semibold">{p.name}</p><p className="text-sm text-muted-foreground">{p.relationship}{n ? ` · ${n.date.label}, ${calLong(n.on)}` : ""}</p></div>{n && <span className="text-sm font-semibold">{daysUntil(n.on)} days</span>}</Link></li>; })}</ul>
+    <div className="mt-6 flex flex-wrap gap-3"><Button asChild><Link to="/calendar/my-dates">Manage my dates</Link></Button><Button asChild variant="outline"><Link to="/calendar">Open the Gift Calendar</Link></Button></div></div>;
 }

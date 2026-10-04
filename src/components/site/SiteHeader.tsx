@@ -11,7 +11,7 @@ import { cartCount } from "@/services/cart";
 
 const nav = [
   ["Gift Dispenser", "/dispenser"], ["Corporate", "/corporate"], ["Look Book", "/lookbook"],
-  ["Gift Calendar", "/gift-calendar"], ["Secret Santa", "/secret-santa"],
+  ["Gift Calendar", "/calendar"], ["Secret Santa", "/secret-santa"],
 ] as const;
 const shopGroups = [
   ["By occasion", [["Birthday", { occasion: "birthday" }], ["Anniversary", { occasion: "anniversary" }], ["Wedding", { occasion: "wedding" }], ["Christmas", { occasion: "christmas" }]]],

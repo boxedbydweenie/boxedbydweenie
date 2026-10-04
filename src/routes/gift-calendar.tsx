@@ -1,1 +1,5 @@
-import {createFileRoute} from "@tanstack/react-router"; import {ComingSoon} from "@/components/site/ComingSoon"; export const Route=createFileRoute("/gift-calendar")({head:()=>({meta:[{title:"Gift Calendar — Boxed by Dweenie"},{name:"description",content:"Plan meaningful gifting moments throughout the year."},{property:"og:title",content:"Gift Calendar — Boxed by Dweenie"},{property:"og:description",content:"Never miss a meaningful gifting moment."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <ComingSoon eyebrow="Plan ahead" title="Gift Calendar" line="A thoughtful reminder for every date that matters is coming soon."/>});
+import { createFileRoute, redirect } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/gift-calendar")({
+  beforeLoad: () => { throw redirect({ to: "/calendar", statusCode: 301 }); },
+});
