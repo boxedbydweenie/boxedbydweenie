@@ -22,7 +22,7 @@ export function GoldRule({ className }: { className?: string }) {
 
 export function SectionHeading({ eyebrow, title, intro, dark, center, className }: { eyebrow: string; title: string; intro?: string; dark?: boolean; center?: boolean; className?: string }) {
   return <div className={cn("max-w-2xl", center && "mx-auto text-center", className)}>
-    <Eyebrow dark={dark}>{eyebrow}</Eyebrow><GoldRule className={cn("mt-4", center && "mx-auto")} />
+    <Eyebrow {...(dark === undefined ? {} : { dark })}>{eyebrow}</Eyebrow><GoldRule className={cn("mt-4", center && "mx-auto")} />
     <h2 className={cn("mt-5 text-2xl md:text-4xl", dark && "text-on-dark")}>{title}</h2>
     {intro && <p className={cn("mt-4 leading-relaxed", dark ? "text-on-dark-muted" : "text-muted-foreground")}>{intro}</p>}
   </div>;
