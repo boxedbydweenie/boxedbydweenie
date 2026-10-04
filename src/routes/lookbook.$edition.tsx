@@ -113,13 +113,11 @@ function Viewer() {
     <main className="relative flex flex-1 items-center justify-center md:px-16 md:py-16"
       onTouchStart={(e) => { const t = e.touches[0]!; touch.current = { x: t.clientX, y: t.clientY }; }}
       onTouchEnd={(e) => { const s = touch.current; const t = e.changedTouches[0]!; if (!s) return; const dx = t.clientX - s.x, dy = t.clientY - s.y; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1); touch.current = null; }}>
-      <div key={visible.join("-")} className={cn("flex h-full w-full md:h-[min(100%,calc((100vw-8rem)*2/3))] md:w-auto md:shadow-soft", dir === "next" ? "animate-page-next" : "animate-page-prev")}>
+      <div key={visible.join("-")} className={cn("relative flex h-full w-full md:h-[min(100%,calc((100vw-8rem)*2/3))] md:w-auto md:shadow-soft", dir === "next" ? "animate-page-next" : "animate-page-prev")}>
         {visible.map((n, i) => <section key={n} aria-label={`Page ${n}`} className={cn("relative h-full w-full md:aspect-[3/4] md:w-auto", !mobile && visible.length === 2 && i === 0 && "border-r border-line-dark")}>
           <LookbookPageView page={edition.pages[n - 1]!} edition={edition} />
-          {!mobile && <button type="button" aria-label={i === 0 && visible.length === 2 || n === 1 && false ? "Previous page" : n === visible[visible.length - 1] ? "Next page" : "Previous page"} tabIndex={-1}
-            onClick={() => step(n === visible[visible.length - 1] && !(visible.length === 2 && i === 0) ? 1 : -1)}
-            className={cn("absolute inset-y-0 z-10 w-8 cursor-pointer bg-transparent transition-colors hover:bg-gold/10", n === visible[visible.length - 1] && !(visible.length === 2 && i === 0) ? "right-0" : "left-0")} />}
         </section>)}
+        {!mobile && <><button type="button" tabIndex={-1} aria-label="Previous page" onClick={() => step(-1)} className="absolute inset-y-0 left-0 z-10 w-8 hover:bg-gold/10" /><button type="button" tabIndex={-1} aria-label="Next page" onClick={() => step(1)} className="absolute inset-y-0 right-0 z-10 w-8 hover:bg-gold/10" /></>}
       </div>
       <div hidden aria-hidden>{preload.filter((n) => n >= 1 && n <= total).map((n) => <span key={n}>{edition.pages[n - 1]!.title}</span>)}</div>
       <Button variant="outline" size="icon" aria-label="Previous" disabled={atStart} onClick={() => step(-1)} className={cn("absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border-line-dark bg-nero text-on-dark md:inline-flex")}><ChevronLeft /></Button>
