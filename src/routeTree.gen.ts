@@ -22,7 +22,6 @@ import { Route as GiftCardsRouteImport } from './routes/gift-cards'
 import { Route as LookBookRouteImport } from './routes/look-book'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SearchRouteImport } from './routes/search'
-import { Route as SecretSantaRouteImport } from './routes/secret-santa'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CalendarIndexRouteImport } from './routes/calendar.index'
 import { Route as CalendarOccasionRouteImport } from './routes/calendar.$occasion'
@@ -30,6 +29,7 @@ import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
 import { Route as LookbookIndexRouteImport } from './routes/lookbook.index'
 import { Route as LookbookEditionRouteImport } from './routes/lookbook.$edition'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
+import { Route as SecretSantaIndexRouteImport } from './routes/secret-santa.index'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as CalendarMyDatesIndexRouteImport } from './routes/calendar.my-dates.index'
@@ -102,11 +102,6 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SecretSantaRoute = SecretSantaRouteImport.update({
-  id: '/secret-santa',
-  path: '/secret-santa',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -140,6 +135,11 @@ const LookbookEditionRoute = LookbookEditionRouteImport.update({
 const OrderIdRoute = OrderIdRouteImport.update({
   id: '/order/$id',
   path: '/order/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecretSantaIndexRoute = SecretSantaIndexRouteImport.update({
+  id: '/secret-santa/',
+  path: '/secret-santa/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopIndexRoute = ShopIndexRouteImport.update({
@@ -187,7 +187,6 @@ export interface FileRoutesByFullPath {
   '/look-book': typeof LookBookRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
-  '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
@@ -196,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/calendar/': typeof CalendarIndexRoute
   '/corporate/': typeof CorporateIndexRoute
   '/lookbook/': typeof LookbookIndexRoute
+  '/secret-santa/': typeof SecretSantaIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
@@ -216,7 +216,6 @@ export interface FileRoutesByTo {
   '/look-book': typeof LookBookRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
-  '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
@@ -225,6 +224,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarIndexRoute
   '/corporate': typeof CorporateIndexRoute
   '/lookbook': typeof LookbookIndexRoute
+  '/secret-santa': typeof SecretSantaIndexRoute
   '/shop': typeof ShopIndexRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
@@ -246,7 +246,6 @@ export interface FileRoutesById {
   '/look-book': typeof LookBookRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
-  '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
@@ -255,6 +254,7 @@ export interface FileRoutesById {
   '/calendar/': typeof CalendarIndexRoute
   '/corporate/': typeof CorporateIndexRoute
   '/lookbook/': typeof LookbookIndexRoute
+  '/secret-santa/': typeof SecretSantaIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
@@ -277,7 +277,6 @@ export interface FileRouteTypes {
     | '/look-book'
     | '/privacy'
     | '/search'
-    | '/secret-santa'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
@@ -286,6 +285,7 @@ export interface FileRouteTypes {
     | '/calendar/'
     | '/corporate/'
     | '/lookbook/'
+    | '/secret-santa/'
     | '/shop/'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
@@ -306,7 +306,6 @@ export interface FileRouteTypes {
     | '/look-book'
     | '/privacy'
     | '/search'
-    | '/secret-santa'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
@@ -315,6 +314,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/corporate'
     | '/lookbook'
+    | '/secret-santa'
     | '/shop'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
@@ -335,7 +335,6 @@ export interface FileRouteTypes {
     | '/look-book'
     | '/privacy'
     | '/search'
-    | '/secret-santa'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
@@ -344,6 +343,7 @@ export interface FileRouteTypes {
     | '/calendar/'
     | '/corporate/'
     | '/lookbook/'
+    | '/secret-santa/'
     | '/shop/'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
@@ -365,7 +365,6 @@ export interface RootRouteChildren {
   LookBookRoute: typeof LookBookRoute
   PrivacyRoute: typeof PrivacyRoute
   SearchRoute: typeof SearchRoute
-  SecretSantaRoute: typeof SecretSantaRoute
   TermsRoute: typeof TermsRoute
   CalendarOccasionRoute: typeof CalendarOccasionRoute
   LookbookEditionRoute: typeof LookbookEditionRoute
@@ -374,6 +373,7 @@ export interface RootRouteChildren {
   CalendarIndexRoute: typeof CalendarIndexRoute
   CorporateIndexRoute: typeof CorporateIndexRoute
   LookbookIndexRoute: typeof LookbookIndexRoute
+  SecretSantaIndexRoute: typeof SecretSantaIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
   CalendarMyDatesPersonIdRoute: typeof CalendarMyDatesPersonIdRoute
   CorporateQuoteRefRoute: typeof CorporateQuoteRefRoute
@@ -474,13 +474,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/secret-santa': {
-      id: '/secret-santa'
-      path: '/secret-santa'
-      fullPath: '/secret-santa'
-      preLoaderRoute: typeof SecretSantaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -528,6 +521,13 @@ declare module '@tanstack/react-router' {
       path: '/order/$id'
       fullPath: '/order/$id'
       preLoaderRoute: typeof OrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/secret-santa/': {
+      id: '/secret-santa/'
+      path: '/secret-santa'
+      fullPath: '/secret-santa/'
+      preLoaderRoute: typeof SecretSantaIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shop/': {
@@ -589,7 +589,6 @@ const rootRouteChildren: RootRouteChildren = {
   LookBookRoute: LookBookRoute,
   PrivacyRoute: PrivacyRoute,
   SearchRoute: SearchRoute,
-  SecretSantaRoute: SecretSantaRoute,
   TermsRoute: TermsRoute,
   CalendarOccasionRoute: CalendarOccasionRoute,
   LookbookEditionRoute: LookbookEditionRoute,
@@ -598,6 +597,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarIndexRoute: CalendarIndexRoute,
   CorporateIndexRoute: CorporateIndexRoute,
   LookbookIndexRoute: LookbookIndexRoute,
+  SecretSantaIndexRoute: SecretSantaIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
   CalendarMyDatesPersonIdRoute: CalendarMyDatesPersonIdRoute,
   CorporateQuoteRefRoute: CorporateQuoteRefRoute,
