@@ -29,6 +29,8 @@ const searchSchema = z.object({
   purpose: z.string().optional().catch(undefined),
   package: z.string().optional().catch(undefined),
   items: z.string().optional().catch(undefined),
+  quantity: z.coerce.number().int().positive().optional().catch(undefined),
+  budget: z.coerce.number().int().positive().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/corporate/quote/")({
@@ -90,6 +92,8 @@ function QuoteBuilder() {
     if (purpose && PURPOSES.some((p) => p.slug === purpose)) r.purpose = purpose as QuotePurpose;
     const pkg = CORPORATE_PACKAGES.find((p) => p.id === search.package);
     if (pkg) r.budget = Math.min(BUDGET_MAX, pkg.fromPrice);
+    if (search.quantity) r.quantity = search.quantity;
+    if (search.budget) r.budget = Math.min(BUDGET_MAX, Math.max(BUDGET_MIN, search.budget));
     if (search.items) r.selections = search.items.split(",").filter((id) => UNIT_PRICE_RANGES[id]).slice(0, MAX_SELECTIONS);
     return r;
   });
@@ -102,7 +106,7 @@ function QuoteBuilder() {
   const [busy, setBusy] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
-  useEffect(() => { getDraft().then((d) => { if (d && !search.purpose && !search.package && !search.items) setDraft(d); }); }, [search.purpose, search.package, search.items]);
+  useEffect(() => { getDraft().then((d) => { if (d && !search.purpose && !search.package && !search.items && !search.quantity) setDraft(d); }); }, [search.purpose, search.package, search.items, search.quantity]);
   useEffect(() => {
     let live = true;
     calculateEstimate(req).then((e) => { if (live) { setEstimate(e); setEstimateError(false); } }).catch(() => live && setEstimateError(true));

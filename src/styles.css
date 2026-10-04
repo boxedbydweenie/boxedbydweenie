@@ -203,3 +203,20 @@
 @utility animate-page-prev { animation: page-in-prev 450ms ease both; transform-origin: right center; }
 @utility animate-hotspot { animation: hotspot-pulse 2000ms ease-out infinite; }
 @media (prefers-reduced-motion: reduce) { .animate-page-next, .animate-page-prev, .animate-hotspot { animation: none; } }
+
+/* Secret Santa */
+@keyframes card-drop { 0% { transform: translateY(-160px) rotate(var(--r, 0deg)); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(40px) rotate(var(--r, 0deg)); opacity: 0; } }
+@keyframes lid-close { 0%, 45% { transform: translateY(-70px) rotate(-12deg); } 65%, 100% { transform: translateY(0) rotate(0); } }
+@keyframes lid-lift { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(-90px) rotate(-14deg); opacity: 0; } }
+@keyframes ribbon-draw { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+@keyframes sparkle { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1); } }
+@utility animate-card-drop { animation: card-drop 1100ms cubic-bezier(.4,.1,.6,1) both; }
+@utility animate-lid-close { animation: lid-close 1800ms ease-in-out both; }
+@utility animate-lid-lift { animation: lid-lift 700ms 900ms ease-in both; }
+@utility animate-sparkle { animation: sparkle 2200ms ease-in-out infinite; }
+.ribbon-draw path, .ribbon-draw circle { stroke-dasharray: 400; animation: ribbon-draw 900ms 1900ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-drop, .animate-lid-close, .animate-lid-lift, .animate-sparkle { animation: none !important; }
+  .animate-card-drop { display: none; }
+  .ribbon-draw path, .ribbon-draw circle { animation: none; stroke-dasharray: none; }
+}

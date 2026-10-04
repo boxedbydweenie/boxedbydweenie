@@ -22,7 +22,6 @@ import { Route as GiftCardsRouteImport } from './routes/gift-cards'
 import { Route as LookBookRouteImport } from './routes/look-book'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SearchRouteImport } from './routes/search'
-import { Route as SecretSantaRouteImport } from './routes/secret-santa'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CalendarIndexRouteImport } from './routes/calendar.index'
 import { Route as CalendarOccasionRouteImport } from './routes/calendar.$occasion'
@@ -30,12 +29,17 @@ import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
 import { Route as LookbookIndexRouteImport } from './routes/lookbook.index'
 import { Route as LookbookEditionRouteImport } from './routes/lookbook.$edition'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
+import { Route as SecretSantaIndexRouteImport } from './routes/secret-santa.index'
+import { Route as SecretSantaNewRouteImport } from './routes/secret-santa.new'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as CalendarMyDatesIndexRouteImport } from './routes/calendar.my-dates.index'
 import { Route as CalendarMyDatesPersonIdRouteImport } from './routes/calendar.my-dates.$personId'
 import { Route as CorporateQuoteIndexRouteImport } from './routes/corporate.quote.index'
 import { Route as CorporateQuoteRefRouteImport } from './routes/corporate.quote.$ref'
+import { Route as SecretSantaIdIndexRouteImport } from './routes/secret-santa.$id.index'
+import { Route as SecretSantaIdManageRouteImport } from './routes/secret-santa.$id.manage'
+import { Route as SecretSantaJoinCodeRouteImport } from './routes/secret-santa.join.$code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -102,11 +106,6 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SecretSantaRoute = SecretSantaRouteImport.update({
-  id: '/secret-santa',
-  path: '/secret-santa',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -142,6 +141,16 @@ const OrderIdRoute = OrderIdRouteImport.update({
   path: '/order/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SecretSantaIndexRoute = SecretSantaIndexRouteImport.update({
+  id: '/secret-santa/',
+  path: '/secret-santa/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecretSantaNewRoute = SecretSantaNewRouteImport.update({
+  id: '/secret-santa/new',
+  path: '/secret-santa/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopIndexRoute = ShopIndexRouteImport.update({
   id: '/shop/',
   path: '/shop/',
@@ -172,6 +181,21 @@ const CorporateQuoteRefRoute = CorporateQuoteRefRouteImport.update({
   path: '/corporate/quote/$ref',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SecretSantaIdIndexRoute = SecretSantaIdIndexRouteImport.update({
+  id: '/secret-santa/$id/',
+  path: '/secret-santa/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecretSantaIdManageRoute = SecretSantaIdManageRouteImport.update({
+  id: '/secret-santa/$id/manage',
+  path: '/secret-santa/$id/manage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecretSantaJoinCodeRoute = SecretSantaJoinCodeRouteImport.update({
+  id: '/secret-santa/join/$code',
+  path: '/secret-santa/join/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -187,20 +211,24 @@ export interface FileRoutesByFullPath {
   '/look-book': typeof LookBookRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
-  '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
+  '/secret-santa/new': typeof SecretSantaNewRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/calendar/': typeof CalendarIndexRoute
   '/corporate/': typeof CorporateIndexRoute
   '/lookbook/': typeof LookbookIndexRoute
+  '/secret-santa/': typeof SecretSantaIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
+  '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
+  '/secret-santa/join/$code': typeof SecretSantaJoinCodeRoute
   '/calendar/my-dates/': typeof CalendarMyDatesIndexRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
+  '/secret-santa/$id/': typeof SecretSantaIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -216,20 +244,24 @@ export interface FileRoutesByTo {
   '/look-book': typeof LookBookRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
-  '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
+  '/secret-santa/new': typeof SecretSantaNewRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/calendar': typeof CalendarIndexRoute
   '/corporate': typeof CorporateIndexRoute
   '/lookbook': typeof LookbookIndexRoute
+  '/secret-santa': typeof SecretSantaIndexRoute
   '/shop': typeof ShopIndexRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
+  '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
+  '/secret-santa/join/$code': typeof SecretSantaJoinCodeRoute
   '/calendar/my-dates': typeof CalendarMyDatesIndexRoute
   '/corporate/quote': typeof CorporateQuoteIndexRoute
+  '/secret-santa/$id': typeof SecretSantaIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -246,20 +278,24 @@ export interface FileRoutesById {
   '/look-book': typeof LookBookRoute
   '/privacy': typeof PrivacyRoute
   '/search': typeof SearchRoute
-  '/secret-santa': typeof SecretSantaRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
+  '/secret-santa/new': typeof SecretSantaNewRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/calendar/': typeof CalendarIndexRoute
   '/corporate/': typeof CorporateIndexRoute
   '/lookbook/': typeof LookbookIndexRoute
+  '/secret-santa/': typeof SecretSantaIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
+  '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
+  '/secret-santa/join/$code': typeof SecretSantaJoinCodeRoute
   '/calendar/my-dates/': typeof CalendarMyDatesIndexRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
+  '/secret-santa/$id/': typeof SecretSantaIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -277,20 +313,24 @@ export interface FileRouteTypes {
     | '/look-book'
     | '/privacy'
     | '/search'
-    | '/secret-santa'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
+    | '/secret-santa/new'
     | '/shop/$slug'
     | '/calendar/'
     | '/corporate/'
     | '/lookbook/'
+    | '/secret-santa/'
     | '/shop/'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
+    | '/secret-santa/$id/manage'
+    | '/secret-santa/join/$code'
     | '/calendar/my-dates/'
     | '/corporate/quote/'
+    | '/secret-santa/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -306,20 +346,24 @@ export interface FileRouteTypes {
     | '/look-book'
     | '/privacy'
     | '/search'
-    | '/secret-santa'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
+    | '/secret-santa/new'
     | '/shop/$slug'
     | '/calendar'
     | '/corporate'
     | '/lookbook'
+    | '/secret-santa'
     | '/shop'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
+    | '/secret-santa/$id/manage'
+    | '/secret-santa/join/$code'
     | '/calendar/my-dates'
     | '/corporate/quote'
+    | '/secret-santa/$id'
   id:
     | '__root__'
     | '/'
@@ -335,20 +379,24 @@ export interface FileRouteTypes {
     | '/look-book'
     | '/privacy'
     | '/search'
-    | '/secret-santa'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
+    | '/secret-santa/new'
     | '/shop/$slug'
     | '/calendar/'
     | '/corporate/'
     | '/lookbook/'
+    | '/secret-santa/'
     | '/shop/'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
+    | '/secret-santa/$id/manage'
+    | '/secret-santa/join/$code'
     | '/calendar/my-dates/'
     | '/corporate/quote/'
+    | '/secret-santa/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -365,20 +413,24 @@ export interface RootRouteChildren {
   LookBookRoute: typeof LookBookRoute
   PrivacyRoute: typeof PrivacyRoute
   SearchRoute: typeof SearchRoute
-  SecretSantaRoute: typeof SecretSantaRoute
   TermsRoute: typeof TermsRoute
   CalendarOccasionRoute: typeof CalendarOccasionRoute
   LookbookEditionRoute: typeof LookbookEditionRoute
   OrderIdRoute: typeof OrderIdRoute
+  SecretSantaNewRoute: typeof SecretSantaNewRoute
   ShopSlugRoute: typeof ShopSlugRoute
   CalendarIndexRoute: typeof CalendarIndexRoute
   CorporateIndexRoute: typeof CorporateIndexRoute
   LookbookIndexRoute: typeof LookbookIndexRoute
+  SecretSantaIndexRoute: typeof SecretSantaIndexRoute
   ShopIndexRoute: typeof ShopIndexRoute
   CalendarMyDatesPersonIdRoute: typeof CalendarMyDatesPersonIdRoute
   CorporateQuoteRefRoute: typeof CorporateQuoteRefRoute
+  SecretSantaIdManageRoute: typeof SecretSantaIdManageRoute
+  SecretSantaJoinCodeRoute: typeof SecretSantaJoinCodeRoute
   CalendarMyDatesIndexRoute: typeof CalendarMyDatesIndexRoute
   CorporateQuoteIndexRoute: typeof CorporateQuoteIndexRoute
+  SecretSantaIdIndexRoute: typeof SecretSantaIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -474,13 +526,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/secret-santa': {
-      id: '/secret-santa'
-      path: '/secret-santa'
-      fullPath: '/secret-santa'
-      preLoaderRoute: typeof SecretSantaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -530,6 +575,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/secret-santa/': {
+      id: '/secret-santa/'
+      path: '/secret-santa'
+      fullPath: '/secret-santa/'
+      preLoaderRoute: typeof SecretSantaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/secret-santa/new': {
+      id: '/secret-santa/new'
+      path: '/secret-santa/new'
+      fullPath: '/secret-santa/new'
+      preLoaderRoute: typeof SecretSantaNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop/': {
       id: '/shop/'
       path: '/shop'
@@ -572,6 +631,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CorporateQuoteRefRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/secret-santa/$id/': {
+      id: '/secret-santa/$id/'
+      path: '/secret-santa/$id'
+      fullPath: '/secret-santa/$id/'
+      preLoaderRoute: typeof SecretSantaIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/secret-santa/$id/manage': {
+      id: '/secret-santa/$id/manage'
+      path: '/secret-santa/$id/manage'
+      fullPath: '/secret-santa/$id/manage'
+      preLoaderRoute: typeof SecretSantaIdManageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/secret-santa/join/$code': {
+      id: '/secret-santa/join/$code'
+      path: '/secret-santa/join/$code'
+      fullPath: '/secret-santa/join/$code'
+      preLoaderRoute: typeof SecretSantaJoinCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -589,20 +669,24 @@ const rootRouteChildren: RootRouteChildren = {
   LookBookRoute: LookBookRoute,
   PrivacyRoute: PrivacyRoute,
   SearchRoute: SearchRoute,
-  SecretSantaRoute: SecretSantaRoute,
   TermsRoute: TermsRoute,
   CalendarOccasionRoute: CalendarOccasionRoute,
   LookbookEditionRoute: LookbookEditionRoute,
   OrderIdRoute: OrderIdRoute,
+  SecretSantaNewRoute: SecretSantaNewRoute,
   ShopSlugRoute: ShopSlugRoute,
   CalendarIndexRoute: CalendarIndexRoute,
   CorporateIndexRoute: CorporateIndexRoute,
   LookbookIndexRoute: LookbookIndexRoute,
+  SecretSantaIndexRoute: SecretSantaIndexRoute,
   ShopIndexRoute: ShopIndexRoute,
   CalendarMyDatesPersonIdRoute: CalendarMyDatesPersonIdRoute,
   CorporateQuoteRefRoute: CorporateQuoteRefRoute,
+  SecretSantaIdManageRoute: SecretSantaIdManageRoute,
+  SecretSantaJoinCodeRoute: SecretSantaJoinCodeRoute,
   CalendarMyDatesIndexRoute: CalendarMyDatesIndexRoute,
   CorporateQuoteIndexRoute: CorporateQuoteIndexRoute,
+  SecretSantaIdIndexRoute: SecretSantaIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

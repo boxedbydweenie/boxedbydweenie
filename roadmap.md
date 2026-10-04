@@ -8,3 +8,4 @@
 - [x] Verify metadata, build diagnostics, primary interactions and responsive layouts.
 - [x] Build the digital Look Book library, viewer, shoppable hotspots and quote list.
 - [x] Build the Gift Calendar, occasion pages and My dates.
+- [x] Build the Secret Santa app (landing, create, dashboard, join, participant home).
