@@ -59,7 +59,7 @@ function Manage() {
   const doDraw = async () => {
     setConfirm(false);
     const r = await drawNames(id);
-    if (!r.ok) return toast(r.message);
+    if (!r.ok) { toast(r.message); return; }
     setDrawing(true);
   };
 
@@ -112,7 +112,7 @@ function Manage() {
           <Card title="Exclusions">
             <p className="text-xs text-on-dark-muted">Pairs who must not draw each other, such as couples, or a manager and a direct report.</p>
             <ul className="mt-3 space-y-2">{ex.exclusions.map(([a, b], i) => <li key={`${a}-${b}`} className="flex items-center justify-between rounded-sm border border-line-dark px-3 py-2 text-sm text-on-dark">{name(a)} &amp; {name(b)}{ex.status === "open" && <Button size="icon" variant="ghost" className="size-8 text-on-dark-muted" aria-label="Remove exclusion" onClick={() => removeExclusion(id, i)}><X /></Button>}</li>)}</ul>
-            {ex.status === "open" && <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-2">{[0, 1].map((i) => <Select key={i} value={pair[i]} onValueChange={(v) => setPair(i ? [pair[0], v] : [v, pair[1]])}><SelectTrigger className={field} aria-label={`Person ${i + 1}`}><SelectValue placeholder="Person" /></SelectTrigger><SelectContent>{people.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>)}
+            {ex.status === "open" && <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-2">{[0, 1].map((i) => <Select key={i} value={pair[i] ?? ""} onValueChange={(v) => setPair(i ? [pair[0], v] : [v, pair[1]])}><SelectTrigger className={field} aria-label={`Person ${i + 1}`}><SelectValue placeholder="Person" /></SelectTrigger><SelectContent>{people.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>)}
               <Button disabled={!pair[0] || !pair[1] || pair[0] === pair[1]} onClick={async () => { await addExclusion(id, pair[0], pair[1]); setPair(["", ""]); }}>Add</Button></div>}
           </Card>
 
