@@ -195,15 +195,15 @@ function DispenserPage() {
       </Machine>}
 
       {phase === "picks" && result && <section aria-labelledby="picks-title">
-        <div className="text-center"><p className="eyebrow text-gold">Freshly dispensed</p><h1 id="picks-title" className="mt-2 text-2xl text-on-dark sm:text-3xl">Your three picks</h1>
+        <div className="px-12 text-center"><p className="eyebrow text-gold">Freshly dispensed</p><h1 id="picks-title" className="mt-2 text-2xl text-on-dark sm:text-3xl">Your three picks</h1>
           {result.restocking && <p className="mt-3 text-sm text-on-dark-muted">The machine is restocking. Here are our bestsellers instead.</p>}</div>
-        <div className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
+        <div className="-mx-4 mt-4 flex snap-x snap-mandatory sm:mt-6 gap-4 overflow-x-auto px-4 pb-3 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
           {result.picks.map((p, i) => <PickCard key={p.product.id} pick={p} index={i} onSend={() => setSending(p.product)} />)}
         </div>
-        <div className="mt-5 flex flex-wrap justify-center gap-2">
-          <Button variant="outline" className="text-on-dark" onClick={again}><RefreshCw />Dispense again</Button>
-          <Button variant="ghost" className="text-on-dark" onClick={change}><SlidersHorizontal />Change my answers</Button>
-          <Button asChild variant="ghost" className="text-on-dark"><Link to="/shop" search={shopSearch}><Store />See all matching gifts</Link></Button>
+        <div className="mt-3 grid grid-cols-3 gap-1 sm:mt-5 sm:flex sm:flex-wrap sm:justify-center sm:gap-2">
+          <Button variant="outline" size="sm" className="whitespace-normal text-on-dark" onClick={again}><RefreshCw />Dispense again</Button>
+          <Button variant="ghost" size="sm" className="whitespace-normal text-on-dark" onClick={change}><SlidersHorizontal />Change my answers</Button>
+          <Button asChild variant="ghost" size="sm" className="whitespace-normal text-on-dark"><Link to="/shop" search={shopSearch}><Store />See all matching gifts</Link></Button>
         </div>
       </section>}
 
