@@ -10,12 +10,54 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DispenserRouteImport } from './routes/dispenser'
+import { Route as GiftCalendarRouteImport } from './routes/gift-calendar'
+import { Route as LookBookRouteImport } from './routes/look-book'
+import { Route as SecretSantaRouteImport } from './routes/secret-santa'
+import { Route as ShopRouteImport } from './routes/shop'
 import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
 import { Route as CorporateQuoteRouteImport } from './routes/corporate.quote'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DispenserRoute = DispenserRouteImport.update({
+  id: '/dispenser',
+  path: '/dispenser',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GiftCalendarRoute = GiftCalendarRouteImport.update({
+  id: '/gift-calendar',
+  path: '/gift-calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LookBookRoute = LookBookRouteImport.update({
+  id: '/look-book',
+  path: '/look-book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SecretSantaRoute = SecretSantaRouteImport.update({
+  id: '/secret-santa',
+  path: '/secret-santa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CorporateIndexRoute = CorporateIndexRouteImport.update({
@@ -31,30 +73,89 @@ const CorporateQuoteRoute = CorporateQuoteRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/dispenser': typeof DispenserRoute
+  '/gift-calendar': typeof GiftCalendarRoute
+  '/look-book': typeof LookBookRoute
+  '/secret-santa': typeof SecretSantaRoute
+  '/shop': typeof ShopRoute
   '/corporate/quote': typeof CorporateQuoteRoute
   '/corporate/': typeof CorporateIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/dispenser': typeof DispenserRoute
+  '/gift-calendar': typeof GiftCalendarRoute
+  '/look-book': typeof LookBookRoute
+  '/secret-santa': typeof SecretSantaRoute
+  '/shop': typeof ShopRoute
   '/corporate/quote': typeof CorporateQuoteRoute
   '/corporate': typeof CorporateIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
+  '/dispenser': typeof DispenserRoute
+  '/gift-calendar': typeof GiftCalendarRoute
+  '/look-book': typeof LookBookRoute
+  '/secret-santa': typeof SecretSantaRoute
+  '/shop': typeof ShopRoute
   '/corporate/quote': typeof CorporateQuoteRoute
   '/corporate/': typeof CorporateIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/corporate/quote' | '/corporate/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/dispenser'
+    | '/gift-calendar'
+    | '/look-book'
+    | '/secret-santa'
+    | '/shop'
+    | '/corporate/quote'
+    | '/corporate/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/corporate/quote' | '/corporate'
-  id: '__root__' | '/' | '/corporate/quote' | '/corporate/'
+  to:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/dispenser'
+    | '/gift-calendar'
+    | '/look-book'
+    | '/secret-santa'
+    | '/shop'
+    | '/corporate/quote'
+    | '/corporate'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/dispenser'
+    | '/gift-calendar'
+    | '/look-book'
+    | '/secret-santa'
+    | '/shop'
+    | '/corporate/quote'
+    | '/corporate/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  ContactRoute: typeof ContactRoute
+  DispenserRoute: typeof DispenserRoute
+  GiftCalendarRoute: typeof GiftCalendarRoute
+  LookBookRoute: typeof LookBookRoute
+  SecretSantaRoute: typeof SecretSantaRoute
+  ShopRoute: typeof ShopRoute
   CorporateQuoteRoute: typeof CorporateQuoteRoute
   CorporateIndexRoute: typeof CorporateIndexRoute
 }
@@ -66,6 +167,55 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dispenser': {
+      id: '/dispenser'
+      path: '/dispenser'
+      fullPath: '/dispenser'
+      preLoaderRoute: typeof DispenserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gift-calendar': {
+      id: '/gift-calendar'
+      path: '/gift-calendar'
+      fullPath: '/gift-calendar'
+      preLoaderRoute: typeof GiftCalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/look-book': {
+      id: '/look-book'
+      path: '/look-book'
+      fullPath: '/look-book'
+      preLoaderRoute: typeof LookBookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/secret-santa': {
+      id: '/secret-santa'
+      path: '/secret-santa'
+      fullPath: '/secret-santa'
+      preLoaderRoute: typeof SecretSantaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/corporate/': {
@@ -87,6 +237,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  ContactRoute: ContactRoute,
+  DispenserRoute: DispenserRoute,
+  GiftCalendarRoute: GiftCalendarRoute,
+  LookBookRoute: LookBookRoute,
+  SecretSantaRoute: SecretSantaRoute,
+  ShopRoute: ShopRoute,
   CorporateQuoteRoute: CorporateQuoteRoute,
   CorporateIndexRoute: CorporateIndexRoute,
 }

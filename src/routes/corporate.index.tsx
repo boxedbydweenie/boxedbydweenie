@@ -4,8 +4,7 @@ import {
   Gift, Award, Briefcase, Handshake, Crown, PartyPopper, Shirt, CreditCard,
   Package, Layers, Ribbon, MessageSquareText, Tag, ArrowRight, MessageCircle, FileDown, Check, X,
 } from "lucide-react";
-import { SiteHeader } from "@/components/site/SiteHeader";
-import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteShell } from "@/components/site/SiteShell";
 import { PlaceholderTile } from "@/components/site/PlaceholderTile";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -93,8 +92,7 @@ const FAQS = [
 
 function CorporatePage() {
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader />
+    <SiteShell>
       <main>
         <Hero />
         <TrustStrip />
@@ -108,9 +106,8 @@ function CorporatePage() {
         <Faq />
         <Consultation />
       </main>
-      <SiteFooter />
       <StickyCta />
-    </div>
+    </SiteShell>
   );
 }
 
