@@ -111,9 +111,9 @@ function DispenserPage() {
   const startRef = useRef<number>(0);
   const [seconds, setSeconds] = useState(0);
   const [answers, setAnswers] = useState<Partial<DispenserAnswers>>(() => ({
-    ...(valid("who", search.who) ? { who: search.who } : {}),
-    ...(valid("occasion", search.occasion) ? { occasion: search.occasion } : {}),
-    ...(valid("budget", search.budget) ? { budget: search.budget } : {}),
+    ...(search.who && valid("who", search.who) ? { who: search.who } : {}),
+    ...(search.occasion && valid("occasion", search.occasion) ? { occasion: search.occasion } : {}),
+    ...(search.budget && valid("budget", search.budget) ? { budget: search.budget } : {}),
   }));
   const firstMissing = (a: Partial<DispenserAnswers>): Phase => (QUESTIONS.find((q) => !a[q.key])?.key ?? "dispensing");
   const [phase, setPhase] = useState<Phase>(() => (Object.keys(answers).length ? firstMissing(answers) : "intro"));
