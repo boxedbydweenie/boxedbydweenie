@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarClock, Download, Mail, MessageCircle, Package, Pencil, Phone, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import logo from "@/assets/bbd-logo.png.asset.json";
+import logo from "@/assets/brand/logo";
 import { SiteShell } from "@/components/site/SiteShell";
 import { BowLoader, Button, Eyebrow, GoldRule, LoadingButton } from "@/components/site/Brand";
 import { BowTie } from "@/components/shop/BowTie";

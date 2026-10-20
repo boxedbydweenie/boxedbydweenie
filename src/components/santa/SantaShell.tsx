@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
 import { toast } from "sonner";
-import logo from "@/assets/bbd-logo.png.asset.json";
+import logo from "@/assets/brand/logo";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CartDrawer } from "@/components/shop/CartDrawer";

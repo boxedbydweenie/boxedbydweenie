@@ -53,8 +53,8 @@ const valid = (key: keyof DispenserAnswers, v?: string) => !!v && QUESTIONS.find
 function MachineWindow({ glow }: { glow: boolean }) {
   return <svg viewBox="0 0 300 150" className="mx-auto block h-auto max-h-28 w-full sm:max-h-none" role="img" aria-label="Gift vending machine window with rows of gold-bowed boxes">
     <defs>
-      <linearGradient id="foil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#C8922E" /><stop offset=".5" stopColor="#F6E3A1" /><stop offset="1" stopColor="#E0AE35" /></linearGradient>
-      <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FBFAF2" stopOpacity=".10" /><stop offset=".5" stopColor="#FBFAF2" stopOpacity=".02" /><stop offset="1" stopColor="#FBFAF2" stopOpacity=".08" /></linearGradient>
+      <linearGradient id="foil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#C79A26" /><stop offset=".5" stopColor="#F2D57E" /><stop offset="1" stopColor="#E7B93B" /></linearGradient>
+      <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#F4EFE5" stopOpacity=".10" /><stop offset=".5" stopColor="#F4EFE5" stopOpacity=".02" /><stop offset="1" stopColor="#F4EFE5" stopOpacity=".08" /></linearGradient>
     </defs>
     <rect x="1" y="1" width="298" height="148" rx="6" fill="#1f1e1e" stroke="url(#foil)" strokeWidth="1.5" />
     {[0, 1, 2].map((row) => <g key={row}>
@@ -63,14 +63,14 @@ function MachineWindow({ glow }: { glow: boolean }) {
         const x = 22 + col * 54, y = 18 + row * 46;
         const dark = (row + col) % 2 === 0;
         return <g key={col} className={glow && row === 2 && col === 2 ? "opacity-30 transition-opacity duration-500" : ""}>
-          <rect x={x} y={y} width="36" height="28" rx="2" fill={dark ? "#292828" : "#FBFAF2"} stroke="url(#foil)" strokeWidth=".8" />
+          <rect x={x} y={y} width="36" height="28" rx="2" fill={dark ? "#292828" : "#F4EFE5"} stroke="url(#foil)" strokeWidth=".8" />
           <rect x={x + 16} y={y} width="4" height="28" fill="url(#foil)" />
           <path d={`M${x + 18} ${y + 2} q-9 -9 -12 -1 q3 6 12 1 q9 -9 12 -1 q-3 6 -12 1`} fill="none" stroke="url(#foil)" strokeWidth="1.2" />
         </g>;
       })}
     </g>)}
     <rect x="1" y="1" width="298" height="148" rx="6" fill="url(#glass)" />
-    <path d="M30 6 L70 6 L20 144 L6 144 Z" fill="#FBFAF2" opacity=".04" />
+    <path d="M30 6 L70 6 L20 144 L6 144 Z" fill="#F4EFE5" opacity=".04" />
   </svg>;
 }
 
@@ -99,7 +99,7 @@ function TimerRing({ seconds }: { seconds: number }) {
   const pct = (seconds % 60) / 60;
   const c = 2 * Math.PI * 16;
   return <div className="pointer-events-none absolute right-4 top-4 flex size-12 items-center justify-center" aria-hidden>
-    <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90"><circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" className="text-line-dark" strokeWidth="2" /><circle cx="20" cy="20" r="16" fill="none" stroke="#FFBD1B" strokeWidth="2" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} strokeLinecap="round" className="transition-[stroke-dashoffset] duration-1000 ease-linear" /></svg>
+    <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90"><circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" className="text-line-dark" strokeWidth="2" /><circle cx="20" cy="20" r="16" fill="none" stroke="#E7B93B" strokeWidth="2" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} strokeLinecap="round" className="transition-[stroke-dashoffset] duration-1000 ease-linear" /></svg>
     <span className="text-[10px] font-semibold text-on-dark-muted">{seconds}s</span>
   </div>;
 }

@@ -58,7 +58,7 @@ export function WhoWeAre({ brand }: { brand: BrandProfile }) {
       <div className="relative" data-reveal>
         <p className="eyebrow text-gold">About us</p><div aria-hidden className="rule-foil mt-4 w-12" />
         <h2 className="mt-5 text-3xl text-on-dark md:text-5xl">Who we are</h2>
-        <blockquote className="mt-8 max-w-md font-heading text-xl uppercase leading-snug tracking-wide text-gold md:text-2xl">“To be your number one luxury gift plug all season round.”</blockquote>
+        <blockquote className="mt-8 max-w-md font-heading text-2xl italic leading-snug text-gold md:text-3xl">“To be your number one luxury gift plug all season round.”</blockquote>
       </div>
     </div>
     <div className="grid items-center gap-8 bg-paper px-5 py-14 md:grid-cols-[1fr_.75fr] lg:px-[max(5vw,3rem)] lg:py-20" data-reveal>

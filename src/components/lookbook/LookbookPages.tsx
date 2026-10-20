@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { FilePlus2, ShoppingBag } from "lucide-react";
-import logo from "@/assets/bbd-logo.png.asset.json";
+import logo from "@/assets/brand/logo";
 import { PlaceholderTile } from "@/components/site/PlaceholderTile";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
