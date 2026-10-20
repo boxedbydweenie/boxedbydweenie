@@ -84,7 +84,7 @@ function TrayBox({ dropping }: { dropping: boolean }) {
 }
 
 function Machine({ glow, dropping, hideWindowOnMobile, children }: { glow: boolean; dropping: boolean; hideWindowOnMobile?: boolean; children: React.ReactNode }) {
-  return <div className="relative mx-auto w-full max-w-xl rounded-lg border border-gold/50 bg-nero p-3 shadow-brand sm:p-4">
+  return <div data-feature="none" className="relative mx-auto w-full max-w-xl rounded-lg border border-gold/50 bg-nero p-3 shadow-brand sm:p-4">
     <div className="foil absolute inset-x-6 top-0 h-px" />
     <div className={cn(hideWindowOnMobile && "hidden sm:block")}><MachineWindow glow={glow} /></div>
     <div className={cn("mt-3 rounded-md border border-line-dark bg-nero-soft p-4 transition-shadow duration-500 sm:p-5", glow && "border-gold animate-panel-glow")}>{children}</div>

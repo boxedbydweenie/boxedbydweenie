@@ -47,11 +47,11 @@ const GROUPS: { key: FilterKey; title: string; options: { slug: string; name: st
 ];
 
 function Header({ count }: { count?: number }) {
-  return <div className="bg-ivory border-b border-border">
-    <div className="mx-auto max-w-7xl px-5 py-10 md:py-14">
-      <Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>Shop</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
-      <h1 className="mt-5 text-3xl md:text-5xl">The gift shop</h1>
-      <p className="mt-3 text-sm text-muted-foreground" aria-live="polite">{count === undefined ? "Loading gifts" : `${count} ${count === 1 ? "gift" : "gifts"}`}</p>
+  return <div className="surface-dark">
+    <div className="mx-auto max-w-7xl px-5 py-12 md:py-16">
+      <Breadcrumb><BreadcrumbList className="text-on-dark-muted [&_a:hover]:text-gold [&_[aria-current]]:text-on-dark"><BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>Shop</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
+      <h1 className="mt-5 text-3xl text-on-dark md:text-5xl">The gift shop</h1>
+      <p className="mt-3 text-sm text-on-dark-muted" aria-live="polite">{count === undefined ? "Loading gifts" : `${count} ${count === 1 ? "gift" : "gifts"}`}</p>
     </div>
   </div>;
 }

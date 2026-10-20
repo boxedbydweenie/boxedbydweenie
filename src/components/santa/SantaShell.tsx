@@ -23,8 +23,8 @@ export function SantaShell({ title, children, tabs, activeTab, onTab, light }: {
     if (r === "organiser") navigate({ to: "/secret-santa/$id/manage", params: { id: DEMO_EXCHANGE_ID } });
     else navigate({ to: "/secret-santa/$id", params: { id: DEMO_EXCHANGE_ID } });
   };
-  return <div className={cn("min-h-screen", light ? "bg-paper" : "surface-dark")}>
-    <header className="surface-dark sticky top-0 z-40 border-b border-line-dark">
+  return <div data-feature="santa" className={cn("min-h-screen", light ? "bg-paper" : "surface-dark")}>
+    <header data-feature="none" className="surface-dark sticky top-0 z-40 border-b border-line-dark">
       <div className="mx-auto grid h-14 max-w-5xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4">
         <Link to="/secret-santa" aria-label="Secret Santa home"><img src={logo.url} alt="Boxed by Dweenie" className="h-7 w-auto" /></Link>
         <p className="truncate text-center font-heading text-xs uppercase tracking-[0.2em] text-on-dark">{title ?? "Secret Santa"}</p>

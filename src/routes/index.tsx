@@ -96,7 +96,7 @@ function TwoDoors() {
 
 function Dispenser() {
   const [who, setWho] = useState("her"), [occasion, setOccasion] = useState("birthday"), [budget, setBudget] = useState("25-50");
-  return <section className={cn(SECTION, "surface-rich overflow-hidden")}>
+  return <section data-feature="dispenser" className={cn(SECTION, "surface-rich overflow-hidden")}>
     <div aria-hidden className="rule-foil absolute inset-x-0 top-0" /><div aria-hidden className="rule-foil absolute inset-x-0 bottom-0" />
     <div className={cn(WRAP, "grid items-center gap-12 lg:grid-cols-[1.1fr_.9fr]")}>
       <div data-reveal>
@@ -118,14 +118,14 @@ function Dispenser() {
 
 function MiniSelect({ id, label, value, set, options }: { id: string; label: string; value: string; set: (v: string) => void; options: { slug: string; name: string }[] }) {
   return <div><label htmlFor={id} className="eyebrow text-on-dark-muted">{label}</label>
-    <Select value={value} onValueChange={set}><SelectTrigger id={id} className="mt-2 min-h-12 border-line-dark bg-nero-soft text-on-dark"><SelectValue placeholder={label} /></SelectTrigger><SelectContent>{options.map((o) => <SelectItem key={o.slug} value={o.slug}>{o.name}</SelectItem>)}</SelectContent></Select>
+    <Select value={value} onValueChange={set}><SelectTrigger id={id} className="mt-2 min-h-12 border-transparent bg-paper text-nero"><SelectValue placeholder={label} /></SelectTrigger><SelectContent>{options.map((o) => <SelectItem key={o.slug} value={o.slug}>{o.name}</SelectItem>)}</SelectContent></Select>
   </div>;
 }
 
 function Occasions({ data }: { data: HomeData }) {
   const track = useRef<HTMLUListElement>(null);
   const move = (dir: number) => track.current?.scrollBy({ left: dir * track.current.clientWidth * 0.8, behavior: "smooth" });
-  return <section className={cn(SECTION, "bg-ivory")}><div className={WRAP}>
+  return <section className={cn(SECTION, "brand-pattern-ivory")}><div className={WRAP}>
     <div className="flex items-end justify-between gap-5" data-reveal><HeadBlock eyebrow="Find the right gift" title="Shop by occasion" />
       <div className="hidden gap-2 md:flex"><Button variant="outline" size="icon" className="size-11 rounded-full" aria-label="Previous occasions" onClick={() => move(-1)}><ArrowLeft /></Button><Button variant="outline" size="icon" className="size-11 rounded-full" aria-label="Next occasions" onClick={() => move(1)}><ArrowRight /></Button></div>
     </div>
@@ -153,7 +153,7 @@ function Bestsellers({ data }: { data: HomeData }) {
 
 function CorporateBand() {
   const points = [[Award, "Employee rewards"], [Handshake, "Client appreciation"], [BriefcaseBusiness, "Onboarding kits"], [PartyPopper, "Event souvenirs"]] as const;
-  return <section className="surface-rich grid lg:grid-cols-[.9fr_1.1fr]">
+  return <section data-feature="corporate" className="surface-rich grid lg:grid-cols-[.9fr_1.1fr]">
     <Photo name="corporate-band" className="aspect-[4/3] w-full lg:aspect-auto lg:h-full" sizes="(min-width: 1024px) 45vw, 100vw" />
     <div className="px-5 py-16 lg:px-[max(5vw,3rem)] lg:py-28" data-reveal>
       <HeadBlock eyebrow="Corporate gifting" title="Make your people and your clients feel seen" dark />
@@ -167,8 +167,8 @@ const dayLabel = (n: number) => n <= 0 ? "Today" : n === 1 ? "Tomorrow" : `${n} 
 function Calendar({ data }: { data: HomeData }) {
   const [today, setToday] = useState<Date | null>(null);
   useEffect(() => setToday(new Date(new Date().toDateString())), []);
-  return <section className={cn(SECTION, "bg-ivory")}><div className={WRAP}>
-    <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end" data-reveal><HeadBlock eyebrow="Gift Calendar" title="Never miss a moment" /><Link to="/calendar" className="link-draw inline-flex min-h-11 w-fit items-center text-sm font-semibold">See the Gift Calendar <ArrowRight className="ml-2 size-4" /></Link></div>
+  return <section data-feature="calendar" className={cn(SECTION, "surface-dark")}><div className={WRAP}>
+    <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end" data-reveal><HeadBlock dark eyebrow="Gift Calendar" title="Never miss a moment" /><Link to="/calendar" className="link-draw inline-flex min-h-11 w-fit items-center text-sm font-semibold text-on-dark">See the Gift Calendar <ArrowRight className="ml-2 size-4" /></Link></div>
     <div className="mt-10 grid gap-4 md:grid-cols-3" data-reveal>{data.moments.map((m, i) => {
       const dt = new Date(`${m.date}T00:00:00`);
       const days = today ? Math.max(0, Math.round((dt.getTime() - today.getTime()) / 86400000)) : null;
@@ -183,17 +183,17 @@ function Calendar({ data }: { data: HomeData }) {
 }
 
 function LookBook() {
-  return <section className={SECTION}><div className={cn(WRAP, "grid items-center gap-12 lg:grid-cols-[1.2fr_.8fr]")}>
+  return <section data-feature="lookbook" className={cn(SECTION, "surface-rich")}><div className={cn(WRAP, "grid items-center gap-12 lg:grid-cols-[1.2fr_.8fr]")}>
     <Link to="/lookbook" aria-label="Open the Look Book" className="covers relative mx-auto grid w-full max-w-lg grid-cols-2 gap-4 py-6">
       <Photo name="lookbook-1" className="aspect-[3/4] -rotate-2 rounded-sm shadow-soft" sizes="(min-width: 1024px) 260px, 45vw" />
       <Photo name="lookbook-2" className="mt-12 aspect-[3/4] rotate-2 rounded-sm shadow-soft" sizes="(min-width: 1024px) 260px, 45vw" />
     </Link>
-    <div data-reveal><HeadBlock eyebrow="Seasonal edit" title="The Look Book" intro="This season's boxes, page by page." /><Button asChild className="mt-7"><Link to="/lookbook">Open the Look Book</Link></Button></div>
+    <div data-reveal><HeadBlock dark eyebrow="Seasonal edit" title="The Look Book" intro="This season's boxes, page by page." /><Button asChild className="mt-7"><Link to="/lookbook">Open the Look Book</Link></Button></div>
   </div></section>;
 }
 
 function SecretSanta() {
-  return <section className={cn(SECTION, "surface-rich")}><div className="mx-auto max-w-3xl px-5 text-center" data-reveal>
+  return <section data-feature="santa" className={cn(SECTION, "surface-rich")}><div className="mx-auto max-w-3xl px-5 text-center" data-reveal>
     <Gift className="mx-auto size-10 text-gold" aria-hidden />
     <h2 className="mt-6 text-3xl text-on-dark md:text-5xl">Secret Santa, sorted.</h2>
     <p className="mx-auto mt-5 max-w-2xl text-on-dark-muted">Set up your office or family gift exchange in five minutes. We draw the names, wrap the gifts and deliver them.</p>

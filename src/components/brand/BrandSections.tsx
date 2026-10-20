@@ -52,7 +52,7 @@ export function TrustedBy({ brand }: { brand: BrandProfile }) {
 }
 
 export function WhoWeAre({ brand }: { brand: BrandProfile }) {
-  return <section id="who-we-are" className="grid scroll-mt-24 lg:grid-cols-[.9fr_1.1fr]">
+  return <section id="who-we-are" data-feature="about" className="grid scroll-mt-24 lg:grid-cols-[.9fr_1.1fr]">
     <div className="surface-rich relative flex items-center overflow-hidden px-5 py-14 lg:px-[max(5vw,3rem)] lg:py-20">
       <div aria-hidden className="pattern-leaf absolute inset-0 opacity-[0.07]" />
       <div className="relative" data-reveal>
@@ -84,7 +84,7 @@ export const SERVICES = [
 ] as const;
 
 export function WhatWeDo() {
-  return <section className={cn(SECTION, "bg-ivory")}><div className={WRAP}>
+  return <section className={cn(SECTION, "brand-pattern-ivory")}><div className={WRAP}>
     <div data-reveal><HeadBlock eyebrow="Our services" title="What we do" /></div>
     <ul className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4" data-reveal>
       {SERVICES.map(({ icon: Icon, title, line, to, search }) => <li key={title}><Link to={to} search={search} className="lift hairline group flex h-full flex-col rounded-md bg-paper p-4 hover:bg-nero hover:text-on-dark md:p-6">
@@ -124,7 +124,7 @@ function CountUp({ stat }: { stat: BrandStat }) {
 
 export function OurJourney({ brand }: { brand: BrandProfile }) {
   if (!brand.stats.length && !brand.milestones.length) return null;
-  return <section className={cn(SECTION, "surface-rich overflow-hidden")}>
+  return <section data-feature="about" className={cn(SECTION, "surface-rich overflow-hidden")}>
     <div aria-hidden className="pattern-leaf absolute inset-0 opacity-[0.07]" />
     <SampleChip dark show={anySample(brand.stats) || anySample(brand.milestones)} />
     <div className={cn(WRAP, "relative")}>

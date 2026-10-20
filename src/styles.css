@@ -159,9 +159,10 @@
 }
 
 @utility surface-dark {
-  background-color: var(--nero);
-  background-image: url("/brand/pattern-black.png");
-  background-size: 143.5px 136.5px;
+  background-color: var(--feature-bg, var(--nero));
+  background-image: var(--feature-img, url("/brand/pattern-black.png"));
+  background-size: var(--feature-size, 143.5px 136.5px);
+  background-position: center;
   color: var(--on-dark);
 }
 
@@ -268,8 +269,10 @@
 /* ---------- Homepage polish ---------- */
 @utility surface-rich {
   background-color: var(--nero);
-  background-image: radial-gradient(ellipse at center, oklch(0.33 0.004 17 / 55%) 0%, transparent 70%), url("/brand/pattern-black.png");
-  background-size: auto, 143.5px 136.5px;
+  background-color: var(--feature-bg, var(--nero));
+  background-image: radial-gradient(ellipse at center, oklch(1 0 0 / 5%) 0%, transparent 70%), var(--feature-img, url("/brand/pattern-black.png"));
+  background-size: auto, var(--feature-size, 143.5px 136.5px);
+  background-position: center;
   color: var(--on-dark);
 }
 @utility text-foil {
@@ -283,10 +286,13 @@
 @utility hairline-dark { border: 1px solid oklch(1 0 0 / 10%); }
 
 /* Photo: warm tone, blurred preview while loading */
+/* In a layer so layout utilities (absolute, inset-0) on a photo still apply. */
+@layer components {
 .photo { position: relative; overflow: hidden; background-size: cover; background-position: center; }
 .photo > img { width: 100%; height: 100%; object-fit: cover; filter: sepia(.12) saturate(1.05); opacity: 0; transition: opacity 500ms ease, transform 600ms ease; }
 .photo > img.is-loaded { opacity: 1; }
 .photo-overlay::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, oklch(0.2 0.002 17 / 85%) 100%); pointer-events: none; }
+}
 .zoom-host:hover .photo > img.is-loaded, .zoom-host:focus-visible .photo > img.is-loaded { transform: scale(1.04); }
 
 /* Scroll reveal (only after JS marks the page ready) */
@@ -349,3 +355,26 @@
 @utility brand-pattern-navy { background: #192850 url("/brand/pattern-navy.svg") center / cover no-repeat; }
 @utility brand-pattern-plum { background: #39243F url("/brand/pattern-plum.svg") center / cover no-repeat; }
 @utility font-script { font-family: var(--font-script); }
+
+/* Feature colours: each part of the site carries one secondary brand colour and its pattern.
+   Set data-feature on a page or section; surface-dark / surface-rich inside it pick it up.
+   Header and footer sit outside and stay Nero Black + Gold. */
+[data-feature="shop"], [data-feature="santa"] { --feature-bg: var(--oxblood); --feature-img: url("/brand/pattern-oxblood.svg"); --feature-size: 308px 264px; }
+[data-feature="corporate"] { --feature-bg: var(--navy); --feature-img: url("/brand/pattern-navy.svg"); --feature-size: cover; }
+[data-feature="calendar"] { --feature-bg: var(--forest); --feature-img: url("/brand/pattern-green.svg"); --feature-size: 432px 241.5px; }
+[data-feature="lookbook"] { --feature-bg: var(--plum); --feature-img: url("/brand/pattern-plum.svg"); --feature-size: cover; }
+[data-feature="about"] { --feature-bg: var(--beige); --feature-img: url("/brand/bow-tile-beige.svg"); --feature-size: 72px 72px; }
+/* Dispenser is the playful one: Muted Coral with dark text; Sage as its accent */
+[data-feature="dispenser"] { --feature-bg: var(--coral); --feature-img: url("/brand/bow-tile-sage.svg"); --feature-size: 72px 72px; }
+[data-feature="dispenser"] :is(.surface-dark, .surface-rich), [data-feature="dispenser"]:is(.surface-dark, .surface-rich) {
+  --on-dark: var(--nero); --on-dark-muted: #4A3330; --line-dark: oklch(0 0 0 / 16%);
+  --gold: var(--nero); --primary: var(--nero); --primary-foreground: #FFFFFF; --ring: var(--nero);
+  color: var(--nero);
+}
+/* data-feature="none" restores the default dark scheme inside a coloured feature (e.g. the dispenser machine). */
+[data-feature="none"], [data-feature] [data-feature="none"] :is(.surface-dark, .surface-rich) {
+  --feature-bg: var(--nero); --feature-img: url("/brand/pattern-black.png"); --feature-size: 143.5px 136.5px;
+  --on-dark: #FFFFFF; --on-dark-muted: #C9C4BA; --line-dark: oklch(1 0 0 / 14%);
+  --gold: #E7B93B; --primary: #E7B93B; --primary-foreground: #292828; --ring: #E7B93B;
+}
+[data-feature="none"] { color: var(--on-dark); }
