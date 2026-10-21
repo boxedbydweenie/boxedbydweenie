@@ -65,9 +65,11 @@ function ShopSkeleton() {
   return <SiteShell><main className="bg-paper"><Header /><div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-5 py-10 md:grid-cols-3 lg:grid-cols-4">{Array.from({ length: 8 }, (_, i) => <div key={i}><Skeleton className="aspect-[4/5] w-full" /><Skeleton className="mt-4 h-4 w-3/4" /><Skeleton className="mt-2 h-4 w-1/2" /></div>)}</div></main></SiteShell>;
 }
 
-function FilterPanel({ f, set }: { f: ShopFilters; set: (p: Partial<ShopFilters>) => void }) {
+function FilterPanel({ f, set, all }: { f: ShopFilters; set: (p: Partial<ShopFilters>) => void; all: ShopProduct[] }) {
+  // only offer options that match at least one gift
+  const groups = GROUPS.map((g) => ({ ...g, options: g.options.filter((o) => filterProducts([...all], { [g.key]: o.slug } as ShopFilters).length > 0) })).filter((g) => g.options.length > 0);
   return <div className="space-y-8">
-    {GROUPS.map((g) => <fieldset key={g.key}>
+    {groups.map((g) => <fieldset key={g.key}>
       <legend className="eyebrow text-nero">{g.title}</legend>
       <div className="mt-3 space-y-1">{g.options.map((o) => {
         const active = f[g.key] === o.slug;
@@ -106,13 +108,13 @@ function ShopPage() {
         <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-lg bg-paper">
           <SheetTitle>Filter and sort</SheetTitle><SheetDescription className="sr-only">Narrow down gifts</SheetDescription>
           <div className="mt-6"><p className="eyebrow text-nero">Sort</p><div className="mt-3"><SortSelect value={f.sort ?? "featured"} onChange={(sort) => set({ sort })} /></div></div>
-          <div className="mt-8"><FilterPanel f={f} set={set} /></div>
+          <div className="mt-8"><FilterPanel f={f} set={set} all={all} /></div>
           <div className="sticky bottom-0 mt-8 grid grid-cols-2 gap-3 bg-paper py-4"><Button variant="outline" onClick={clear}>Clear all</Button><SheetClose asChild><Button>Show {results.length}</Button></SheetClose></div>
         </SheetContent>
       </Sheet>
     </div>
     <div className="mx-auto grid max-w-7xl gap-10 px-5 py-10 lg:grid-cols-[240px_1fr]">
-      <aside className="hidden lg:block" aria-label="Filters"><FilterPanel f={f} set={set} /></aside>
+      <aside className="hidden lg:block" aria-label="Filters"><FilterPanel f={f} set={set} all={all} /></aside>
       <section>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap gap-2">{chips.map((c) => <button key={c.key} type="button" onClick={() => set({ [c.key]: undefined })} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-nero bg-paper px-4 text-sm hover:bg-ivory" aria-label={`Remove filter ${c.label}`}>{c.label}<X className="size-4" /></button>)}{chips.length > 1 && <Button variant="link" onClick={clear}>Clear all</Button>}</div>

@@ -75,16 +75,16 @@ function ProductPage() {
     await addToCart({ kind: "product", productId: p.id, slug: p.slug, name: p.name, price: p.price, quantity: qty, packaging, handwritten, ...(note.trim() ? { note: note.trim() } : {}), ...(date ? { deliveryDate: toIso(date) } : {}) });
     openCart();
   };
-  return <SiteShell><main className="bg-paper pb-24 lg:pb-0">
+  return <SiteShell><main className="bg-ivory pb-24 lg:pb-0">
     <div className="mx-auto max-w-7xl px-5 pt-6">
       <Breadcrumb><BreadcrumbList><BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbLink asChild><Link to="/shop">Shop</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>{p.name}</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
     </div>
     <div className="mx-auto grid max-w-7xl gap-10 px-5 py-8 lg:grid-cols-2 lg:gap-16">
-      <Gallery p={p} />
+      <div className="relative"><div aria-hidden className="pointer-events-none absolute -bottom-4 -right-4 hidden h-full w-full border border-gold/70 lg:block" /><div className="relative"><Gallery p={p} /></div></div>
       <div>
         <Eyebrow>{category}</Eyebrow>
-        <h1 className="mt-3 text-2xl md:text-4xl">{p.name}</h1>
-        <p className="mt-3 text-xl font-semibold">{formatNaira(p.price)}</p>
+        <h1 className="mt-3 text-4xl leading-[1.05] md:text-6xl">{p.name}</h1>
+        <p className="mt-4 inline-block rounded-full bg-nero px-5 py-1.5 text-lg font-semibold text-gold">{formatNaira(p.price)}</p>
         {p.poem?.length ? <p className="mt-4 font-heading text-lg italic leading-snug text-nero/80">{p.poem.map((l, i) => <span key={i} className="block">{l}</span>)}</p> : null}
         <p className="mt-3 text-muted-foreground">{p.idealFor ? <><span className="font-semibold text-nero">Ideal for: </span>{p.idealFor}</> : p.line}</p>
         {p.saysAboutYou && <p className="mt-2 text-sm text-muted-foreground"><span className="font-semibold text-nero">What it says about you: </span>{p.saysAboutYou}</p>}
@@ -130,7 +130,7 @@ function ProductPage() {
       </div>
     </div>
 
-    {related.pairs.length > 0 && <section className="bg-ivory py-16"><div className="mx-auto max-w-7xl px-5"><SectionHeading eyebrow="Complete the moment" title="Pairs well with" /><div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4">{related.pairs.map((r) => <ProductCard key={r.id} product={card(r)} />)}</div></div></section>}
+    {related.pairs.length > 0 && <section className="brand-pattern-green py-16 text-on-dark"><div className="mx-auto max-w-7xl px-5"><SectionHeading dark eyebrow="Complete the moment" title="Pairs well with" /><div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4">{related.pairs.map((r) => <ProductCard key={r.id} product={card(r)} />)}</div></div></section>}
     {related.occasion.length > 0 && <section className="py-16"><div className="mx-auto max-w-7xl px-5"><SectionHeading eyebrow="Same occasion" title="More for this occasion" /><div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4">{related.occasion.map((r) => <ProductCard key={r.id} product={card(r)} />)}</div></div></section>}
 
     <div data-bottom-bar className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-4 border-t border-border bg-paper px-5 py-3 shadow-soft lg:hidden">
