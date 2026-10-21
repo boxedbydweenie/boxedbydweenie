@@ -18,7 +18,7 @@ import { GIFT_NOTE_LIMIT, SAME_DAY_CUTOFF_HOUR } from "@/config/shop";
 import { formatDayMonth, formatNaira } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { getPicks, randomAnswers, type DispenserAnswers, type Pick } from "@/services/dispenser";
-import { createOrder } from "@/services/orders";
+import { startCheckout } from "@/services/orders";
 import type { Order, ShopProduct } from "@/types/shop";
 
 const searchSchema = z.object({
@@ -263,14 +263,18 @@ function ExpressSheet({ product, onClose, onDone }: { product: ShopProduct | nul
     if (!z.string().email().safeParse(v("c_email")).success) return setError("Enter a valid email address.");
     if (date < earliest) return setError(`The earliest delivery is ${formatDayMonth(earliest)}.`);
     setError(""); setBusy(true);
-    const order = await createOrder({
-      items: [{ key: `disp-${product.id}`, kind: "product", productId: product.id, slug: product.slug, name: product.name, price: product.price, quantity: 1, packaging: "signature-black", ...(note.trim() ? { note: note.trim() } : {}), deliveryDate: date }],
-      subtotal: product.price, discount: 0, deliveryFee: fee, total, sendTo: "someone", payment,
-      recipient: { name: v("r_name"), phone: v("r_phone"), address: v("address"), state, area: "", deliveryDate: date, notes: "", surprise: true },
-      customer: { name: "", email: v("c_email"), phone: v("c_phone") },
-    });
-    setBusy(false);
-    onDone(order);
+    try {
+      const { authorizationUrl } = await startCheckout({
+        items: [{ key: `disp-${product.id}`, kind: "product", productId: product.id, slug: product.slug, name: product.name, price: product.price, quantity: 1, packaging: "signature-black", ...(note.trim() ? { note: note.trim() } : {}), deliveryDate: date }],
+        sendTo: "someone",
+        recipient: { name: v("r_name"), phone: v("r_phone"), address: v("address"), state, area: state, deliveryDate: date, notes: "", surprise: true },
+        customer: { name: v("r_name"), email: v("c_email"), phone: v("c_phone") },
+      });
+      window.location.assign(authorizationUrl);
+    } catch (err) {
+      setBusy(false);
+      setError(err instanceof Error ? err.message : "We could not start your payment. Please try again.");
+    }
   };
 
   return <Sheet open={!!product} onOpenChange={(o) => !o && onClose()}>

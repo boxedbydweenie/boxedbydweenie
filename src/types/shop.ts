@@ -23,6 +23,13 @@ export interface ShopProduct {
   minCorporateQty: number;
   featured: number;
   addedOn: string;
+  /** Product-book extras (optional so older mock items still type-check). */
+  collection?: string;
+  poem?: string[];
+  idealFor?: string;
+  saysAboutYou?: string;
+  /** False while the client has not yet confirmed this product. */
+  confirmed?: boolean;
 }
 
 export interface ShopFilters {

@@ -24,7 +24,7 @@ export const Route = createFileRoute("/corporate/quote/$ref")({
   component: QuoteResult,
 });
 
-const WHATSAPP = "https://wa.me/2349092125960";
+const WHATSAPP = "https://wa.me/2348134907391";
 const fmtRange = (r: { low: number; high: number }) => (r.low === r.high ? formatNaira(r.low) : `${formatNaira(r.low)} to ${formatNaira(r.high)}`);
 const longDate = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
@@ -70,7 +70,7 @@ function PrintView({ q }: { q: Quote }) {
         <p className="mt-6 text-xs text-muted-foreground">Estimate only. Your consultant confirms the final quote. Prices in Naira and include VAT where shown.</p>
       </div>
       <div className="absolute inset-x-0 bottom-0 h-[38mm] bg-nero [clip-path:polygon(0_35%,100%_0,100%_100%,0_100%)]">
-        <div className="absolute bottom-[8mm] left-[18mm] right-[18mm] flex justify-between text-xs text-on-dark-muted"><span>0909 212 5960 · info@boxedbydweenie.com · @boxedbydweenie</span><span>A product of The Plug Shop Limited</span></div>
+        <div className="absolute bottom-[8mm] left-[18mm] right-[18mm] flex justify-between text-xs text-on-dark-muted"><span>0813 490 7391 · hello@boxedbydweenie.com · @boxedbydweenie</span><span>A product of The Plug Shop Limited</span></div>
       </div>
     </div>
   </div>;
@@ -124,7 +124,7 @@ function QuoteResult() {
         <div className="rounded-md border border-border bg-ivory p-6">
           <div className="flex items-center gap-4"><div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-nero text-on-dark" role="img" aria-label="Consultant photo placeholder"><UserRound /></div><div><p className="font-semibold">REPLACE Consultant Name</p><p className="text-xs text-muted-foreground">Corporate gifting consultant</p></div></div>
           <p className="mt-4 text-sm">Your gifting consultant will contact you within one working day.</p>
-          <a href="tel:+2349092125960" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline underline-offset-4"><Phone className="size-4" />0909 212 5960</a>
+          <a href="tel:+2348134907391" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline underline-offset-4"><Phone className="size-4" />0813 490 7391</a>
         </div>
         <div className="surface-dark rounded-md p-6">
           <h2 className="text-lg text-on-dark">What happens next</h2>

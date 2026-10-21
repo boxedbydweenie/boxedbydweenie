@@ -32,10 +32,10 @@ export function CartLine({ item, compact }: { item: CartItem; compact?: boolean 
   </li>;
 }
 
-export function PromoField({ onApply }: { onApply: (percent: number) => void }) {
+export function PromoField({ onApply, onCode }: { onApply: (percent: number) => void; onCode?: (code: string) => void }) {
   const [code, setCode] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  return <form className="mt-4" onSubmit={async (e) => { e.preventDefault(); if (!code.trim()) return; const r = await applyPromo(code); setMsg({ ok: r.ok, text: r.message }); onApply(r.percent); }}>
+  return <form className="mt-4" onSubmit={async (e) => { e.preventDefault(); if (!code.trim()) return; const r = await applyPromo(code); setMsg({ ok: r.ok, text: r.message }); onApply(r.percent); onCode?.(r.ok ? code.trim().toUpperCase() : ""); }}>
     <label htmlFor="promo" className="text-xs font-semibold uppercase tracking-wider">Promo code</label>
     <div className="mt-2 flex gap-2"><Input id="promo" value={code} onChange={(e) => setCode(e.target.value)} className="min-h-11 bg-paper" placeholder="Enter code" /><Button type="submit" variant="outline">Apply</Button></div>
     {msg && <p role="status" className={`mt-2 text-xs ${msg.ok ? "text-success" : "text-destructive"}`}>{msg.text}</p>}

@@ -48,7 +48,7 @@ export const Route = createFileRoute("/corporate/quote/")({
 });
 
 const STEPS = ["Purpose", "Quantity", "Gifts", "Branding", "Delivery", "Details"];
-const WHATSAPP = "https://wa.me/2349092125960";
+const WHATSAPP = "https://wa.me/2348134907391";
 const CSV_TEMPLATE = "data:text/csv;charset=utf-8," + encodeURIComponent("Full name,Phone,Address,City or area,State\n");
 const fmtRange = (r: { low: number; high: number }) => (r.low === r.high ? formatNaira(r.low) : `${formatNaira(r.low)} to ${formatNaira(r.high)}`);
 

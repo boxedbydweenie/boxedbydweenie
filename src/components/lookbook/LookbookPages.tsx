@@ -100,7 +100,7 @@ export function LookbookPageView({ page, edition }: { page: LookbookPage; editio
       return <Paper dark className="flex flex-col items-center justify-center p-8 text-center"><div className="pattern-bow-light pointer-events-none absolute inset-0 opacity-[0.06]" />
         <img src={logo.url} alt="Boxed by Dweenie" loading="lazy" className="relative h-10 w-auto" />
         <h2 className="relative mt-8 text-2xl text-on-dark">Let's create a wow.</h2><div className="foil relative mt-5 h-px w-14" />
-        <div className="relative mt-6 space-y-1 text-sm text-on-dark-muted"><a className="block py-3 hover:text-gold" href="tel:+2349092125960">0909 212 5960</a><a className="block py-3 hover:text-gold" href="mailto:info@boxedbydweenie.com">info@boxedbydweenie.com</a><p>@boxedbydweenie</p></div>
+        <div className="relative mt-6 space-y-1 text-sm text-on-dark-muted"><a className="block py-3 hover:text-gold" href="tel:+2348134907391">0813 490 7391</a><a className="block py-3 hover:text-gold" href="mailto:hello@boxedbydweenie.com">hello@boxedbydweenie.com</a><p>@boxedbydweenie</p></div>
         <div className="relative mt-8 flex size-24 items-center justify-center border border-dashed border-line-dark text-[10px] uppercase tracking-[0.2em] text-on-dark-muted">QR code</div></Paper>;
   }
 }

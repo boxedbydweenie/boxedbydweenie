@@ -8,10 +8,9 @@ import type { BrandProfile } from "@/types/brand";
  */
 export const BRAND: BrandProfile = {
   stats: [
-    { value: 10000, suffix: "+", label: "gifts delivered", sample: true },
-    { value: 150, suffix: "+", label: "companies served", sample: true },
-    { value: 5, label: "years in business", sample: true },
-    { value: 12, label: "cities delivered to", sample: true },
+    { value: 5000, suffix: "+", label: "boxes delivered" },
+    { value: 450, suffix: "+", label: "satisfied customers" },
+    { value: 2, label: "countries: Nigeria and the UK" },
   ],
   clients: [1, 2, 3, 4, 5, 6].map((n) => ({ name: `Sample Client ${["One", "Two", "Three", "Four", "Five", "Six"][n - 1]}`, logo: "", sample: true })),
   recognition: ["One", "Two", "Three"].map((n) => ({ name: `Sample Publication ${n}`, logo: "", sample: true })),

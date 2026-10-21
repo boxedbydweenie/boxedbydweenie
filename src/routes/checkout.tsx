@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronDown, CreditCard, Landmark, Lock, Smartphone } from "lucide-react";
 import { useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -12,8 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { STATES, deliveryFeeFor } from "@/config/delivery";
 import { formatNaira } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { cartSubtotal, clearCart } from "@/services/cart";
-import { createOrder } from "@/services/orders";
+import { cartSubtotal } from "@/services/cart";
+import { startCheckout } from "@/services/orders";
 import { useCart, useUser } from "@/hooks/use-shop";
 import type { CartItem, Order } from "@/types/shop";
 
@@ -42,19 +42,19 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   </section>;
 }
 
-function Summary({ items, fee, promo, setPromo }: { items: CartItem[]; fee: number | null; promo: number; setPromo: (n: number) => void }) {
-  return <><ul>{items.map((i) => <CartLine key={i.key} item={i} compact />)}</ul><div className="mt-5"><SummaryRows items={items} discountPercent={promo} deliveryFee={fee} /></div><PromoField onApply={setPromo} /></>;
+function Summary({ items, fee, promo, setPromo, setPromoCode }: { items: CartItem[]; fee: number | null; promo: number; setPromo: (n: number) => void; setPromoCode: (c: string) => void }) {
+  return <><ul>{items.map((i) => <CartLine key={i.key} item={i} compact />)}</ul><div className="mt-5"><SummaryRows items={items} discountPercent={promo} deliveryFee={fee} /></div><PromoField onApply={setPromo} onCode={setPromoCode} /></>;
 }
 
 function CheckoutPage() {
   const items = useCart();
   const user = useUser();
-  const navigate = useNavigate();
   const [sendTo, setSendTo] = useState<"someone" | "me">("someone");
   const [state, setState] = useState("");
   const [surprise, setSurprise] = useState(true);
   const [payment, setPayment] = useState<Order["payment"]>("card");
   const [promo, setPromo] = useState(0);
+  const [promoCode, setPromoCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const fee = state ? deliveryFeeFor(state) : null;
@@ -71,20 +71,24 @@ function CheckoutPage() {
     const required = ["r_name", "r_phone", "address", "area", "date", "c_name", "c_email", "c_phone"];
     if (!state || required.some((k) => !v(k))) { setError("Please complete every required field, including the state."); return; }
     setError(""); setBusy(true);
-    const order = await createOrder({
-      items, subtotal, discount, deliveryFee: fee ?? 0, total, sendTo, payment,
-      recipient: { name: v("r_name"), phone: v("r_phone"), address: v("address"), state, area: v("area"), deliveryDate: v("date"), notes: v("notes"), surprise },
-      customer: { name: v("c_name"), email: v("c_email"), phone: v("c_phone") },
-    });
-    await clearCart();
-    navigate({ to: "/order/$id", params: { id: order.id } });
+    try {
+      const { authorizationUrl } = await startCheckout({
+        items, sendTo, promoCode: promo ? promoCode : "",
+        recipient: { name: v("r_name"), phone: v("r_phone"), address: v("address"), state, area: v("area"), deliveryDate: v("date"), notes: v("notes"), surprise },
+        customer: { name: v("c_name"), email: v("c_email"), phone: v("c_phone") },
+      });
+      window.location.assign(authorizationUrl);
+    } catch (err) {
+      setBusy(false);
+      setError(err instanceof Error ? err.message : "We could not start your payment. Please try again.");
+    }
   };
 
   return <SiteShell><main className="bg-paper">
     <div className="border-b border-border bg-ivory"><div className="mx-auto max-w-7xl px-5 py-8"><h1 className="text-3xl">Checkout</h1></div></div>
     <Collapsible className="border-b border-border bg-ivory lg:hidden">
       <CollapsibleTrigger className="flex min-h-14 w-full items-center justify-between px-5 text-sm font-semibold">Order summary <span className="flex items-center gap-2">{formatNaira(total)}<ChevronDown className="size-4" /></span></CollapsibleTrigger>
-      <CollapsibleContent className="px-5 pb-6"><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} /></CollapsibleContent>
+      <CollapsibleContent className="px-5 pb-6"><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} setPromoCode={setPromoCode} /></CollapsibleContent>
     </Collapsible>
     <div className="mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-[1fr_400px]">
       <form onSubmit={submit} noValidate>
@@ -110,13 +114,12 @@ function CheckoutPage() {
           </div>
         </Step>
         <Step n={3} title="Payment">
-          <div className="grid gap-3 sm:grid-cols-3">{PAYMENTS.map(({ slug, name, icon: Icon }) => <label key={slug} className={cn("flex min-h-14 cursor-pointer items-center gap-3 rounded-md border px-4 text-sm", payment === slug ? "border-nero bg-ivory" : "border-border")}><input type="radio" name="payment" checked={payment === slug} onChange={() => setPayment(slug)} className="size-4 accent-[var(--color-nero)]" /><Icon className="size-5" />{name}</label>)}</div>
-          <div className="mt-5 flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-ivory px-6 py-10 text-center text-sm text-muted-foreground"><Lock className="size-5" />The secure payment form will appear here.</div>
+          <div className="mt-5 flex items-start gap-3 rounded-md border border-border bg-ivory px-5 py-4 text-sm text-muted-foreground"><Lock className="mt-0.5 size-4 shrink-0" /><span>Next, you will pay securely on Paystack with your card, a bank transfer or USSD. We never see your card details.</span></div>
         </Step>
         {error && <p role="alert" className="mt-6 text-sm text-destructive">{error}</p>}
-        <div className="py-8"><LoadingButton type="submit" size="lg" loading={busy} className="w-full">Place order, {formatNaira(total)}</LoadingButton></div>
+        <div className="py-8"><LoadingButton type="submit" size="lg" loading={busy} className="w-full">Pay {formatNaira(total)} securely</LoadingButton></div>
       </form>
-      <aside className="hidden py-8 lg:block"><div className="sticky top-24 rounded-md border border-border bg-ivory p-6"><h2 className="text-lg">Order summary</h2><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} /></div></aside>
+      <aside className="hidden py-8 lg:block"><div className="sticky top-24 rounded-md border border-border bg-ivory p-6"><h2 className="text-lg">Order summary</h2><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} setPromoCode={setPromoCode} /></div></aside>
     </div>
   </main></SiteShell>;
 }

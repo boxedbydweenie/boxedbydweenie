@@ -41,4 +41,4 @@ export const YEAR_END_DEADLINES: KeyDate[] = [
 export const CONSULTATION_QUANTITIES = ["25 to 50", "51 to 100", "101 to 250", "251 to 500", "501 to 1,000", "Over 1,000"];
 
 // REPLACE with the real WhatsApp business number.
-export const WHATSAPP_URL = "https://wa.me/2349092125960";
+export const WHATSAPP_URL = "https://wa.me/2348134907391";

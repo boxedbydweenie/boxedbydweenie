@@ -55,7 +55,7 @@ function Gallery({ p }: { p: ShopProduct }) {
     <Carousel setApi={setApi} opts={{ loop: true }} aria-label={`${p.name} images`}>
       <CarouselContent>{p.images.map((img, i) => <CarouselItem key={img}><PlaceholderTile label={img} tone={i % 2 ? "dark" : "ivory"} className="aspect-[4/5] w-full" /></CarouselItem>)}</CarouselContent>
     </Carousel>
-    <div className="mt-3 grid grid-cols-4 gap-3">{p.images.map((img, i) => <button key={img} type="button" onClick={() => api?.scrollTo(i)} aria-label={`Show image ${i + 1}`} aria-current={index === i} className={cn("rounded-md border-2 transition-colors", index === i ? "border-nero" : "border-transparent")}><PlaceholderTile label="" tone={i % 2 ? "dark" : "ivory"} className="aspect-square w-full" /></button>)}</div>
+    <div className="mt-3 grid grid-cols-4 gap-3">{p.images.map((img, i) => <button key={img} type="button" onClick={() => api?.scrollTo(i)} aria-label={`Show image ${i + 1}`} aria-current={index === i} className={cn("rounded-md border-2 transition-colors", index === i ? "border-nero" : "border-transparent")}><PlaceholderTile label={img} tone={i % 2 ? "dark" : "ivory"} className="aspect-square w-full" /></button>)}</div>
   </div>;
 }
 
@@ -85,7 +85,9 @@ function ProductPage() {
         <Eyebrow>{category}</Eyebrow>
         <h1 className="mt-3 text-2xl md:text-4xl">{p.name}</h1>
         <p className="mt-3 text-xl font-semibold">{formatNaira(p.price)}</p>
-        <p className="mt-3 text-muted-foreground">{p.line}</p>
+        {p.poem?.length ? <p className="mt-4 font-heading text-lg italic leading-snug text-nero/80">{p.poem.map((l, i) => <span key={i} className="block">{l}</span>)}</p> : null}
+        <p className="mt-3 text-muted-foreground">{p.idealFor ? <><span className="font-semibold text-nero">Ideal for: </span>{p.idealFor}</> : p.line}</p>
+        {p.saysAboutYou && <p className="mt-2 text-sm text-muted-foreground"><span className="font-semibold text-nero">What it says about you: </span>{p.saysAboutYou}</p>}
         {(p.badges.length > 0 || p.sameDay) && <div className="mt-4 flex flex-wrap gap-2">{[...new Set([...p.badges, ...(p.sameDay ? ["Same-day Lagos"] : [])])].map((b) => <span key={b} className="rounded-sm bg-gold px-2 py-1 text-[10px] font-bold uppercase text-nero">{b}</span>)}</div>}
         <GoldRule className="mt-6" />
 

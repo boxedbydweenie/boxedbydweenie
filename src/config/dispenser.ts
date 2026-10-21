@@ -22,10 +22,10 @@ export const DISPENSER_OCCASIONS = [
 ];
 
 export const DISPENSER_BUDGETS = [
-  { slug: "under-25", name: "Under ₦25,000" },
-  { slug: "25-50", name: "₦25,000 to ₦50,000" },
-  { slug: "50-100", name: "₦50,000 to ₦100,000" },
-  { slug: "over-100", name: "Over ₦100,000" },
+  { slug: "under-25", name: "Under ₦250,000" },
+  { slug: "25-50", name: "₦250,000 to ₦500,000" },
+  { slug: "50-100", name: "₦500,000 to ₦1,000,000" },
+  { slug: "over-100", name: "Over ₦1,000,000" },
 ];
 
 export const DISPENSE_DURATION_MS = 2000;

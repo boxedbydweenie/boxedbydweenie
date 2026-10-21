@@ -30,10 +30,10 @@ export const RECIPIENTS = [
 ];
 
 export const PRICE_BANDS: { slug: PriceBand; name: string; min: number; max: number }[] = [
-  { slug: "under-25", name: "Under ₦25,000", min: 0, max: 24999 },
-  { slug: "25-50", name: "₦25,000 to ₦50,000", min: 25000, max: 50000 },
-  { slug: "50-100", name: "₦50,000 to ₦100,000", min: 50001, max: 100000 },
-  { slug: "over-100", name: "Over ₦100,000", min: 100001, max: Infinity },
+  { slug: "under-25", name: "Under ₦250,000", min: 0, max: 249999 },
+  { slug: "25-50", name: "₦250,000 to ₦500,000", min: 250000, max: 500000 },
+  { slug: "50-100", name: "₦500,000 to ₦1,000,000", min: 500001, max: 1000000 },
+  { slug: "over-100", name: "Over ₦1,000,000", min: 1000001, max: Infinity },
 ];
 
 export const SORTS: { slug: SortKey; name: string }[] = [
