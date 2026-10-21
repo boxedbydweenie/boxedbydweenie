@@ -265,3 +265,24 @@
 .bbd-home .unbox .pin{position:relative;height:auto;padding-block:80px}
 .bbd-home .giftbox{--p:.85}
 .bbd-home .track{width:auto;flex-wrap:wrap;justify-content:center}}
+/* --- v2: homepage refinements --- */
+.bbd-home .hero-boxes{display:grid;place-items:center;min-height:0}
+.bbd-home .hero-boxes img{width:min(440px,100%);height:auto;filter:drop-shadow(0 40px 40px rgba(41,40,40,.28));animation:boxIn 1.1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes boxIn{from{opacity:0;transform:translateY(28px) scale(.97)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.bbd-home .hero-boxes img{animation:none}}
+.bbd-home .way{justify-content:flex-end}
+.bbd-home .way h3{min-height:1.2em}
+.bbd-home .way p{min-height:4.6em}
+.bbd-home .way .more{margin-top:14px}
+.bbd-home .way.disp{background:var(--coral);color:var(--ink)}
+.bbd-home .way.disp::before{background:url("/brand/bow-tile-dark.svg") repeat;background-size:56px 56px;opacity:.14}
+.bbd-home .way.disp .more{color:var(--ink)}
+/* occasions: colour cards with a faint bow watermark, no photos */
+.bbd-home .o{min-height:200px;justify-content:flex-end}
+.bbd-home .o::before{content:"";position:absolute;right:-28px;top:-24px;width:170px;height:170px;background:url("/brand/bow-ivory.svg") center/contain no-repeat;opacity:.1;transition:opacity .5s,transform .8s cubic-bezier(.2,.8,.2,1)}
+.bbd-home .o.light::before{background-image:url("/brand/bow-black.svg");opacity:.07}
+.bbd-home .o:hover::before{opacity:.18;transform:rotate(-8deg) scale(1.08)}
+.bbd-home .o .lbl{padding:28px 22px 24px}
+.bbd-home .o .lbl::before{opacity:.07}
+.bbd-home .o h3{font-size:1.7rem}
+@media (max-width:900px){.bbd-home .hero-boxes{margin-top:24px}.bbd-home .hero-boxes img{width:min(300px,76vw)}.bbd-home .way p{min-height:0}.bbd-home .o{min-height:150px}}
