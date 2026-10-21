@@ -7,3 +7,10 @@ export function supabase(): SupabaseClient {
   client ??= createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: "bbd-admin-auth" } });
   return client;
 }
+
+/** Separate browser client for customers, so a customer sign-in never mixes with a staff sign-in. */
+let cust: SupabaseClient | null = null;
+export function customerClient(): SupabaseClient {
+  cust ??= createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: "bbd-customer-auth" } });
+  return cust;
+}

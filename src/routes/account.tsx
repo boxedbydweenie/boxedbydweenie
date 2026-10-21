@@ -4,12 +4,14 @@ import { daysUntil, formatLong as calLong, nextDateFor } from "@/services/calend
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button, EmptyState, Eyebrow, FormField, ProductCard } from "@/components/site/Brand";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ORDER_STEPS } from "@/config/shop";
 import { formatDayMonth, formatNaira } from "@/lib/format";
-import { removeRecipient, saveRecipient, signIn, signOut, updateDetails } from "@/services/account";
+import { AuthForm } from "@/components/account/AuthForm";
+import { changePassword, removeRecipient, saveRecipient, signOut, updateDetails } from "@/services/account";
 import { addToCart } from "@/services/cart";
 import { getProductById } from "@/services/products";
 import { openCart, useOrders, useRecipients, useUser, useWishlist } from "@/hooks/use-shop";
@@ -27,15 +29,6 @@ export const Route = createFileRoute("/account")({
   component: AccountPage,
 });
 
-function SignIn() {
-  const [email, setEmail] = useState("");
-  return <form className="mx-auto max-w-md rounded-md border border-border bg-ivory p-8" onSubmit={(e) => { e.preventDefault(); if (email.includes("@")) signIn(email); }}>
-    <h2 className="text-xl">Sign in</h2><p className="mt-2 text-sm text-muted-foreground">Enter your email to see your orders and saved recipients.</p>
-    <FormField className="mt-6" label="Email" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-    <Button type="submit" className="mt-6 w-full">Continue</Button>
-  </form>;
-}
-
 const reorder = async (o: Order) => { for (const { key: _k, ...i } of o.items) await addToCart(i); openCart(); };
 
 function AccountPage() {
@@ -44,7 +37,7 @@ function AccountPage() {
   return <SiteShell><main className="bg-paper">
     <div className="border-b border-border bg-ivory"><div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-4 px-5 py-10"><div><Eyebrow>Your account</Eyebrow><h1 className="mt-3 text-3xl md:text-4xl">{user ? `Welcome, ${user.name}` : "Your account"}</h1></div>{user && <Button variant="outline" onClick={() => signOut()}>Sign out</Button>}</div></div>
     <div className="mx-auto max-w-7xl px-5 py-10">
-      {!user ? <SignIn /> : <Tabs defaultValue="orders">
+      {!user ? <AuthForm /> : <Tabs defaultValue="orders">
         <TabsList className="h-auto w-full justify-start overflow-x-auto bg-ivory p-1">{["Orders", "Saved recipients", "Wishlist", "My dates", "Details"].map((t) => <TabsTrigger key={t} value={t.toLowerCase().replace(" ", "-")} className="min-h-11 px-4">{t}</TabsTrigger>)}</TabsList>
 
         <TabsContent value="orders" className="mt-8">{orders.length === 0 ? <EmptyState line="No orders yet." action={<Button asChild><Link to="/shop">Shop gifts</Link></Button>} /> : <ul className="divide-y divide-border border-y border-border">{orders.map((o) => <li key={o.id} className="flex flex-wrap items-center justify-between gap-4 py-5">
@@ -64,9 +57,12 @@ function AccountPage() {
 
         <TabsContent value="my-dates" className="mt-8"><AccountDates /></TabsContent>
 
-        <TabsContent value="details" className="mt-8"><form key={user.email} className="grid max-w-xl gap-4" onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); updateDetails({ name: String(fd.get("name")), email: String(fd.get("email")), phone: String(fd.get("phone")) }); }}>
-          <FormField label="Name" name="name" defaultValue={user.name} /><FormField label="Email" name="email" type="email" defaultValue={user.email} /><FormField label="Phone" name="phone" type="tel" defaultValue={user.phone} />
+        <TabsContent value="details" className="mt-8"><form key={user.email} className="grid max-w-xl gap-4" onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); updateDetails({ name: String(fd.get("name")), email: user.email, phone: String(fd.get("phone")) }).then(() => toast.success("Details saved")).catch((x: Error) => toast.error(x.message)); }}>
+          <FormField label="Name" name="name" defaultValue={user.name} /><FormField label="Email (your sign-in)" name="email" type="email" defaultValue={user.email} readOnly /><FormField label="Phone" name="phone" type="tel" defaultValue={user.phone} />
           <Button type="submit" className="w-fit">Save details</Button>
+        </form>
+        <form className="mt-10 grid max-w-xl gap-4 border-t border-border pt-8" onSubmit={(e) => { e.preventDefault(); const f = e.currentTarget; const pw = String(new FormData(f).get("pw") ?? ""); changePassword(pw).then(() => { toast.success("Password changed"); f.reset(); }).catch((x: Error) => toast.error(x.message)); }}>
+          <h3 className="text-lg">Change password</h3><FormField label="New password (8+ characters)" name="pw" type="password" autoComplete="new-password" minLength={8} required /><Button type="submit" variant="outline" className="w-fit">Change password</Button>
         </form></TabsContent>
       </Tabs>}
     </div>

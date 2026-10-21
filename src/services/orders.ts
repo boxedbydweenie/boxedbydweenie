@@ -16,8 +16,8 @@ export interface ServerOrder {
   paidAt: string | null;
   items: { productId: string; slug: string; name: string; price: number; quantity: number }[];
   subtotal: number; discount: number; deliveryFee: number; total: number;
-  recipient: { name: string; state: string; area: string; deliveryDate: string };
-  customer: { name: string };
+  recipient: { name: string; state: string; area: string; deliveryDate: string; phone?: string; address?: string; notes?: string; surprise?: boolean };
+  customer: { name: string; email?: string; phone?: string };
 }
 
 const STEP: Record<ServerOrder["status"], OrderStatus> = {
@@ -30,8 +30,8 @@ export function mergeOrder(s: ServerOrder): Order & { payment_status: ServerOrde
   const merged: Order = {
     ...(local ?? {
       id: s.ref, createdAt: s.createdAt, sendTo: "someone", payment: "card",
-      recipient: { name: s.recipient.name, phone: "", address: "", state: s.recipient.state, area: s.recipient.area, deliveryDate: s.recipient.deliveryDate, notes: "", surprise: false },
-      customer: { name: s.customer.name, email: "", phone: "" },
+      recipient: { name: s.recipient.name, phone: s.recipient.phone ?? "", address: s.recipient.address ?? "", state: s.recipient.state, area: s.recipient.area, deliveryDate: s.recipient.deliveryDate, notes: s.recipient.notes ?? "", surprise: Boolean(s.recipient.surprise) },
+      customer: { name: s.customer.name, email: s.customer.email ?? "", phone: s.customer.phone ?? "" },
     }),
     items: s.items.map((i, k) => ({ key: `${i.productId}-${k}`, kind: i.productId === "prd-gift-card" ? "gift-card" : "product", productId: i.productId, slug: i.slug, name: i.name, price: i.price, quantity: i.quantity }) as CartItem),
     subtotal: s.subtotal, discount: s.discount, deliveryFee: s.deliveryFee, total: s.total,

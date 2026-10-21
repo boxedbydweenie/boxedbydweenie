@@ -12,8 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MIN_TO_DRAW } from "@/config/secretSanta";
-import { useSanta } from "@/hooks/use-santa";
-import { addExclusion, completeExchange, currentStage, dateWarnings, drawNames, exchangeById, exportParticipantsCsv, invitePeople, joinedCount, organiserMatches, parsePeopleList, participantsOf, postAnnouncement, removeExclusion, removeParticipant, updateExchangeSettings } from "@/services/secretSanta";
+import { useSanta, useSantaSync } from "@/hooks/use-santa";
+import { organiserKey, addExclusion, completeExchange, currentStage, dateWarnings, drawNames, exchangeById, exportParticipantsCsv, invitePeople, joinedCount, organiserMatches, parsePeopleList, participantsOf, postAnnouncement, removeExclusion, removeParticipant, updateExchangeSettings } from "@/services/secretSanta";
 import { formatNaira } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { ExchangeDates, ParticipantStatus } from "@/types/secretSanta";
@@ -39,6 +39,7 @@ const field = "min-h-11 border-line-dark bg-nero-soft text-on-dark";
 function Manage() {
   const { id } = Route.useParams();
   const s = useSanta();
+  useSantaSync(id);
   const ex = exchangeById(s, id);
   const people = participantsOf(s, id);
   const [one, setOne] = useState({ name: "", contact: "" });
@@ -69,6 +70,7 @@ function Manage() {
       <header className="flex items-center gap-5 rounded-md border border-line-dark p-5 md:p-6">
         <ProgressRing value={joined} total={people.length} label="joined" />
         <div className="min-w-0 flex-1"><p className="eyebrow text-gold">Organiser · {ex.status === "open" ? "Open" : ex.status === "drawn" ? "Names drawn" : ex.status === "complete" ? "Complete" : "Closed"}</p><h1 className="mt-2 truncate text-xl text-on-dark md:text-2xl">{ex.name}</h1><div className="mt-1 text-sm"><NextDateCountdown exchange={ex} dark /></div></div>
+        <Button size="sm" variant="outline" className="hidden text-on-dark sm:inline-flex" onClick={() => { const k = organiserKey(id); if (!k) { toast("This exchange is not saved on a server."); return; } void navigator.clipboard.writeText(`${window.location.origin}/secret-santa/${id}/manage?k=${k}`).then(() => toast.success("Organiser link copied", { description: "Keep it private. It lets you manage this exchange on any device." })); }}>Copy my organiser link</Button>
         <p className="hidden text-right text-sm text-on-dark-muted sm:block">Code<br /><strong className="font-heading text-lg tracking-[0.2em] text-gold">{ex.code}</strong></p>
       </header>
 

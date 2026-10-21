@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+import { callSanta } from "@/lib/api";
 import { createStore } from "@/lib/store";
 import { PRODUCTS } from "@/data/products";
 import { DEMO_EXCHANGE, DEMO_MESSAGES, DEMO_PARTICIPANTS } from "@/data/secretSanta";
@@ -14,6 +16,8 @@ export interface SantaState {
   /** Which participant this device is, per exchange. */
   session: Record<string, string>;
   role: "organiser" | "participant";
+  /** Secret keys for real (server) exchanges: organiser key per exchange, participant key per participant. */
+  tokens?: Record<string, string>;
 }
 
 const initial = (): SantaState => ({
@@ -21,6 +25,48 @@ const initial = (): SantaState => ({
   session: { [DEMO_EXCHANGE_ID]: DEMO_PARTICIPANT_ID }, role: "participant",
 });
 export const santaStore = createStore<SantaState>("bbd-santa", initial());
+/* ---------- Server (real exchanges). The demo exchange stays local. ---------- */
+interface ServerView { exchange: Exchange; participants: Participant[]; matches: Match[]; messages: Message[]; orders: SantaGiftOrder[]; isOrganiser: boolean; meId: string | null }
+const isDemo = (id: string) => id === DEMO_EXCHANGE_ID;
+function applyView(v: ServerView) {
+  const id = v.exchange.id;
+  patch((s) => ({
+    exchanges: [...s.exchanges.filter((e) => e.id !== id), v.exchange],
+    participants: [...s.participants.filter((p) => p.exchangeId !== id), ...v.participants],
+    matches: [...s.matches.filter((m) => m.exchangeId !== id), ...v.matches],
+    messages: [...s.messages.filter((m) => m.exchangeId !== id), ...v.messages],
+    orders: [...s.orders.filter((o) => o.exchangeId !== id), ...v.orders],
+    session: v.meId ? { ...s.session, [id]: v.meId } : s.session,
+  }));
+}
+const authFor = (id: string) => {
+  const s = santaStore.get(), pid = s.session[id], t = s.tokens ?? {};
+  return { id, ...(t[`o:${id}`] ? { orgToken: t[`o:${id}`] } : {}), ...(pid && t[`p:${pid}`] ? { pid, pToken: t[`p:${pid}`] } : {}) };
+};
+const saveTokens = (add: Record<string, string>) => patch((s) => ({ tokens: { ...(s.tokens ?? {}), ...add } }));
+const exchangeOfParticipant = (pid: string) => santaStore.get().participants.find((p) => p.id === pid)?.exchangeId ?? "";
+/** Calls the server for one exchange and shows the result. Failures are shown to the person, then re-thrown. */
+async function remote(exId: string, action: string, extra: Record<string, unknown> = {}) {
+  try {
+    const r = await callSanta<{ view: ServerView } & Record<string, unknown>>({ action, ...authFor(exId), ...extra });
+    applyView(r.view);
+    return r;
+  } catch (e) { toast.error(e instanceof Error ? e.message : "Something went wrong."); throw e; }
+}
+/** Re-reads an exchange from the server (other people's joins, messages, the draw). */
+export async function refreshExchange(id: string) {
+  if (isDemo(id) || !(authFor(id).orgToken || authFor(id).pToken)) return;
+  try { const r = await callSanta<{ view: ServerView }>({ action: "get", ...authFor(id) }); applyView(r.view); } catch { /* keep what we have */ }
+}
+/** Lets an organiser open their exchange on another device with the secret link. */
+export function adoptOrganiserKey(id: string, key: string) { if (key) saveTokens({ [`o:${id}`]: key }); }
+export function adoptKeys(id: string, k: { org: string; pid: string; pToken: string }) {
+  if (k.org) saveTokens({ [`o:${id}`]: k.org });
+  if (k.pid && k.pToken) { saveTokens({ [`p:${k.pid}`]: k.pToken }); patch((s) => ({ session: { ...s.session, [id]: k.pid } })); }
+}
+export const participantKey = (id: string) => { const s = santaStore.get(); const pid = s.session[id]; return pid ? { pid, token: (s.tokens ?? {})[`p:${pid}`] ?? "" } : null; };
+export const organiserKey = (id: string) => (santaStore.get().tokens ?? {})[`o:${id}`] ?? "";
+
 const delay = <T,>(v: T, ms = 120) => new Promise<T>((r) => setTimeout(() => r(v), ms));
 const uid = (p: string) => `${p}-${Math.random().toString(36).slice(2, 9)}`;
 const patch = (fn: (s: SantaState) => Partial<SantaState>) => { const s = santaStore.get(); santaStore.set({ ...s, ...fn(s) }); };
@@ -35,10 +81,14 @@ export const exchangeById = (s: SantaState, id: string) => s.exchanges.find((e) 
 export const participantsOf = (s: SantaState, id: string) => s.participants.filter((p) => p.exchangeId === id);
 export const joinedCount = (s: SantaState, id: string) => participantsOf(s, id).filter((p) => p.status !== "invited").length;
 
+let pendingCode = "";
 export type CodeCheck = { ok: true; exchange: Exchange } | { ok: false; reason: "invalid" | "closed" | "full" | "expired" };
 export async function checkCode(code: string): Promise<CodeCheck> {
   const s = santaStore.get();
-  const e = s.exchanges.find((x) => x.code.toUpperCase() === code.trim().toUpperCase());
+  const e = s.exchanges.find((x) => isDemo(x.id) && x.code.toUpperCase() === code.trim().toUpperCase());
+  if (!e) {
+    try { const r = await callSanta<CodeCheck>({ action: "check-code", code }); if (r.ok) { pendingCode = code.trim().toUpperCase(); patch((st) => ({ exchanges: [...st.exchanges.filter((e) => e.id !== r.exchange.id), r.exchange] })); } return r; } catch { return { ok: false, reason: "invalid" }; }
+  }
   if (!e) return delay({ ok: false, reason: "invalid" });
   if (e.status === "closed" || e.status === "complete") return delay({ ok: false, reason: "closed" });
   if (e.status === "drawn" || daysUntil(e.dates.joinBy) < 0) return delay({ ok: false, reason: "expired" });
@@ -75,14 +125,15 @@ export function dateWarnings(d: ExchangeDates): string[] {
 const makeCode = () => { const c = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; return Array.from({ length: 6 }, () => c[Math.floor(Math.random() * c.length)]).join(""); };
 export type NewExchange = Omit<Exchange, "id" | "code" | "status" | "createdAt" | "exclusions" | "showMatches" | "maxParticipants" | "allowReveal">;
 export async function createExchange(input: NewExchange) {
-  const id = uid("ex");
-  const exchange: Exchange = { ...input, id, code: makeCode(), status: "open", createdAt: new Date().toISOString(), exclusions: [], showMatches: false, allowReveal: true, maxParticipants: 200 };
-  const organiser: Participant | null = input.organiserTakesPart ? { id: uid("pt"), exchangeId: id, name: input.organiserName, contact: "", status: "joined", wishlist: [], likes: "", dislikes: "", sizes: "", noAlcohol: false, isOrganiser: true } : null;
-  patch((s) => ({ exchanges: [...s.exchanges, exchange], participants: organiser ? [...s.participants, organiser] : s.participants, session: organiser ? { ...s.session, [id]: organiser.id } : s.session, role: "organiser" }));
-  return delay(exchange);
+  try {
+    const r = await callSanta<{ exchangeId: string; orgToken: string; participantId: string | null; pToken: string | null; view: ServerView }>({ action: "create", exchange: input });
+    saveTokens({ [`o:${r.exchangeId}`]: r.orgToken, ...(r.participantId && r.pToken ? { [`p:${r.participantId}`]: r.pToken } : {}) });
+    applyView(r.view); patch(() => ({ role: "organiser" }));
+    return r.view.exchange;
+  } catch (e) { toast.error(e instanceof Error ? e.message : "We could not create the exchange."); throw e; }
 }
-
 export async function invitePeople(exchangeId: string, people: { name: string; contact: string }[]) {
+  if (!isDemo(exchangeId)) { const r = await remote(exchangeId, "invite", { people }); return Number(r["added"] ?? 0); }
   const add = people.filter((p) => p.name.trim()).map((p): Participant => ({ id: uid("pt"), exchangeId, name: p.name.trim(), contact: p.contact.trim(), status: "invited", wishlist: [], likes: "", dislikes: "", sizes: "", noAlcohol: false }));
   patch((s) => ({ participants: [...s.participants, ...add] }));
   return add.length;
@@ -91,22 +142,30 @@ export async function invitePeople(exchangeId: string, people: { name: string; c
 export function parsePeopleList(text: string) {
   return text.split(/\r?\n/).map((l) => l.split(/[,;\t]/).map((x) => x.trim())).filter(([n]) => n && !/^name$/i.test(n)).map(([name = "", contact = ""]) => ({ name, contact }));
 }
-export async function removeParticipant(id: string) { patch((s) => ({ participants: s.participants.filter((p) => p.id !== id) })); }
+export async function removeParticipant(id: string) {
+  const ex = exchangeOfParticipant(id); if (ex && !isDemo(ex)) { await remote(ex, "remove-participant", { participantId: id }); return; } patch((s) => ({ participants: s.participants.filter((p) => p.id !== id) })); }
 export async function addExclusion(exchangeId: string, a: string, b: string) {
+  if (!isDemo(exchangeId)) { await remote(exchangeId, "add-exclusion", { a, b }); return; }
   const e = exchangeById(santaStore.get(), exchangeId);
   if (!e || a === b || e.exclusions.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) return;
   updateExchange(exchangeId, { exclusions: [...e.exclusions, [a, b]] });
 }
 export async function removeExclusion(exchangeId: string, index: number) {
+  if (!isDemo(exchangeId)) { await remote(exchangeId, "remove-exclusion", { index }); return; }
   const e = exchangeById(santaStore.get(), exchangeId);
   if (e) updateExchange(exchangeId, { exclusions: e.exclusions.filter((_, i) => i !== index) });
 }
-export async function updateExchangeSettings(id: string, p: Partial<Pick<Exchange, "dates" | "showMatches" | "allowReveal" | "status">>) { updateExchange(id, p); }
+export async function updateExchangeSettings(id: string, p: Partial<Pick<Exchange, "dates" | "showMatches" | "allowReveal" | "status">>) {
+  if (!isDemo(id)) { await remote(id, "settings", p); return; }
+  updateExchange(id, p);
+}
 export async function postAnnouncement(exchangeId: string, body: string) {
+  if (!isDemo(exchangeId)) { await remote(exchangeId, "announce", { body }); return; }
   patch((s) => ({ messages: [...s.messages, { id: uid("msg"), exchangeId, kind: "announcement", fromId: "organiser", body, at: new Date().toISOString() }] }));
 }
 /** Placeholder: marks exchange day as done and all gifts delivered. */
 export async function completeExchange(id: string) {
+  if (!isDemo(id)) { await remote(id, "complete"); return; }
   patch((s) => ({
     exchanges: s.exchanges.map((e) => (e.id === id ? { ...e, status: "complete" } : e)),
     orders: s.orders.map((o) => (o.exchangeId === id ? { ...o, status: "delivered" } : o)),
@@ -119,6 +178,10 @@ export async function completeExchange(id: string) {
  * Only joined participants take part.
  */
 export async function drawNames(exchangeId: string): Promise<{ ok: true } | { ok: false; message: string }> {
+  if (!isDemo(exchangeId)) {
+    try { const r = await callSanta<{ view: ServerView }>({ action: "draw", ...authFor(exchangeId) }); applyView(r.view); return { ok: true }; }
+    catch (e) { return { ok: false, message: e instanceof Error ? e.message : "We could not run the draw." }; }
+  }
   const s = santaStore.get();
   const people = participantsOf(s, exchangeId).filter((p) => p.status !== "invited");
   const e = exchangeById(s, exchangeId);
@@ -142,6 +205,14 @@ export async function drawNames(exchangeId: string): Promise<{ ok: true } | { ok
 
 /* ---------- Participant ---------- */
 export async function joinExchange(exchangeId: string, input: Pick<Participant, "name" | "contact">) {
+  if (!isDemo(exchangeId)) {
+    const code = santaStore.get().exchanges.find((e) => e.id === exchangeId)?.code ?? pendingCode;
+    try {
+      const r = await callSanta<{ exchangeId: string; participantId: string; pToken: string; view: ServerView }>({ action: "join", code, ...input });
+      saveTokens({ [`p:${r.participantId}`]: r.pToken }); applyView(r.view); patch((st) => ({ role: "participant", session: { ...st.session, [r.exchangeId]: r.participantId } }));
+      return r.participantId;
+    } catch (e) { toast.error(e instanceof Error ? e.message : "We could not add you."); throw e; }
+  }
   const s = santaStore.get();
   const invited = participantsOf(s, exchangeId).find((p) => p.status === "invited" && p.contact && p.contact.toLowerCase() === input.contact.toLowerCase());
   const id = invited?.id ?? uid("pt");
@@ -152,6 +223,7 @@ export async function joinExchange(exchangeId: string, input: Pick<Participant, 
 }
 export async function saveHelpYourSanta(id: string, p: Pick<Participant, "likes" | "dislikes" | "sizes" | "noAlcohol"> & { address?: string; wishlist: string[] }) {
   const cur = santaStore.get().participants.find((x) => x.id === id);
+  if (cur && !isDemo(cur.exchangeId)) { await remote(cur.exchangeId, "save-help", { likes: p.likes, dislikes: p.dislikes, sizes: p.sizes, noAlcohol: p.noAlcohol, address: p.address, wishlist: p.wishlist }); return; }
   updateParticipant(id, {
     likes: p.likes, dislikes: p.dislikes, sizes: p.sizes, noAlcohol: p.noAlcohol, ...(p.address !== undefined ? { address: p.address } : {}),
     wishlist: p.wishlist.slice(0, MAX_WISHLIST).map((productId) => ({ productId, addedAt: todayIso() })),
@@ -163,17 +235,22 @@ export async function toggleWishlistItem(id: string, productId: string) {
   if (!p) return false;
   const has = p.wishlist.some((w) => w.productId === productId);
   if (!has && p.wishlist.length >= MAX_WISHLIST) return false;
+  if (!isDemo(p.exchangeId)) { await remote(p.exchangeId, "save-help", { likes: p.likes, dislikes: p.dislikes, sizes: p.sizes, noAlcohol: p.noAlcohol, wishlist: (has ? p.wishlist.filter((w) => w.productId !== productId) : [...p.wishlist, { productId }]).map((w) => w.productId) }); return true; }
   const wishlist = has ? p.wishlist.filter((w) => w.productId !== productId) : [...p.wishlist, { productId, addedAt: todayIso() }];
   updateParticipant(id, { wishlist, ...(p.status === "joined" || p.status === "wishlist" ? { status: wishlist.length ? "wishlist" : "joined" } : {}) });
   return true;
 }
-export async function updateDelivery(id: string, address: string) { updateParticipant(id, { address }); }
+export async function updateDelivery(id: string, address: string) {
+  const ex = exchangeOfParticipant(id); if (ex && !isDemo(ex)) { await remote(ex, "delivery", { address }); return; }
+  updateParticipant(id, { address });
+}
 
 export const giftsWithinBudget = (budget: number, wishlistFirst: string[] = []) =>
   PRODUCTS.filter((p) => p.inStock && p.category !== "gift-cards" && p.price <= budget)
     .sort((a, b) => Number(wishlistFirst.includes(b.id)) - Number(wishlistFirst.includes(a.id)) || a.price - b.price);
 
 export async function orderSantaGift(exchangeId: string, giverId: string, productId: string) {
+  if (!isDemo(exchangeId)) { await remote(exchangeId, "order-gift", { productId }); return orderBy(santaStore.get(), exchangeId, giverId)!; }
   const receiver = myMatch(santaStore.get(), exchangeId, giverId);
   if (!receiver) throw new Error("No match yet");
   const order: SantaGiftOrder = { id: uid("sso"), exchangeId, giverId, receiverId: receiver.id, productId, note: SANTA_NOTE, status: "ordered", at: new Date().toISOString() };
@@ -187,12 +264,14 @@ export const orderFor = (s: SantaState, exchangeId: string, receiverId: string) 
 
 /** Anonymous question to your giftee ("recipient") or to your Santa ("santa"). */
 export async function sendQuestion(exchangeId: string, fromId: string, to: "recipient" | "santa", body: string) {
+  if (!isDemo(exchangeId)) { await remote(exchangeId, "question", { to, body }); return; }
   const s = santaStore.get();
   const toId = to === "recipient" ? s.matches.find((m) => m.exchangeId === exchangeId && m.giverId === fromId)?.receiverId : s.matches.find((m) => m.exchangeId === exchangeId && m.receiverId === fromId)?.giverId;
   if (!toId) return;
   patch((st) => ({ messages: [...st.messages, { id: uid("msg"), exchangeId, kind: "question", fromId, toId, body, at: new Date().toISOString() }] }));
 }
 export async function sendThanks(exchangeId: string, fromId: string, body: string) {
+  if (!isDemo(exchangeId)) { await remote(exchangeId, "thanks", { body }); return; }
   const s = santaStore.get();
   const toId = s.matches.find((m) => m.exchangeId === exchangeId && m.receiverId === fromId)?.giverId;
   if (!toId) return;

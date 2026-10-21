@@ -16,6 +16,7 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { syncCatalogue } from "@/services/catalogue";
+import { startAccountSync } from "@/services/sync";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 function NotFoundComponent() {
@@ -114,7 +115,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   // Load live prices, photos and stock from the database, then refresh the current page's data.
-  useEffect(() => { void syncCatalogue().then(() => router.invalidate()); }, [router]);
+  useEffect(() => { void syncCatalogue().then(() => router.invalidate()); startAccountSync(); }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>

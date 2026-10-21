@@ -27,3 +27,5 @@ async function callFunction<T>(fn: string, body: Record<string, unknown>): Promi
 
 export const callShop = <T>(action: string, body: Record<string, unknown>) => callFunction<T>("shop", { action, ...body });
 export const callLeads = <T>(body: Record<string, unknown>) => callFunction<T>("leads", body);
+export const callAccount = <T>(body: Record<string, unknown>) => callFunction<T>("account", body);
+export const callSanta = <T>(body: Record<string, unknown>) => callFunction<T>("santa", body);

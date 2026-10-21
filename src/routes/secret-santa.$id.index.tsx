@@ -11,8 +11,8 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MAX_WISHLIST, SANTA_NOTE } from "@/config/secretSanta";
-import { useSanta } from "@/hooks/use-santa";
-import { exchangeById, giftsWithinBudget, myMatch, orderBy, orderFor, orderSantaGift, revealMySanta, sendQuestion, sendThanks, toggleWishlistItem, updateDelivery, type SantaState } from "@/services/secretSanta";
+import { useSanta, useSantaSync } from "@/hooks/use-santa";
+import { participantKey, exchangeById, giftsWithinBudget, myMatch, orderBy, orderFor, orderSantaGift, revealMySanta, sendQuestion, sendThanks, toggleWishlistItem, updateDelivery, type SantaState } from "@/services/secretSanta";
 import { getProductById } from "@/services/products";
 import { daysUntil, formatLong } from "@/services/calendar";
 import { formatNaira } from "@/lib/format";
@@ -42,6 +42,7 @@ const TABS: SantaTab[] = [
 function ParticipantHome() {
   const { id } = Route.useParams();
   const s = useSanta();
+  useSantaSync(id);
   const [tab, setTab] = useState("match");
   const ex = exchangeById(s, id);
   const me = ex ? s.participants.find((p) => p.id === s.session[id]) : undefined;
@@ -179,6 +180,7 @@ function MeTab({ ex, me, s }: { ex: Exchange; me: Participant; s: SantaState }) 
   const santa = revealMySanta(s, ex.id, me.id);
   return <div className="space-y-8">
     <section className="rounded-md border border-line-dark p-5">
+      <Button size="sm" variant="outline" className="float-right text-on-dark" onClick={() => { const k = participantKey(ex.id); if (!k?.token) { toast("Preview mode has no personal link."); return; } void navigator.clipboard.writeText(`${window.location.origin}/secret-santa/${ex.id}?p=${k.pid}&t=${k.token}`).then(() => toast.success("Personal link copied", { description: "Open it on another device to continue as you. Keep it private." })); }}>Copy my link</Button>
       <h1 className="text-sm text-on-dark">Your gift</h1>
       <p className="mt-3 text-lg text-on-dark">{!incoming ? "Your Santa hasn't ordered yet." : incoming.status === "delivered" ? "Your gift has been delivered." : "Your gift has been ordered."}</p>
       {incoming && <p className="mt-1 text-sm text-on-dark-muted">{SANTA_NOTE}</p>}
