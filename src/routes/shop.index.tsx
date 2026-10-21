@@ -47,11 +47,16 @@ const GROUPS: { key: FilterKey; title: string; options: { slug: string; name: st
 ];
 
 function Header({ count }: { count?: number }) {
-  return <div className="surface-dark">
-    <div className="mx-auto max-w-7xl px-5 py-12 md:py-16">
-      <Breadcrumb><BreadcrumbList className="text-on-dark-muted [&_a:hover]:text-gold [&_[aria-current]]:text-on-dark"><BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>Shop</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
-      <h1 className="mt-5 text-3xl text-on-dark md:text-5xl">The gift shop</h1>
-      <p className="mt-3 text-sm text-on-dark-muted" aria-live="polite">{count === undefined ? "Loading gifts" : `${count} ${count === 1 ? "gift" : "gifts"}`}</p>
+  return <div className="surface-dark relative overflow-hidden">
+    <div className="mx-auto max-w-7xl px-5 py-14 md:py-24">
+      <Breadcrumb><BreadcrumbList className="text-on-dark-muted [&_a:hover]:text-gold [&_[aria-current]]:text-on-dark"><BreadcrumbItem><BreadcrumbLink asChild><Link to="/">Home</Link></BreadcrumbLink></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><BreadcrumbPage>Retail</BreadcrumbPage></BreadcrumbItem></BreadcrumbList></Breadcrumb>
+      <p className="eyebrow mt-10 text-gold">Individuals &amp; Retail</p><div aria-hidden className="mt-4 h-px w-14 bg-gold" />
+      <h1 className="mt-6 text-5xl leading-[1.02] md:text-7xl">The gift <span className="text-gold">shop</span></h1>
+      <p className="mt-6 max-w-xl text-lg text-on-dark-muted">Luxury boxes and hampers for every occasion, wrapped by hand and delivered anywhere in Nigeria.</p>
+      <div className="mt-8 flex flex-wrap gap-2.5">
+        {OCCASIONS.slice(0, 6).map((o, i) => <Link key={o.slug} to="/shop" search={{ occasion: o.slug }} className={`pill ${["pill-gold", "pill-coral", "pill-sage", "pill-ivory"][i % 4]} transition hover:-translate-y-0.5`}>{o.name}</Link>)}
+      </div>
+      <p className="mt-8 text-sm text-on-dark-muted" aria-live="polite">{count === undefined ? "Loading gifts" : `${count} ${count === 1 ? "gift" : "gifts"}`}</p>
     </div>
   </div>;
 }
@@ -118,5 +123,9 @@ function ShopPage() {
           : <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 xl:grid-cols-4 lg:gap-x-6">{results.map((p) => <ProductCard key={p.id} product={{ id: p.id, slug: p.slug, name: p.name, line: p.line, price: p.price, inStock: p.inStock, ...(p.badges[0] ? { badge: p.badges[0] } : {}) }} />)}</div>}
       </section>
     </div>
+    <section className="brand-pattern-plum py-20 text-on-dark"><div className="mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-2 lg:items-center">
+      <div><p className="eyebrow text-gold">Not sure what to pick?</p><div aria-hidden className="mt-4 h-px w-14 bg-gold" /><h2 className="mt-6 text-4xl md:text-5xl">Gift in <span className="text-gold">60 seconds</span></h2><p className="mt-4 max-w-md text-on-dark-muted">Answer three quick questions and our Gift Dispenser picks the right box.</p></div>
+      <div className="flex flex-col gap-3 sm:flex-row lg:justify-end"><Link to="/dispenser" className="inline-flex min-h-14 items-center justify-center rounded-full bg-gold px-9 text-[15px] font-semibold text-nero transition hover:brightness-105">Try the Gift Dispenser</Link><Link to="/corporate/quote" className="inline-flex min-h-14 items-center justify-center rounded-full border border-on-dark/70 px-9 text-[15px] font-semibold transition hover:border-gold hover:bg-gold hover:text-nero">Gifting for a team?</Link></div>
+    </div></section>
   </main></SiteShell>;
 }

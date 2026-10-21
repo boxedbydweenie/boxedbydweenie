@@ -86,13 +86,15 @@ export function ProductCard({ product, variant = "default", image, image2 }: { p
     </article>;
   }
   return <article className="group relative">
-    <div className="relative">
-      {product.slug ? <Link to="/shop/$slug" params={{ slug: product.slug }} aria-label={product.name} tabIndex={-1}>{tile}</Link> : tile}
-      {product.badge && <span className="absolute left-3 top-3 rounded-sm bg-gold px-2 py-1 text-[10px] font-bold uppercase text-nero">{product.badge}</span>}
-      <Button type="button" size="icon" variant="ghost" className="absolute right-2 top-2 bg-paper/90" aria-pressed={liked} aria-label={liked ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`} onClick={() => toggleWishlist(product.id)}><Heart className={liked ? "fill-current" : ""} /></Button>
+    <div className="relative overflow-hidden rounded-[2px] bg-ivory shadow-[0_20px_30px_-24px_rgba(41,40,40,.55)] transition-shadow duration-500 group-hover:shadow-[0_30px_40px_-24px_rgba(41,40,40,.6)]">
+      {product.slug ? <Link to="/shop/$slug" params={{ slug: product.slug }} aria-label={product.name} tabIndex={-1} className="block overflow-hidden">{tile}</Link> : tile}
+      {product.badge && <span className="pill pill-gold absolute left-3 top-3 !min-h-0 py-1 text-[10px] uppercase tracking-wider">{product.badge}</span>}
+      <Button type="button" size="icon" variant="ghost" className="absolute right-2 top-2 size-11 rounded-full bg-paper/90" aria-pressed={liked} aria-label={liked ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`} onClick={() => toggleWishlist(product.id)}><Heart className={liked ? "fill-current" : ""} /></Button>
+      {!soldOut && <button type="button" onClick={quickAdd} aria-label={`Quick add ${product.name}`} className="absolute inset-x-3 bottom-3 flex min-h-11 translate-y-3 items-center justify-center gap-2 rounded-full bg-nero text-sm font-semibold text-white opacity-0 transition duration-300 focus-visible:translate-y-0 focus-visible:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 max-lg:translate-y-0 max-lg:opacity-100"><ShoppingBag className="size-4" /> Add to bag</button>}
     </div>
-    <h3 className="mt-4 text-sm">{product.slug ? <Link to="/shop/$slug" params={{ slug: product.slug }} className="hover:text-muted-foreground">{product.name}</Link> : product.name}</h3><p className="mt-1 text-sm text-muted-foreground">{product.line}</p>
-    <div className="mt-3 flex items-center justify-between gap-2"><span className="font-semibold">{formatNaira(product.price)}</span>{soldOut ? <span className="text-xs text-muted-foreground">Sold out</span> : <Button size="sm" aria-label={`Quick add ${product.name}`} onClick={quickAdd}><ShoppingBag /> <span className="hidden sm:inline">Quick add</span></Button>}</div>
+    <h3 className="mt-4 font-heading text-xl font-medium leading-tight">{product.slug ? <Link to="/shop/$slug" params={{ slug: product.slug }} className="hover:text-[#8E6A10]">{product.name}</Link> : product.name}</h3>
+    <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{product.line}</p>
+    <p className="mt-2 flex items-center justify-between text-[15px] font-semibold"><span>{formatNaira(product.price)}</span>{soldOut && <span className="text-xs font-normal text-muted-foreground">Sold out</span>}</p>
   </article>;
 }
 
