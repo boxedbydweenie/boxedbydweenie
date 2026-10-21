@@ -65,7 +65,7 @@ function ClockRing({ seconds, size = 44 }: { seconds: number; size?: number }) {
   const pct = Math.min(seconds, 60) / 60, c = 2 * Math.PI * 16, over = seconds >= 60;
   return <div className="relative grid place-items-center" style={{ width: size, height: size }} role="timer" aria-label={`${seconds} seconds elapsed`}>
     <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.15)" strokeWidth="2.5" /><circle cx="20" cy="20" r="16" fill="none" stroke={over ? "#EB826C" : "#E7B93B"} strokeWidth="2.5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} style={{ transition: "stroke-dashoffset 1s linear" }} /></svg>
-    <span className="dsp-term text-[11px] font-semibold text-white">{seconds}s</span>
+    <span className="dsp-term text-[11px] font-semibold text-nero">{seconds}s</span>
   </div>;
 }
 
@@ -137,36 +137,36 @@ function DispenserPage() {
     {phase === "intro" && <Landing onStart={start} onSurprise={surprise} />}
 
     {inFlow && phase !== "picks" && phase !== "done" && <main className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-3xl flex-col justify-center px-5 py-10 sm:py-14">
-      <div className="dsp-glow -left-40 top-10 size-80 bg-[#E7B93B]/20" aria-hidden /><div className="dsp-glow -right-40 bottom-10 size-80 bg-[#83252C]/40" aria-hidden />
+      <div className="dsp-glow -left-40 top-10 size-80 bg-[#E7B93B]/20" aria-hidden /><div className="dsp-glow -right-40 bottom-10 size-80 bg-[#86BAA3]/60" aria-hidden />
       {phase !== "dispensing" && <div className="relative">
         <div className="flex items-center gap-4">
-          <button type="button" onClick={back} aria-label="Back" className="grid size-11 shrink-0 place-items-center rounded-full border border-white/20 hover:border-[#E7B93B] hover:bg-white/5"><ArrowLeft className="size-5" /></button>
+          <button type="button" onClick={back} aria-label="Back" className="grid size-11 shrink-0 place-items-center rounded-full border border-nero/20 hover:border-nero hover:bg-[#F4EFE5]"><ArrowLeft className="size-5" /></button>
           <div className="flex flex-1 gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={7} aria-valuenow={Math.max(step + 1, 1)} aria-label={`Step ${step + 1} of 7`}>{ORDER.map((o, i) => <span key={o} className={cn("dsp-seg", i < step && "on")}><i style={{ width: i < step ? "100%" : i === step ? "45%" : "0" }} /></span>)}</div>
-          <span className="dsp-term text-xs text-white/60">{step + 1}/7</span>
+          <span className="dsp-term text-xs text-nero/60">{step + 1}/7</span>
         </div>
       </div>}
 
       {q && <section key={q.key} className="relative mt-10" aria-labelledby="q-title">
         <p className="dsp-eyebrow">{q.kicker}</p>
         <h1 id="q-title" className="mt-3 font-heading text-4xl leading-[1.05] sm:text-6xl">{q.title}</h1>
-        <p className="mt-3 max-w-xl text-white/65">{q.sub}</p>
+        <p className="mt-3 max-w-xl text-nero/65">{q.sub}</p>
         <div className={cn("mt-8 grid gap-3", q.cols)}>
           {q.options.map((o, i) => { const Ic = q.icons[o.slug] ?? Gift;
             return <button key={o.slug} type="button" onClick={() => answer(q.key, o.slug)} aria-pressed={answers[q.key] === o.slug} className="dsp-option" style={{ animationDelay: `${i * 55}ms` }}>
               <span className="ico"><Ic className="size-5" /></span>
-              <span className="min-w-0"><span className="block text-base font-semibold">{o.name}</span>{o.line && <span className="block text-sm text-white/55">{o.line}</span>}</span>
-              <ArrowRight className="ml-auto size-4 shrink-0 text-white/30" />
+              <span className="min-w-0"><span className="block text-base font-semibold">{o.name}</span>{o.line && <span className="block text-sm text-nero/55">{o.line}</span>}</span>
+              <ArrowRight className="ml-auto size-4 shrink-0 text-nero/30" />
             </button>; })}
         </div>
       </section>}
 
       {phase === "line" && <section className="relative mt-10" aria-labelledby="q-title">
         <p className="dsp-eyebrow">The finishing touch</p>
-        <h1 id="q-title" className="mt-3 font-heading text-4xl leading-[1.05] sm:text-6xl">Write one line only <span className="text-[#E7B93B]">you</span> could write.</h1>
-        <p className="mt-3 max-w-xl text-white/65">A private joke, a memory, a thank you. We will place it on the card inside the box. Optional.</p>
+        <h1 id="q-title" className="mt-3 font-heading text-4xl leading-[1.05] sm:text-6xl">Write one line only <span className="text-[#83252C]">you</span> could write.</h1>
+        <p className="mt-3 max-w-xl text-nero/65">A private joke, a memory, a thank you. We will place it on the card inside the box. Optional.</p>
         <label htmlFor="line" className="sr-only">Line for the card</label>
-        <textarea id="line" value={line} onChange={(e) => setLine(e.target.value.slice(0, 160))} rows={3} placeholder="“Happy birthday. Still the person I call first.”" className="mt-6 w-full resize-none rounded-2xl border border-white/20 bg-white/5 p-5 text-lg text-white placeholder:text-white/35 focus:border-[#E7B93B] focus:outline-none" />
-        <p className="mt-2 text-right text-xs text-white/45">{line.length}/160</p>
+        <textarea id="line" value={line} onChange={(e) => setLine(e.target.value.slice(0, 160))} rows={3} placeholder="“Happy birthday. Still the person I call first.”" className="mt-6 w-full resize-none rounded-2xl border border-nero/20 bg-[#F4EFE5] p-5 text-lg text-nero placeholder:text-nero/35 focus:border-[#E7B93B] focus:outline-none" />
+        <p className="mt-2 text-right text-xs text-nero/45">{line.length}/160</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <button type="button" onClick={finishLine} className="dsp-btn dsp-btn-gold dsp-pulse"><Zap className="size-5" />Dispense my gifts</button>
           {line && <button type="button" onClick={() => { setLine(""); finishLine(); }} className="dsp-btn dsp-btn-line">Skip the card</button>}
@@ -176,12 +176,12 @@ function DispenserPage() {
 
       {phase === "dispensing" && <section className="relative text-center" role="status" aria-live="polite">
         <div className="dsp-glass dsp-scan relative mx-auto max-w-md overflow-hidden rounded-3xl p-6">
-          <div className="grid grid-cols-5 gap-2.5">{Array.from({ length: 15 }, (_, i) => <div key={i} className="dsp-cell" style={{ animationDelay: `${((i * 7) % 15) * 160}ms` }}><Gift className="size-4 text-[#E7B93B]/70" /></div>)}</div>
+          <div className="grid grid-cols-5 gap-2.5">{Array.from({ length: 15 }, (_, i) => <div key={i} className="dsp-cell" style={{ animationDelay: `${((i * 7) % 15) * 160}ms` }}><Gift className="size-4 text-[#83252C]/70" /></div>)}</div>
         </div>
         <p className="dsp-eyebrow mt-8">Dispensing</p>
-        <h1 className="mt-3 font-heading text-4xl sm:text-5xl">Choosing three gifts worth a <span className="text-[#E7B93B]">wow</span></h1>
-        <ul className="dsp-term mx-auto mt-6 max-w-sm space-y-2 text-left text-sm text-white/75">
-          {["Reading the person and the moment", "Scanning the collection for taste", "Weighing the impression you want", "Checking budget and delivery date", "Wrapping up your top three"].map((t, i) => <li key={t} className={cn("flex items-center gap-3 transition-opacity", lineStep > i ? "opacity-100" : "opacity-20")}><span className={cn("grid size-5 place-items-center rounded-full", lineStep > i + 0 ? "bg-[#E7B93B] text-nero" : "border border-white/30")}>{lineStep > i + 1 || (lineStep > i && i === 4) ? <Check className="size-3" /> : null}</span>{t}</li>)}
+        <h1 className="mt-3 font-heading text-4xl sm:text-5xl">Choosing three gifts worth a <span className="text-[#83252C]">wow</span></h1>
+        <ul className="dsp-term mx-auto mt-6 max-w-sm space-y-2 text-left text-sm text-nero/75">
+          {["Reading the person and the moment", "Scanning the collection for taste", "Weighing the impression you want", "Checking budget and delivery date", "Wrapping up your top three"].map((t, i) => <li key={t} className={cn("flex items-center gap-3 transition-opacity", lineStep > i ? "opacity-100" : "opacity-20")}><span className={cn("grid size-5 place-items-center rounded-full", lineStep > i + 0 ? "bg-[#E7B93B] text-nero" : "border border-nero/30")}>{lineStep > i + 1 || (lineStep > i && i === 4) ? <Check className="size-3" /> : null}</span>{t}</li>)}
         </ul>
       </section>}
     </main>}
@@ -190,8 +190,8 @@ function DispenserPage() {
       <div className="dsp-glow left-1/2 top-0 size-[30rem] -translate-x-1/2 bg-[#E7B93B]/15" aria-hidden />
       <section aria-labelledby="picks-title" className="relative">
         <div className="text-center"><p className="dsp-eyebrow">Freshly dispensed · {seconds}s</p>
-          <h1 id="picks-title" className="mt-3 font-heading text-5xl sm:text-7xl">Your three <span className="text-[#E7B93B]">picks</span></h1>
-          <p className="mx-auto mt-3 max-w-xl text-white/65">Chosen for {DISPENSER_RECIPIENTS.find((r) => r.slug === answers.who)?.name.toLowerCase() ?? "them"}{answers.occasion && answers.occasion !== "just-because" ? `, for ${DISPENSER_OCCASIONS.find((o) => o.slug === answers.occasion)?.name.toLowerCase()}` : ""}. Pick one and it is on its way.</p>
+          <h1 id="picks-title" className="mt-3 font-heading text-5xl sm:text-7xl">Your three <span className="text-[#83252C]">picks</span></h1>
+          <p className="mx-auto mt-3 max-w-xl text-nero/65">Chosen for {DISPENSER_RECIPIENTS.find((r) => r.slug === answers.who)?.name.toLowerCase() ?? "them"}{answers.occasion && answers.occasion !== "just-because" ? `, for ${DISPENSER_OCCASIONS.find((o) => o.slug === answers.occasion)?.name.toLowerCase()}` : ""}. Pick one and it is on its way.</p>
           {result.restocking && <p className="mt-3 text-sm text-[#EB826C]">Nothing matched that budget exactly, so here are our bestsellers instead.</p>}</div>
         <div className="-mx-5 mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
           {result.picks.map((p, i) => <PickCard key={p.product.id} pick={p} index={i} onSend={() => setSending(p.product)} />)}
@@ -207,8 +207,8 @@ function DispenserPage() {
     {phase === "done" && order && <main className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-lg flex-col items-center justify-center px-5 py-16 text-center" aria-live="polite">
       <div className="dsp-glow left-1/2 top-1/4 size-80 -translate-x-1/2 bg-[#E7B93B]/25" aria-hidden />
       <div className="relative"><BowTie /><p className="dsp-eyebrow mt-8">Sent</p>
-        <h1 className="mt-3 font-heading text-5xl sm:text-6xl">Done in <span className="text-[#E7B93B]">{order.seconds}</span> seconds</h1>
-        <p className="mt-4 text-white/70">Order <span className="font-semibold text-white">{order.order.id}</span> is being boxed for {order.order.recipient.name}, arriving {formatDayMonth(order.order.recipient.deliveryDate)}.</p>
+        <h1 className="mt-3 font-heading text-5xl sm:text-6xl">Done in <span className="text-[#83252C]">{order.seconds}</span> seconds</h1>
+        <p className="mt-4 text-nero/70">Order <span className="font-semibold text-nero">{order.order.id}</span> is being boxed for {order.order.recipient.name}, arriving {formatDayMonth(order.order.recipient.deliveryDate)}.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3"><Link to="/order/$id" params={{ id: order.order.id }} className="dsp-btn dsp-btn-gold">Track this order</Link><button type="button" className="dsp-btn dsp-btn-line" onClick={() => { change(); begin(); }}>Send another</button></div></div>
     </main>}
 
@@ -223,10 +223,10 @@ function PickCard({ pick, index, onSend }: { pick: Pick; index: number; onSend: 
   return <article className="dsp-pick dsp-glass flex w-[82vw] max-w-sm shrink-0 snap-center flex-col rounded-3xl p-4 md:w-auto md:max-w-none" style={{ animationDelay: `${index * 160}ms` }}>
     <div className="relative overflow-hidden rounded-2xl"><PlaceholderTile label={p.name} className="aspect-[5/4] w-full" /><span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-[#E7B93B] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-nero">{index === 0 && <Star className="size-3" />}{pick.label}</span></div>
     <h2 className="mt-4 font-heading text-2xl leading-tight">{p.name}</h2>
-    <p className="mt-1 text-xl font-semibold text-[#E7B93B]">{formatNaira(p.price)}</p>
-    {pick.reasons.length > 0 && <div className="mt-3 rounded-xl bg-white/5 p-3"><p className="dsp-eyebrow !text-[10px]">Why this one</p><ul className="mt-2 space-y-1.5 text-sm text-white/80">{pick.reasons.map((r) => <li key={r} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-[#E7B93B]" />{r}</li>)}</ul></div>}
-    <ul className="mt-3 space-y-0.5 text-xs text-white/55">{p.inside.slice(0, 3).map((i) => <li key={i}>· {i}</li>)}</ul>
-    <p className="mt-3 text-xs font-semibold text-[#E7B93B]">{today ? "Arrives today in Lagos" : `Arrives from ${formatDayMonth(earliest)}`}</p>
+    <p className="mt-1 text-xl font-semibold text-[#83252C]">{formatNaira(p.price)}</p>
+    {pick.reasons.length > 0 && <div className="mt-3 rounded-xl bg-[#F4EFE5] p-3"><p className="dsp-eyebrow !text-[10px]">Why this one</p><ul className="mt-2 space-y-1.5 text-sm text-nero/80">{pick.reasons.map((r) => <li key={r} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-[#83252C]" />{r}</li>)}</ul></div>}
+    <ul className="mt-3 space-y-0.5 text-xs text-nero/55">{p.inside.slice(0, 3).map((i) => <li key={i}>· {i}</li>)}</ul>
+    <p className="mt-3 text-xs font-semibold text-[#83252C]">{today ? "Arrives today in Lagos" : `Arrives from ${formatDayMonth(earliest)}`}</p>
     <div className="mt-auto flex gap-2 pt-4"><button type="button" onClick={onSend} className="dsp-btn dsp-btn-gold flex-1 !min-h-12">Send this one</button><Link to="/shop/$slug" params={{ slug: p.slug }} className="dsp-btn dsp-btn-line !min-h-12 !px-5" aria-label={`View ${p.name}`}>View</Link></div>
   </article>;
 }
@@ -238,68 +238,68 @@ function Landing({ onStart, onSurprise }: { onStart: () => void; onSurprise: () 
   return <main className="relative">
     {/* Hero */}
     <section className="relative overflow-hidden">
-      <div className="dsp-glow -left-32 top-20 size-96 bg-[#E7B93B]/20" aria-hidden /><div className="dsp-glow -right-24 top-40 size-96 bg-[#39243F]/70" aria-hidden />
+      <div className="dsp-glow -left-32 top-20 size-96 bg-[#E7B93B]/20" aria-hidden /><div className="dsp-glow -right-24 top-40 size-96 bg-[#EB826C]/50" aria-hidden />
       <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-16 pt-14 md:grid-cols-[1.1fr_.9fr] md:pb-24 md:pt-20">
         <div>
-          <p className="dsp-eyebrow inline-flex items-center gap-2 rounded-full border border-[#E7B93B]/30 bg-[#E7B93B]/10 px-4 py-2"><Timer className="size-3.5" />Gift Dispenser</p>
-          <h1 className="mt-6 font-heading text-[2.9rem] leading-[0.98] sm:text-7xl lg:text-[5.4rem]">A <span className="text-[#E7B93B]">wow</span> gift.<br />In 60 seconds.</h1>
-          <p className="mt-6 max-w-xl text-lg text-white/70">Answer a few thoughtful questions about the person, the moment and the impression you want to leave. Our dispenser serves three hand-picked luxury gifts. You choose, pay and send, before the minute is up.</p>
+          <p className="dsp-eyebrow inline-flex items-center gap-2 rounded-full border border-nero/15 bg-white px-4 py-2"><Timer className="size-3.5" />Gift Dispenser</p>
+          <h1 className="mt-6 font-heading text-[2.9rem] leading-[0.98] sm:text-7xl lg:text-[5.4rem]">A <span className="text-[#83252C]">wow</span> gift.<br />In 60 seconds.</h1>
+          <p className="mt-6 max-w-xl text-lg text-nero/70">Answer a few thoughtful questions about the person, the moment and the impression you want to leave. Our dispenser serves three hand-picked luxury gifts. You choose, pay and send, before the minute is up.</p>
           <div className="mt-9 flex flex-wrap gap-3">
             <button type="button" onClick={onStart} className="dsp-btn dsp-btn-gold dsp-pulse"><Zap className="size-5" />Start the 60-second clock</button>
             <button type="button" onClick={onSurprise} className="dsp-btn dsp-btn-line"><Shuffle className="size-4" />Surprise me</button>
           </div>
-          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/60">{["Hand-wrapped", "Same-day Lagos", "Delivered nationwide"].map((t) => <li key={t} className="flex items-center gap-2"><Check className="size-4 text-[#E7B93B]" />{t}</li>)}</ul>
+          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-nero/60">{["Hand-wrapped", "Same-day Lagos", "Delivered nationwide"].map((t) => <li key={t} className="flex items-center gap-2"><Check className="size-4 text-[#83252C]" />{t}</li>)}</ul>
         </div>
         <div className="relative mx-auto w-full max-w-md" aria-hidden>
-          <div className="dsp-glass dsp-scan relative overflow-hidden rounded-[2rem] p-8">
+          <div className="dsp-scan relative overflow-hidden rounded-[2rem] p-8 shadow-[0_40px_70px_-35px_rgba(131,37,44,.7)]" style={{ background: "#EB826C url(/brand/bow-tile-dark.svg) center / 140px repeat" }}>
             <div className="absolute right-5 top-5"><ClockRing seconds={42} size={56} /></div>
-            <img src="/home/boxes-stack.webp" alt="" className="dsp-float mx-auto w-4/5 drop-shadow-[0_30px_40px_rgba(0,0,0,.6)]" />
-            <div className="dsp-term mt-4 flex items-center justify-between text-xs text-white/60"><span>MATCH 98%</span><span className="text-[#E7B93B]">● 3 GIFTS READY</span></div>
+            <img src="/home/boxes-stack.webp" alt="" className="dsp-float mx-auto w-4/5 drop-shadow-[0_30px_30px_rgba(41,40,40,.45)]" />
+            <div className="dsp-term mt-4 flex items-center justify-between text-xs text-nero/60"><span className="font-bold">MATCH 98%</span><span className="font-bold">● 3 GIFTS READY</span></div>
           </div>
         </div>
       </div>
-      <div className="relative border-y border-white/10 bg-white/[.03] py-4" aria-label="The questions we ask"><div className="overflow-hidden"><div className="dsp-marquee">{[...chips, ...chips].map((c, i) => <span key={i} className="dsp-chip">{c}</span>)}</div></div></div>
+      <div className="relative border-y border-nero/10 bg-white/60 py-4" aria-label="The questions we ask"><div className="overflow-hidden"><div className="dsp-marquee">{[...chips, ...chips].map((c, i) => <span key={i} className="dsp-chip">{c}</span>)}</div></div></div>
     </section>
 
     {/* Concept */}
     <section className="relative mx-auto max-w-6xl px-5 py-20 md:py-28">
       <p className="dsp-eyebrow">The idea</p>
-      <h2 className="mt-4 max-w-3xl font-heading text-4xl leading-tight sm:text-6xl">The best gifts prove you <span className="text-[#E7B93B]">paid attention.</span></h2>
-      <p className="mt-5 max-w-2xl text-lg text-white/65">Price does not make a gift memorable. Feeling understood does. So we do not just ask your budget. We ask about them, then do the hard part of choosing.</p>
+      <h2 className="mt-4 max-w-3xl font-heading text-4xl leading-tight sm:text-6xl">The best gifts prove you <span className="text-[#83252C]">paid attention.</span></h2>
+      <p className="mt-5 max-w-2xl text-lg text-nero/65">Price does not make a gift memorable. Feeling understood does. So we do not just ask your budget. We ask about them, then do the hard part of choosing.</p>
       <div className="mt-12 grid gap-5 md:grid-cols-3">
-        {[[Heart, "Chosen for them", "Their taste, the occasion and the feeling you want to create all shape the match. Never a random bestseller."], [Gem, "Luxury, wrapped by hand", "Every box is finished in our signature packaging, with a card in your own words."], [Truck, "Sent before you know it", "Same-day in Lagos on eligible gifts. Next-day in Lagos and Abuja. Nationwide in days."]].map(([Ic, t, d]) => { const I = Ic as typeof Heart; return <div key={t as string} className="dsp-glass rounded-3xl p-7"><span className="grid size-12 place-items-center rounded-2xl bg-[#E7B93B]/15 text-[#E7B93B]"><I className="size-6" /></span><h3 className="mt-5 font-heading text-2xl">{t as string}</h3><p className="mt-2 text-white/65">{d as string}</p></div>; })}
+        {[[Heart, "Chosen for them", "Their taste, the occasion and the feeling you want to create all shape the match. Never a random bestseller."], [Gem, "Luxury, wrapped by hand", "Every box is finished in our signature packaging, with a card in your own words."], [Truck, "Sent before you know it", "Same-day in Lagos on eligible gifts. Next-day in Lagos and Abuja. Nationwide in days."]].map(([Ic, t, d]) => { const I = Ic as typeof Heart; return <div key={t as string} className="dsp-glass rounded-3xl p-7"><span className="grid size-12 place-items-center rounded-2xl bg-[#E7B93B]/15 text-[#83252C]"><I className="size-6" /></span><h3 className="mt-5 font-heading text-2xl">{t as string}</h3><p className="mt-2 text-nero/65">{d as string}</p></div>; })}
       </div>
     </section>
 
     {/* How it works */}
-    <section className="relative border-y border-white/10 bg-[#141212] py-20 md:py-28"><div className="mx-auto max-w-6xl px-5">
-      <p className="dsp-eyebrow">How it works</p><h2 className="mt-4 font-heading text-4xl sm:text-6xl">Three steps. <span className="text-[#E7B93B]">One minute.</span></h2>
+    <section className="relative border-y border-nero/10 py-20 md:py-28" style={{ background: "#86BAA3 url(/brand/bow-tile-sage.svg) center / 150px repeat" }}><div className="mx-auto max-w-6xl px-5">
+      <p className="dsp-eyebrow">How it works</p><h2 className="mt-4 font-heading text-4xl sm:text-6xl">Three steps. <span className="text-[#83252C]">One minute.</span></h2>
       <ol className="mt-14 grid gap-10 md:grid-cols-3">
         {[["01", "Tell us about them", "Six quick taps: who, the moment, their taste, the impression, budget and timing. Add one personal line if you like."], ["02", "The Dispenser matches", "We rank our whole collection against your answers and serve your top pick, a crowd favourite and something different, with the reason for each."], ["03", "Choose, pay, sent", "Pick one, confirm the delivery details and pay securely. We wrap it by hand and deliver it on your date."]].map(([n, t, d]) => <li key={n}>
-          <span className="dsp-step-num" aria-hidden>{n}</span><h3 className="mt-3 font-heading text-3xl">{t}</h3><p className="mt-3 text-white/65">{d}</p></li>)}
+          <span className="dsp-step-num" aria-hidden>{n}</span><h3 className="mt-3 font-heading text-3xl">{t}</h3><p className="mt-3 text-nero/65">{d}</p></li>)}
       </ol>
       <div className="mt-12"><button type="button" onClick={onStart} className="dsp-btn dsp-btn-gold">Try it now <ArrowRight className="size-4" /></button></div>
     </div></section>
 
     {/* Proof */}
     <section className="relative mx-auto max-w-6xl px-5 py-20 md:py-28">
-      <p className="dsp-eyebrow">Trusted to make an impression</p><h2 className="mt-4 max-w-3xl font-heading text-4xl sm:text-6xl">Gifts people <span className="text-[#E7B93B]">keep talking about.</span></h2>
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">{BRAND.stats.slice(0, 3).map((s) => <div key={s.label} className="dsp-glass rounded-3xl p-7"><p className="font-heading text-5xl text-[#E7B93B]">{formatStat(s)}</p><p className="mt-2 text-white/65">{s.label}</p></div>)}</div>
-      <ul className="mt-6 grid gap-4 md:grid-cols-2">{BRAND.reviews.slice(0, 2).map((r) => <li key={r.name} className="dsp-glass rounded-3xl p-7"><div className="flex gap-1 text-[#E7B93B]" aria-label="5 out of 5 stars">{Array.from({ length: 5 }, (_, i) => <Star key={i} className="size-4 fill-current" />)}</div><h3 className="mt-3 font-heading text-2xl">{r.title}</h3><p className="mt-2 line-clamp-4 text-white/70">{r.text}</p><p className="mt-4 text-sm font-semibold text-white/90">{r.name}</p></li>)}</ul>
+      <p className="dsp-eyebrow">Trusted to make an impression</p><h2 className="mt-4 max-w-3xl font-heading text-4xl sm:text-6xl">Gifts people <span className="text-[#83252C]">keep talking about.</span></h2>
+      <div className="mt-10 grid gap-4 sm:grid-cols-3">{BRAND.stats.slice(0, 3).map((s) => <div key={s.label} className="dsp-glass rounded-3xl p-7"><p className="font-heading text-5xl text-[#83252C]">{formatStat(s)}</p><p className="mt-2 text-nero/65">{s.label}</p></div>)}</div>
+      <ul className="mt-6 grid gap-4 md:grid-cols-2">{BRAND.reviews.slice(0, 2).map((r) => <li key={r.name} className="dsp-glass rounded-3xl p-7"><div className="flex gap-1 text-[#83252C]" aria-label="5 out of 5 stars">{Array.from({ length: 5 }, (_, i) => <Star key={i} className="size-4 fill-current" />)}</div><h3 className="mt-3 font-heading text-2xl">{r.title}</h3><p className="mt-2 line-clamp-4 text-nero/70">{r.text}</p><p className="mt-4 text-sm font-semibold text-nero/90">{r.name}</p></li>)}</ul>
     </section>
 
     {/* FAQ */}
-    <section className="relative border-t border-white/10 bg-[#141212] py-20 md:py-24"><div className="mx-auto max-w-3xl px-5">
+    <section className="relative border-t border-nero/10 bg-[#FBF9F4] py-20 md:py-24"><div className="mx-auto max-w-3xl px-5">
       <p className="dsp-eyebrow">Good to know</p><h2 className="mt-4 font-heading text-4xl sm:text-5xl">Questions, answered</h2>
-      <Accordion type="single" collapsible className="mt-8">{FAQ.map(([q, a], i) => <AccordionItem key={q} value={`f${i}`} className="border-white/15"><AccordionTrigger className="text-left text-lg text-white hover:no-underline">{q}</AccordionTrigger><AccordionContent className="text-base text-white/70">{a}</AccordionContent></AccordionItem>)}</Accordion>
-      <p className="mt-8 text-sm text-white/60">Gifting a whole team? <Link to="/corporate/quote" className="text-[#E7B93B] underline underline-offset-4">Get an instant corporate quote</Link>.</p>
+      <Accordion type="single" collapsible className="mt-8">{FAQ.map(([q, a], i) => <AccordionItem key={q} value={`f${i}`} className="border-nero/15"><AccordionTrigger className="text-left text-lg text-nero hover:no-underline">{q}</AccordionTrigger><AccordionContent className="text-base text-nero/70">{a}</AccordionContent></AccordionItem>)}</Accordion>
+      <p className="mt-8 text-sm text-nero/60">Gifting a whole team? <Link to="/corporate/quote" className="text-[#83252C] underline underline-offset-4">Get an instant corporate quote</Link>.</p>
     </div></section>
 
     {/* Final CTA */}
-    <section className="relative overflow-hidden py-24 text-center"><div className="dsp-glow left-1/2 top-0 size-[32rem] -translate-x-1/2 bg-[#E7B93B]/20" aria-hidden />
-      <div className="relative mx-auto max-w-3xl px-5"><h2 className="font-heading text-5xl leading-tight sm:text-7xl">Ready? <span className="text-[#E7B93B]">The clock starts when you do.</span></h2>
-        <p className="mx-auto mt-5 max-w-xl text-white/65">Someone is about to feel truly seen. Let us help you make it a moment they never forget.</p>
-        <button type="button" onClick={onStart} className="dsp-btn dsp-btn-gold dsp-pulse mt-9"><Zap className="size-5" />Start the 60-second clock</button></div>
+    <section className="relative overflow-hidden py-24 text-center" style={{ background: "#E7B93B url(/brand/bow-tile-gold.svg) center / 150px repeat" }}>
+      <div className="relative mx-auto max-w-3xl px-5"><h2 className="font-heading text-5xl leading-tight sm:text-7xl">Ready? <span className="text-[#83252C]">The clock starts when you do.</span></h2>
+        <p className="mx-auto mt-5 max-w-xl text-nero/65">Someone is about to feel truly seen. Let us help you make it a moment they never forget.</p>
+        <button type="button" onClick={onStart} className="dsp-btn mt-9 bg-nero text-white shadow-[0_18px_36px_-16px_rgba(41,40,40,.8)] hover:-translate-y-0.5"><Zap className="size-5" />Start the 60-second clock</button></div>
     </section>
   </main>;
 }
