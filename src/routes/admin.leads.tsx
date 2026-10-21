@@ -3,12 +3,14 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
+import { formatNaira } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/leads")({ component: Leads });
 
 const STATUSES = [["new", "New"], ["contacted", "Contacted"], ["won", "Won"], ["lost", "Lost"]] as const;
 const KIND: Record<string, string> = { contact: "Contact", consultation: "Consultation", quote: "Quote" };
-interface Lead { id: string; ref: string; kind: string; name: string; email: string; phone: string | null; company: string | null; role: string | null; quantity: string | null; required_by: string | null; enquiry_type: string | null; message: string | null; status: string; created_at: string }
+interface QuoteDetails { estimate?: { total?: { low: number; high: number }; lines?: { label: string; detail?: string; low: number; high: number; negative?: boolean }[]; rush?: boolean }; crm?: { products?: { name: string }[]; branding?: string[]; delivery?: { mode?: string; locations?: string[] }; purpose?: string | null; budgetPerRecipient?: number } }
+interface Lead { id: string; ref: string; kind: string; name: string; email: string; phone: string | null; company: string | null; role: string | null; details: QuoteDetails | null; quantity: string | null; required_by: string | null; enquiry_type: string | null; message: string | null; status: string; created_at: string }
 
 function Leads() {
   const [rows, setRows] = useState<Lead[] | null>(null);
@@ -39,6 +41,10 @@ function Leads() {
         </div>
         <p className="mt-3 text-sm"><a className="underline" href={`mailto:${l.email}`}>{l.email}</a>{l.phone && <> · <a className="underline" href={`tel:${l.phone}`}>{l.phone}</a> · <a className="underline" href={`https://wa.me/${l.phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">WhatsApp</a></>}</p>
         {(l.quantity || l.required_by || l.enquiry_type) && <p className="mt-2 text-sm text-muted-foreground">{[l.enquiry_type, l.quantity && `Quantity: ${l.quantity}`, l.required_by && `Needed by ${l.required_by}`].filter(Boolean).join(" · ")}</p>}
+        {l.details?.estimate?.total && <div className="mt-3 rounded-md border border-gold/60 bg-[#FBF6E6] p-3 text-sm">
+          <p className="font-semibold">Estimate {formatNaira(Math.round(l.details.estimate.total.low))} to {formatNaira(Math.round(l.details.estimate.total.high))}{l.details.estimate.rush ? " (rush)" : ""}</p>
+          <p className="mt-1 text-muted-foreground">{[l.details.crm?.products?.map((p) => p.name).join(", "), l.details.crm?.branding?.length ? `Branding: ${l.details.crm.branding.join(", ")}` : null, l.details.crm?.delivery ? `Delivery: ${l.details.crm.delivery.mode}, ${(l.details.crm.delivery.locations ?? []).join(", ")}` : null, l.details.crm?.budgetPerRecipient ? `Budget ${formatNaira(l.details.crm.budgetPerRecipient)} each` : null].filter(Boolean).join(" · ")}</p>
+          <a className="mt-1 inline-block underline" href={`/corporate/quote/${l.ref}`} target="_blank" rel="noreferrer">Open full quote</a></div>}
         {l.message && <p className="mt-3 whitespace-pre-wrap rounded-md bg-[#F7F4EC] p-3 text-sm">{l.message}</p>}
       </article>)}
     </div>

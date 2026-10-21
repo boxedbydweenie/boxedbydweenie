@@ -1,3 +1,4 @@
+import { callLeads } from "@/lib/api";
 import { createStore } from "@/lib/store";
 import {
   BRANDING, CURATE_RANGE, DELIVERY_FEES, EXPRESS_SURCHARGE_PERCENT, QUOTE_VALIDITY_DAYS,
@@ -74,34 +75,44 @@ export async function submitQuote(request: QuoteRequest): Promise<Quote> {
   const estimate = await calculateEstimate(request);
   const now = new Date();
   const valid = new Date(now); valid.setDate(valid.getDate() + QUOTE_VALIDITY_DAYS);
-  const seq = quotesStore.get().length + 1;
-  const ref = `BBD-Q-${now.getFullYear()}-${String(seq).padStart(4, "0")}`;
-  const crm = {
-    source: "website-quote-builder",
-    reference: ref,
-    submittedAt: now.toISOString(),
-    contact: request.contact,
-    purpose: request.purpose,
-    quantity: request.quantity,
-    budgetPerRecipient: request.budget,
-    products: request.selections.map((id) => (id === "curate" ? { id, name: "Curate it for me" } : { id, name: getProductById(id)?.name ?? id })),
-    branding: request.branding,
-    logoFileName: request.logoFileName,
-    delivery: { mode: request.deliveryMode, locations: request.locations, requiredBy: request.requiredBy, rush: estimate.rush, recipientListFileName: request.recipientListFileName },
-    estimate: { lines: estimate.lines, totalLow: estimate.total.low, totalHigh: estimate.total.high, currency: "NGN" },
+  const build = (ref: string): Quote => {
+    const crm = {
+      source: "website-quote-builder", reference: ref, submittedAt: now.toISOString(), contact: request.contact, purpose: request.purpose,
+      quantity: request.quantity, budgetPerRecipient: request.budget,
+      products: request.selections.map((id) => (id === "curate" ? { id, name: "Curate it for me" } : { id, name: getProductById(id)?.name ?? id })),
+      branding: request.branding, logoFileName: request.logoFileName,
+      delivery: { mode: request.deliveryMode, locations: request.locations, requiredBy: request.requiredBy, rush: estimate.rush, recipientListFileName: request.recipientListFileName },
+      estimate: { lines: estimate.lines, totalLow: estimate.total.low, totalHigh: estimate.total.high, currency: "NGN" },
+    };
+    return { ref, createdAt: iso(now), validUntil: iso(valid), status: "Estimate", request, estimate, crm };
   };
-  const quote: Quote = { ref, createdAt: iso(now), validUntil: iso(valid), status: "Estimate", request, estimate, crm };
+  // Saved on the server so the team sees it in the admin and the link works on any device.
+  const c = request.contact;
+  const res = await callLeads<{ reference: string }>({
+    kind: "quote", name: c.name, email: c.email, phone: c.phone, company: c.company, role: c.role, message: c.notes,
+    quantity: String(request.quantity), requiredBy: request.requiredBy || undefined,
+    quote: build("pending"),
+  });
+  const quote = build(res.reference);
   quotesStore.set([...quotesStore.get(), quote]);
   draftStore.set(null);
-  await new Promise((r) => setTimeout(r, 600));
   return quote;
 }
 
-export const getQuote = async (ref: string) => quotesStore.get().find((q) => q.ref === ref) ?? null;
+export async function getQuote(ref: string): Promise<Quote | null> {
+  const local = quotesStore.get().find((q) => q.ref === ref);
+  if (local) return local;
+  try {
+    const r = await callLeads<{ quote: Quote | null }>({ action: "get-quote", ref });
+    return r.quote ?? null;
+  } catch { return null; }
+}
 
 export async function emailQuote(ref: string, email: string) {
-  await new Promise((r) => setTimeout(r, 500));
-  return { ok: true, message: `We will send quote ${ref} to ${email}.` };
+  try {
+    const r = await callLeads<{ sent: boolean }>({ action: "email-quote", ref, email });
+    return { ok: true, message: r.sent ? `We have emailed quote ${ref} to ${email}.` : `Your quote ${ref} is saved and our team has it. Copy this page's link to share it.` };
+  } catch { return { ok: false, message: "We could not send that email. Please try again." }; }
 }
 
 export async function saveDraft(step: number, request: QuoteRequest) {

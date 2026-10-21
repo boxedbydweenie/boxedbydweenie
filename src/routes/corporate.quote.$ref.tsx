@@ -88,8 +88,8 @@ function QuoteResult() {
     return () => clearTimeout(t);
   }, [ref]);
 
-  if (quote === undefined || (quote && !revealed)) return <SiteShell><main className="surface-dark flex min-h-[70vh] flex-col items-center justify-center gap-6 px-5 text-center">{quote ? <><BowTie className="h-28 w-40" /><p className="eyebrow text-gold">Boxing your quote</p></> : <BowLoader label="Loading your quote" />}</main></SiteShell>;
-  if (!quote) return <SiteShell><main className="bg-paper px-5 py-24 text-center"><h1 className="text-3xl">We could not find that quote</h1><p className="mt-4 text-muted-foreground">Quotes are saved on the device that created them. Build a new one in two minutes.</p><Button asChild className="mt-8"><Link to="/corporate/quote">Build a quote</Link></Button></main></SiteShell>;
+  if (quote === undefined || (quote && !revealed)) return <SiteShell><main className="brand-pattern-green text-on-dark flex min-h-[70vh] flex-col items-center justify-center gap-6 px-5 text-center">{quote ? <><BowTie className="h-28 w-40" /><p className="eyebrow text-gold">Boxing your quote</p></> : <BowLoader label="Loading your quote" />}</main></SiteShell>;
+  if (!quote) return <SiteShell><main className="bg-paper px-5 py-24 text-center"><h1 className="text-3xl">We could not find that quote</h1><p className="mt-4 text-muted-foreground">Check the link you were given, or build a new one in two minutes.</p><Button asChild className="mt-8"><Link to="/corporate/quote">Build a quote</Link></Button></main></SiteShell>;
 
   const q = quote;
   const wa = `${WHATSAPP}?text=${encodeURIComponent(`Hello, I have a question about quote ${q.ref}.`)}`;
@@ -98,9 +98,9 @@ function QuoteResult() {
   const edit = async () => { await saveDraft(0, q.request); };
 
   return <SiteShell><main className="bg-paper print:hidden">
-    <section className="surface-dark"><div className="mx-auto max-w-5xl px-5 py-12">
+    <section className="brand-pattern-navy text-on-dark"><div className="mx-auto max-w-5xl px-5 py-14 md:py-16">
       <div className="flex flex-wrap items-center gap-3"><Eyebrow dark>Your quote</Eyebrow><span className="rounded-sm bg-gold px-2 py-1 text-[10px] font-bold uppercase text-nero">{q.status}</span></div>
-      <h1 className="mt-4 text-3xl text-on-dark md:text-5xl">{q.ref}</h1>
+      <h1 className="mt-4 text-3xl text-on-dark md:text-5xl">Your quote <span className="text-gold">{q.ref}</span></h1>
       <p className="mt-3 text-on-dark-muted">Created {longDate(q.createdAt)} · Valid until {longDate(q.validUntil)}</p>
       <p className="mt-6 text-2xl font-bold text-on-dark">{fmtRange(q.estimate.total)}</p>
     </div></section>
@@ -109,7 +109,7 @@ function QuoteResult() {
       <div>
         <div className="flex flex-wrap gap-3">
           <Button size="lg" onClick={() => window.print()}><Download />Download PDF quote</Button>
-          <LoadingButton size="lg" variant="outline" loading={emailing} onClick={async () => { setEmailing(true); const r = await emailQuote(q.ref, q.request.contact.email); setEmailing(false); toast.success(r.message); }}><Mail />Email me this quote</LoadingButton>
+          <LoadingButton size="lg" variant="outline" loading={emailing} onClick={async () => { setEmailing(true); const r = await emailQuote(q.ref, q.request.contact.email); setEmailing(false); (r.ok ? toast.success : toast.error)(r.message); }}><Mail />Email me this quote</LoadingButton>
           <Button asChild size="lg" variant="outline"><a href={book} target="_blank" rel="noreferrer"><CalendarClock />Book a call</a></Button>
         </div>
         <div className="mt-4 flex flex-wrap gap-1">

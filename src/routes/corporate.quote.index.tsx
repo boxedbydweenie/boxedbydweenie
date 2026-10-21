@@ -129,10 +129,10 @@ function QuoteBuilder() {
   const panel = <EstimatePanel estimate={estimate} error={estimateError} onSave={saveLater} quantity={req.quantity} />;
 
   return <SiteShell><main className="bg-paper pb-28 lg:pb-0">
-    <section className="surface-dark relative overflow-hidden"><div className="pattern-leaf absolute inset-0 opacity-[0.04]" />
+    <section className="brand-pattern-green relative overflow-hidden text-on-dark">
       <div className="relative mx-auto max-w-7xl px-5 py-12 md:py-16">
         <Eyebrow dark>Instant quote</Eyebrow><GoldRule className="mt-4" />
-        <h1 className="mt-5 text-3xl text-on-dark md:text-5xl">Build your corporate gift quote</h1>
+        <h1 className="mt-5 text-4xl text-on-dark md:text-6xl">Build your corporate <span className="text-gold">gift quote</span></h1>
         <p className="mt-4 max-w-2xl text-on-dark-muted">See a live estimate as you go. Share your details at the end for a formal PDF quote and a dedicated gifting consultant.</p>
       </div>
     </section>
