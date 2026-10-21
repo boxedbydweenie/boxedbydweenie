@@ -1,0 +1,61 @@
+/* Profile-inspired components: numbered orbs, stat badges, pills, logo wall, brand-colour cards. */
+
+.pill { display: inline-flex; align-items: center; min-height: 2rem; padding: .25rem .9rem; border-radius: 999px; font-size: .75rem; font-weight: 600; letter-spacing: .04em; color: var(--nero); }
+.pill-gold { background: var(--gold); }
+.pill-coral { background: var(--coral); }
+.pill-sage { background: var(--sage); }
+.pill-ivory { background: var(--ivory); }
+
+/* Numbered orb: 01–07 */
+.orb { display: inline-flex; align-items: center; justify-content: center; width: 3.25rem; height: 3.25rem; border-radius: 999px; background: var(--gold); color: var(--nero); font-family: var(--font-heading); font-size: 1.25rem; font-weight: 500; flex: none; }
+.orb-dark { background: var(--nero); color: var(--gold); box-shadow: 0 0 0 1px color-mix(in oklab, var(--gold) 50%, transparent); }
+
+/* Stat badges connected by a thin gold line */
+.stat-line { position: relative; display: grid; gap: 2.5rem; justify-items: center; }
+@media (min-width: 768px) { .stat-line { grid-template-columns: repeat(3, 1fr); } .stat-line::before { content: ""; position: absolute; left: 10%; right: 10%; top: 50%; height: 1px; background: color-mix(in oklab, var(--gold) 55%, transparent); } }
+.stat-orb { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 13rem; height: 13rem; border-radius: 999px; text-align: center; padding: 1rem; transition: transform 500ms cubic-bezier(.2,.7,.2,1); }
+.stat-orb:hover { transform: translateY(-6px) scale(1.03); }
+.stat-orb b { font-family: var(--font-heading); font-weight: 500; font-size: 3.25rem; line-height: 1; }
+.stat-orb span { margin-top: .5rem; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; max-width: 9rem; }
+.stat-gold { background: var(--gold); color: var(--nero); }
+.stat-ivory { background: var(--ivory); color: var(--nero); }
+.stat-sage { background: var(--sage); color: var(--nero); }
+
+/* Client logo wall: white panel, as in the company profile */
+.logo-wall { background: #fff; border-radius: .25rem; padding: clamp(1.25rem, 4vw, 3rem); display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.75rem 1rem; align-items: center; box-shadow: 0 30px 60px -30px rgba(0,0,0,.55); }
+@media (min-width: 640px) { .logo-wall { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1024px) { .logo-wall { grid-template-columns: repeat(7, 1fr); } }
+.logo-wall li { display: flex; align-items: center; justify-content: center; height: 4.25rem; }
+.logo-wall img { max-height: 3.25rem; max-width: 100%; width: auto; object-fit: contain; transition: transform 400ms ease; mix-blend-mode: multiply; }
+.logo-wall li:hover img { transform: scale(1.1); }
+
+/* Brand-colour cards (What we do) */
+.tone-card { --fg: #fff; --fg-muted: rgba(255,255,255,.78); --accent: var(--gold); position: relative; overflow: hidden; display: flex; flex-direction: column; min-height: 17rem; padding: 1.75rem; border-radius: .25rem; color: var(--fg); background-color: var(--bg); background-image: var(--img, none); background-size: var(--size, 160px); transition: transform 500ms cubic-bezier(.2,.7,.2,1), box-shadow 500ms ease; }
+.tone-card:hover { transform: translateY(-6px); box-shadow: 0 24px 40px -22px rgba(0,0,0,.6); }
+.tone-card h3 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 500; line-height: 1.15; color: var(--accent); margin-top: 1.5rem; }
+.tone-card p { margin-top: .75rem; color: var(--fg-muted); font-size: .9rem; line-height: 1.55; flex: 1; }
+.tone-card .go { margin-top: 1.25rem; font-size: .7rem; letter-spacing: .22em; text-transform: uppercase; font-weight: 700; color: var(--accent); display: inline-flex; gap: .4rem; align-items: center; }
+.tone-forest { --bg: var(--forest); --img: url("/brand/pattern-green.svg"); --size: 380px; }
+.tone-navy { --bg: var(--navy); --img: url("/brand/pattern-navy.svg"); --size: cover; }
+.tone-plum { --bg: var(--plum); --img: url("/brand/pattern-plum.svg"); --size: cover; }
+.tone-oxblood { --bg: var(--oxblood); --img: url("/brand/pattern-oxblood.svg"); --size: 280px; }
+.tone-beige { --bg: var(--beige); --img: url("/brand/bow-tile-beige.svg"); --size: 72px; }
+.tone-nero { --bg: var(--nero); --img: url("/brand/pattern-black.png"); --size: 143px; }
+.tone-coral { --bg: var(--coral); --fg: var(--nero); --fg-muted: #3d2420; --accent: var(--nero); }
+.tone-sage { --bg: var(--sage); --fg: var(--nero); --fg-muted: #24352d; --accent: var(--nero); }
+.tone-card.tone-coral .orb, .tone-card.tone-sage .orb { background: var(--nero); color: var(--gold); }
+
+/* Large faint bow watermark */
+.bow-watermark { position: absolute; pointer-events: none; background: url("/brand/bow-black.svg") center / contain no-repeat; opacity: .05; }
+.on-dark .bow-watermark, .bow-watermark.light { background-image: url("/brand/bow-ivory.svg"); opacity: .06; }
+
+/* Process timeline */
+.timeline { position: relative; display: grid; gap: 2rem; counter-reset: s; }
+@media (min-width: 1024px) { .timeline { grid-template-columns: repeat(6, 1fr); } .timeline::before { content: ""; position: absolute; left: 0; right: 0; top: 2.5rem; height: 2px; background: var(--nero); } }
+.timeline li { position: relative; }
+.timeline .orb { width: 5rem; height: 5rem; font-size: 1.75rem; background: var(--nero); color: var(--gold); position: relative; z-index: 1; }
+
+
+/* Hero headline word rise */
+.rise > span { display: inline-block; animation: mask-up 800ms cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--d, 0) * 90ms); }
+.rise { display: block; overflow: hidden; padding-bottom: .1em; }

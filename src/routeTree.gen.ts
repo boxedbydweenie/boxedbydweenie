@@ -12,17 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
-import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DeliveryAndReturnsRouteImport } from './routes/delivery-and-returns'
-import { Route as DeliveryReturnsRouteImport } from './routes/delivery-returns'
 import { Route as DispenserRouteImport } from './routes/dispenser'
-import { Route as GiftCalendarRouteImport } from './routes/gift-calendar'
 import { Route as GiftCardsRouteImport } from './routes/gift-cards'
-import { Route as LookBookRouteImport } from './routes/look-book'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as SearchRouteImport } from './routes/search'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CalendarIndexRouteImport } from './routes/calendar.index'
 import { Route as CalendarOccasionRouteImport } from './routes/calendar.$occasion'
@@ -57,11 +52,6 @@ const AccountRoute = AccountRouteImport.update({
   path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CartRoute = CartRouteImport.update({
-  id: '/cart',
-  path: '/cart',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
@@ -77,19 +67,9 @@ const DeliveryAndReturnsRoute = DeliveryAndReturnsRouteImport.update({
   path: '/delivery-and-returns',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DeliveryReturnsRoute = DeliveryReturnsRouteImport.update({
-  id: '/delivery-returns',
-  path: '/delivery-returns',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DispenserRoute = DispenserRouteImport.update({
   id: '/dispenser',
   path: '/dispenser',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GiftCalendarRoute = GiftCalendarRouteImport.update({
-  id: '/gift-calendar',
-  path: '/gift-calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GiftCardsRoute = GiftCardsRouteImport.update({
@@ -97,19 +77,9 @@ const GiftCardsRoute = GiftCardsRouteImport.update({
   path: '/gift-cards',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LookBookRoute = LookBookRouteImport.update({
-  id: '/look-book',
-  path: '/look-book',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SearchRoute = SearchRouteImport.update({
-  id: '/search',
-  path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -207,17 +177,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
-  '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/delivery-and-returns': typeof DeliveryAndReturnsRoute
-  '/delivery-returns': typeof DeliveryReturnsRoute
   '/dispenser': typeof DispenserRoute
-  '/gift-calendar': typeof GiftCalendarRoute
   '/gift-cards': typeof GiftCardsRoute
-  '/look-book': typeof LookBookRoute
   '/privacy': typeof PrivacyRoute
-  '/search': typeof SearchRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
@@ -241,17 +206,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
-  '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/delivery-and-returns': typeof DeliveryAndReturnsRoute
-  '/delivery-returns': typeof DeliveryReturnsRoute
   '/dispenser': typeof DispenserRoute
-  '/gift-calendar': typeof GiftCalendarRoute
   '/gift-cards': typeof GiftCardsRoute
-  '/look-book': typeof LookBookRoute
   '/privacy': typeof PrivacyRoute
-  '/search': typeof SearchRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
@@ -276,17 +236,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
-  '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/delivery-and-returns': typeof DeliveryAndReturnsRoute
-  '/delivery-returns': typeof DeliveryReturnsRoute
   '/dispenser': typeof DispenserRoute
-  '/gift-calendar': typeof GiftCalendarRoute
   '/gift-cards': typeof GiftCardsRoute
-  '/look-book': typeof LookBookRoute
   '/privacy': typeof PrivacyRoute
-  '/search': typeof SearchRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
@@ -312,17 +267,12 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
-    | '/cart'
     | '/checkout'
     | '/contact'
     | '/delivery-and-returns'
-    | '/delivery-returns'
     | '/dispenser'
-    | '/gift-calendar'
     | '/gift-cards'
-    | '/look-book'
     | '/privacy'
-    | '/search'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
@@ -346,17 +296,12 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
-    | '/cart'
     | '/checkout'
     | '/contact'
     | '/delivery-and-returns'
-    | '/delivery-returns'
     | '/dispenser'
-    | '/gift-calendar'
     | '/gift-cards'
-    | '/look-book'
     | '/privacy'
-    | '/search'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
@@ -380,17 +325,12 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
-    | '/cart'
     | '/checkout'
     | '/contact'
     | '/delivery-and-returns'
-    | '/delivery-returns'
     | '/dispenser'
-    | '/gift-calendar'
     | '/gift-cards'
-    | '/look-book'
     | '/privacy'
-    | '/search'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
@@ -415,17 +355,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
-  CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
   DeliveryAndReturnsRoute: typeof DeliveryAndReturnsRoute
-  DeliveryReturnsRoute: typeof DeliveryReturnsRoute
   DispenserRoute: typeof DispenserRoute
-  GiftCalendarRoute: typeof GiftCalendarRoute
   GiftCardsRoute: typeof GiftCardsRoute
-  LookBookRoute: typeof LookBookRoute
   PrivacyRoute: typeof PrivacyRoute
-  SearchRoute: typeof SearchRoute
   TermsRoute: typeof TermsRoute
   CalendarOccasionRoute: typeof CalendarOccasionRoute
   LookbookEditionRoute: typeof LookbookEditionRoute
@@ -469,13 +404,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cart': {
-      id: '/cart'
-      path: '/cart'
-      fullPath: '/cart'
-      preLoaderRoute: typeof CartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/checkout': {
       id: '/checkout'
       path: '/checkout'
@@ -497,25 +425,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeliveryAndReturnsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/delivery-returns': {
-      id: '/delivery-returns'
-      path: '/delivery-returns'
-      fullPath: '/delivery-returns'
-      preLoaderRoute: typeof DeliveryReturnsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/dispenser': {
       id: '/dispenser'
       path: '/dispenser'
       fullPath: '/dispenser'
       preLoaderRoute: typeof DispenserRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gift-calendar': {
-      id: '/gift-calendar'
-      path: '/gift-calendar'
-      fullPath: '/gift-calendar'
-      preLoaderRoute: typeof GiftCalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gift-cards': {
@@ -525,25 +439,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GiftCardsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/look-book': {
-      id: '/look-book'
-      path: '/look-book'
-      fullPath: '/look-book'
-      preLoaderRoute: typeof LookBookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search': {
-      id: '/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -679,17 +579,12 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
-  CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
   DeliveryAndReturnsRoute: DeliveryAndReturnsRoute,
-  DeliveryReturnsRoute: DeliveryReturnsRoute,
   DispenserRoute: DispenserRoute,
-  GiftCalendarRoute: GiftCalendarRoute,
   GiftCardsRoute: GiftCardsRoute,
-  LookBookRoute: LookBookRoute,
   PrivacyRoute: PrivacyRoute,
-  SearchRoute: SearchRoute,
   TermsRoute: TermsRoute,
   CalendarOccasionRoute: CalendarOccasionRoute,
   LookbookEditionRoute: LookbookEditionRoute,

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { IMAGES, type ImageKey } from "@/data/images";
-import { SHOW_SAMPLE_CHIPS } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 /** Fixed-ratio photo with a blurred preview while loading. Set `priority` only for the hero. */
@@ -18,10 +17,6 @@ export function Photo({ name, className, imgClassName, overlay, priority, sizes 
   </div>;
 }
 
-export function SampleChip({ show = true, dark }: { show?: boolean; dark?: boolean }) {
-  if (!SHOW_SAMPLE_CHIPS || !show) return null;
-  return <span className={cn("absolute right-4 top-4 z-10 rounded-sm border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.2em]", dark ? "border-line-dark bg-nero-soft text-on-dark" : "border-border bg-paper text-nero")}>Sample content</span>;
-}
 
 /** Fades sections marked `data-reveal` up as they enter the viewport, once. */
 export function useScrollReveal() {

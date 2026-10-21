@@ -23,7 +23,6 @@ export function CartDrawer() {
             <SummaryRows items={items} />
             <div className="mt-5 grid gap-2">
               <Button asChild size="lg" onClick={close}><Link to="/checkout">Checkout</Link></Button>
-              <Button asChild variant="outline" onClick={close}><Link to="/cart">View bag</Link></Button>
               <Button variant="ghost" onClick={close}>Keep shopping</Button>
             </div>
           </div>

@@ -2,6 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 @import "./styles/home.css";
+@import "./styles/brand.css";
 
 @custom-variant dark (&:is(.dark *));
 
