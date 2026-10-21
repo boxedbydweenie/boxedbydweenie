@@ -3,6 +3,7 @@
 @import "tw-animate-css";
 @import "./styles/home.css";
 @import "./styles/brand.css";
+@import "./styles/dispenser.css";
 
 @custom-variant dark (&:is(.dark *));
 

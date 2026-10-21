@@ -1,312 +1,305 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, RefreshCw, Shuffle, SlidersHorizontal, Store } from "lucide-react";
+import { ArrowLeft, ArrowRight, Baby, Briefcase, Cake, Check, Clock, Cpu, Crown, Gem, Gift, Heart, HeartHandshake, Home as HomeIcon, PartyPopper, RefreshCw, Shuffle, SlidersHorizontal, Smile, Sparkles, Star, Store, Timer, Truck, User, UserRound, Utensils, Wallet, Wand2, Zap } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { SiteShell } from "@/components/site/SiteShell";
-import { Button, LoadingButton } from "@/components/site/Brand";
+import { DispenserShell } from "@/components/site/DispenserShell";
+import { ExpressSheet } from "@/components/site/DispenserSend";
 import { PlaceholderTile } from "@/components/site/PlaceholderTile";
 import { BowTie } from "@/components/shop/BowTie";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
-import { Textarea } from "@/components/ui/textarea";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { DISPENSE_DURATION_MS, DISPENSER_BUDGETS, DISPENSER_OCCASIONS, DISPENSER_RECIPIENTS } from "@/config/dispenser";
-import { STATES, deliveryFeeFor, earliestDelivery, toIso } from "@/config/delivery";
-import { GIFT_NOTE_LIMIT, SAME_DAY_CUTOFF_HOUR } from "@/config/shop";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { DISPENSE_DURATION_MS, DISPENSER_BUDGETS, DISPENSER_IMPRESSIONS, DISPENSER_OCCASIONS, DISPENSER_RECIPIENTS, DISPENSER_TIMINGS, DISPENSER_VIBES } from "@/config/dispenser";
+import { earliestDelivery, toIso } from "@/config/delivery";
+import { BRAND } from "@/data/brand";
+import { formatStat } from "@/services/brand";
 import { formatDayMonth, formatNaira } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { getPicks, randomAnswers, type DispenserAnswers, type Pick } from "@/services/dispenser";
-import { startCheckout } from "@/services/orders";
 import type { Order, ShopProduct } from "@/types/shop";
 
-const searchSchema = z.object({
-  who: z.string().optional().catch(undefined),
-  occasion: z.string().optional().catch(undefined),
-  budget: z.string().optional().catch(undefined),
-});
+const opt = z.string().optional().catch(undefined);
+const searchSchema = z.object({ who: opt, occasion: opt, budget: opt, vibe: opt, impression: opt, timing: opt, start: z.coerce.boolean().optional().catch(undefined) });
 
 export const Route = createFileRoute("/dispenser")({
   validateSearch: (s) => searchSchema.parse(s),
   head: () => ({ meta: [
-    { title: "Gift Dispenser: Gift in 60 Seconds — Boxed by Dweenie" },
-    { name: "description", content: "Tell us three things and our Gift Dispenser serves three well-matched luxury gifts. Choose one and send it in under a minute." },
-    { property: "og:title", content: "Gift in 60 Seconds — Boxed by Dweenie" },
-    { property: "og:description", content: "Three taps, three beautifully matched gifts, sent in under a minute." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary_large_image" },
+    { title: "Gift Dispenser: A WOW gift in 60 seconds — Boxed by Dweenie" },
+    { name: "description", content: "Answer six thoughtful questions and our Gift Dispenser serves three hand-picked luxury gifts, matched to the person, the moment and the impression you want to leave. Send it in under a minute." },
+    { property: "og:title", content: "A WOW gift in 60 seconds — Boxed by Dweenie" },
+    { property: "og:description", content: "Six thoughtful questions. Three perfectly matched gifts. Sent before the minute is up." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }),
   component: DispenserPage,
 });
 
-type Phase = "intro" | "who" | "occasion" | "budget" | "dispensing" | "picks" | "done";
-const QUESTIONS = [
-  { key: "who" as const, title: "Who is it for?", options: DISPENSER_RECIPIENTS },
-  { key: "occasion" as const, title: "What is the occasion?", options: DISPENSER_OCCASIONS },
-  { key: "budget" as const, title: "What is your budget?", options: DISPENSER_BUDGETS },
+type QKey = "who" | "occasion" | "vibe" | "impression" | "budget" | "timing";
+type Phase = "intro" | QKey | "line" | "dispensing" | "picks" | "done";
+interface Q { key: QKey; kicker: string; title: string; sub: string; options: { slug: string; name: string; line?: string }[]; icons: Record<string, typeof Gift>; cols: string }
+const QUESTIONS: Q[] = [
+  { key: "who", kicker: "The person", title: "Who is this gift for?", sub: "The more we know about them, the better we choose.", options: DISPENSER_RECIPIENTS, cols: "sm:grid-cols-2",
+    icons: { her: Heart, him: User, couple: HeartHandshake, parent: UserRound, colleague: Briefcase, client: Crown, child: Baby, "someone-new": Sparkles } },
+  { key: "occasion", kicker: "The moment", title: "What are we celebrating?", sub: "Every occasion has its own kind of wow.", options: DISPENSER_OCCASIONS, cols: "sm:grid-cols-2",
+    icons: { birthday: Cake, anniversary: HeartHandshake, "thank-you": Smile, congratulations: PartyPopper, "new-baby": Baby, "get-well": Heart, "just-because": Sparkles, christmas: Gift } },
+  { key: "vibe", kicker: "Their taste", title: "What would make them light up?", sub: "Think about their weekend, their shelf, their favourite thing to receive.", options: DISPENSER_VIBES, cols: "sm:grid-cols-2",
+    icons: { pamper: Sparkles, tech: Cpu, feast: Utensils, home: HomeIcon, all: Wand2 } },
+  { key: "impression", kicker: "The impression", title: "How should they feel when they open it?", sub: "A great gift is remembered for the feeling, long after the contents.", options: DISPENSER_IMPRESSIONS, cols: "sm:grid-cols-2",
+    icons: { thoughtful: Heart, luxurious: Gem, fun: PartyPopper, professional: Briefcase } },
+  { key: "budget", kicker: "Your budget", title: "What feels right to spend?", sub: "We will never show you anything outside this range.", options: DISPENSER_BUDGETS, cols: "sm:grid-cols-2",
+    icons: { "under-25": Wallet, "25-50": Wallet, "50-100": Gem, "over-100": Crown } },
+  { key: "timing", kicker: "The clock", title: "When does it need to arrive?", sub: "We deliver nationwide, and same-day across Lagos.", options: DISPENSER_TIMINGS, cols: "sm:grid-cols-3",
+    icons: { today: Zap, soon: Truck, later: Clock } },
 ];
-const valid = (key: keyof DispenserAnswers, v?: string) => !!v && QUESTIONS.find((q) => q.key === key)!.options.some((o) => o.slug === v);
+const ORDER: Phase[] = ["who", "occasion", "vibe", "impression", "budget", "timing", "line"];
+const valid = (key: QKey, v?: string) => !!v && QUESTIONS.find((q) => q.key === key)!.options.some((o) => o.slug === v);
+const mmss = (s: number) => `0${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
-/* ---------- Machine ---------- */
+const FAQ: [string, string][] = [
+  ["Is it really 60 seconds?", "Yes. Six quick taps, one optional line for the card, and your three matches appear. Most people choose and pay inside a minute. There is a live clock so you can watch."],
+  ["How does the Dispenser choose?", "It looks at who the gift is for, the occasion, what would make them light up, the impression you want to leave, your budget and when it must arrive. Then it ranks our whole collection and serves your top pick, a crowd favourite and something different."],
+  ["What if I do not love the three picks?", "Tap Dispense again for a fresh set, change your answers, or browse every matching gift in the shop."],
+  ["Can I add a personal message?", "Yes. The last step lets you write a line for the card. We print it by hand-finished card and tuck it into the box."],
+  ["Where do you deliver and how fast?", "Same-day in Lagos for orders placed before 12 noon on eligible gifts, next-day in Lagos and Abuja, and two to three days to other states."],
+  ["Can I gift something to a whole team instead?", "Of course. For ten or more gifts, branded with your logo, use our instant corporate quote."],
+];
 
-function MachineWindow({ glow }: { glow: boolean }) {
-  return <svg viewBox="0 0 300 150" className="mx-auto block h-auto max-h-28 w-full sm:max-h-none" role="img" aria-label="Gift vending machine window with rows of gold-bowed boxes">
-    <defs>
-      <linearGradient id="foil" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#C79A26" /><stop offset=".5" stopColor="#F2D57E" /><stop offset="1" stopColor="#E7B93B" /></linearGradient>
-      <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#F4EFE5" stopOpacity=".10" /><stop offset=".5" stopColor="#F4EFE5" stopOpacity=".02" /><stop offset="1" stopColor="#F4EFE5" stopOpacity=".08" /></linearGradient>
-    </defs>
-    <rect x="1" y="1" width="298" height="148" rx="6" fill="#1f1e1e" stroke="url(#foil)" strokeWidth="1.5" />
-    {[0, 1, 2].map((row) => <g key={row}>
-      <line x1="12" x2="288" y1={48 + row * 46} y2={48 + row * 46} stroke="url(#foil)" strokeWidth=".8" opacity=".6" />
-      {[0, 1, 2, 3, 4].map((col) => {
-        const x = 22 + col * 54, y = 18 + row * 46;
-        const dark = (row + col) % 2 === 0;
-        return <g key={col} className={glow && row === 2 && col === 2 ? "opacity-30 transition-opacity duration-500" : ""}>
-          <rect x={x} y={y} width="36" height="28" rx="2" fill={dark ? "#292828" : "#F4EFE5"} stroke="url(#foil)" strokeWidth=".8" />
-          <rect x={x + 16} y={y} width="4" height="28" fill="url(#foil)" />
-          <path d={`M${x + 18} ${y + 2} q-9 -9 -12 -1 q3 6 12 1 q9 -9 12 -1 q-3 6 -12 1`} fill="none" stroke="url(#foil)" strokeWidth="1.2" />
-        </g>;
-      })}
-    </g>)}
-    <rect x="1" y="1" width="298" height="148" rx="6" fill="url(#glass)" />
-    <path d="M30 6 L70 6 L20 144 L6 144 Z" fill="#F4EFE5" opacity=".04" />
-  </svg>;
-}
-
-function TrayBox({ dropping }: { dropping: boolean }) {
-  return <div className={cn("relative mx-auto h-14 w-16", dropping ? "animate-box-drop" : "")} aria-hidden>
-    <div className="absolute inset-x-0 bottom-0 h-10 rounded-sm border border-gold/60 bg-nero" />
-    <div className="foil absolute bottom-0 left-1/2 h-10 w-1.5 -translate-x-1/2" />
-    <div className={cn("absolute left-1/2 top-0.5 h-5 w-7 -translate-x-full rounded-[50%_10%_50%_50%] border-2 border-gold", dropping && "animate-bow-untie-l")} />
-    <div className={cn("absolute left-1/2 top-0.5 h-5 w-7 rounded-[10%_50%_50%_50%] border-2 border-gold", dropping && "animate-bow-untie-r")} />
+function ClockRing({ seconds, size = 44 }: { seconds: number; size?: number }) {
+  const pct = Math.min(seconds, 60) / 60, c = 2 * Math.PI * 16, over = seconds >= 60;
+  return <div className="relative grid place-items-center" style={{ width: size, height: size }} role="timer" aria-label={`${seconds} seconds elapsed`}>
+    <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(255,255,255,.15)" strokeWidth="2.5" /><circle cx="20" cy="20" r="16" fill="none" stroke={over ? "#EB826C" : "#E7B93B"} strokeWidth="2.5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} style={{ transition: "stroke-dashoffset 1s linear" }} /></svg>
+    <span className="dsp-term text-[11px] font-semibold text-white">{seconds}s</span>
   </div>;
 }
-
-function Machine({ glow, dropping, hideWindowOnMobile, children }: { glow: boolean; dropping: boolean; hideWindowOnMobile?: boolean; children: React.ReactNode }) {
-  return <div data-feature="none" className="relative mx-auto w-full max-w-xl rounded-lg border border-gold/50 bg-nero p-3 shadow-brand sm:p-4">
-    <div className="foil absolute inset-x-6 top-0 h-px" />
-    <div className={cn(hideWindowOnMobile && "hidden sm:block")}><MachineWindow glow={glow} /></div>
-    <div className={cn("mt-3 rounded-md border border-line-dark bg-nero-soft p-4 transition-shadow duration-500 sm:p-5", glow && "border-gold animate-panel-glow")}>{children}</div>
-    <div className="mt-3 flex h-16 items-end sm:h-20 justify-center overflow-hidden rounded-md border border-line-dark bg-nero pb-2" aria-label="Collection tray">
-      {(dropping || glow) ? <TrayBox dropping={dropping} /> : <span className="eyebrow mb-4 text-on-dark-muted sm:mb-5">Collect here</span>}
-    </div>
-    <div className="mx-auto mt-2 h-1.5 w-2/3 rounded-full foil opacity-70" />
-  </div>;
-}
-
-function TimerRing({ seconds }: { seconds: number }) {
-  const pct = (seconds % 60) / 60;
-  const c = 2 * Math.PI * 16;
-  return <div className="pointer-events-none absolute right-4 top-4 flex size-12 items-center justify-center" aria-hidden>
-    <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90"><circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" className="text-line-dark" strokeWidth="2" /><circle cx="20" cy="20" r="16" fill="none" stroke="#E7B93B" strokeWidth="2" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} strokeLinecap="round" className="transition-[stroke-dashoffset] duration-1000 ease-linear" /></svg>
-    <span className="text-[10px] font-semibold text-on-dark-muted">{seconds}s</span>
-  </div>;
-}
-
-/* ---------- Page ---------- */
 
 function DispenserPage() {
   const search = Route.useSearch();
-  const startRef = useRef<number>(0);
+  const startRef = useRef(0);
   const [seconds, setSeconds] = useState(0);
+  const [running, setRunning] = useState(false);
   const [answers, setAnswers] = useState<Partial<DispenserAnswers>>(() => ({
-    ...(search.who && valid("who", search.who) ? { who: search.who } : {}),
-    ...(search.occasion && valid("occasion", search.occasion) ? { occasion: search.occasion } : {}),
-    ...(search.budget && valid("budget", search.budget) ? { budget: search.budget } : {}),
+    ...(valid("who", search.who) ? { who: search.who! } : {}), ...(valid("occasion", search.occasion) ? { occasion: search.occasion! } : {}),
+    ...(valid("budget", search.budget) ? { budget: search.budget! } : {}), ...(valid("vibe", search.vibe) ? { vibe: search.vibe! } : {}),
+    ...(valid("impression", search.impression) ? { impression: search.impression! } : {}), ...(valid("timing", search.timing) ? { timing: search.timing! } : {}),
   }));
-  const firstMissing = (a: Partial<DispenserAnswers>): Phase => (QUESTIONS.find((q) => !a[q.key])?.key ?? "dispensing");
-  const [phase, setPhase] = useState<Phase>(() => (Object.keys(answers).length ? firstMissing(answers) : "intro"));
+  const next = (a: Partial<DispenserAnswers>): Phase => (QUESTIONS.find((q) => !a[q.key])?.key ?? "line");
+  const [phase, setPhase] = useState<Phase>(() => (Object.keys(answers).length || search.start ? next(answers) : "intro"));
+  const [line, setLine] = useState("");
   const [round, setRound] = useState(0);
   const [result, setResult] = useState<{ picks: Pick[]; restocking: boolean } | null>(null);
   const [sending, setSending] = useState<ShopProduct | null>(null);
   const [order, setOrder] = useState<{ order: Order; seconds: number } | null>(null);
+  const [lineStep, setLineStep] = useState(0);
 
+  const begin = () => { startRef.current = Date.now(); setSeconds(0); setRunning(true); };
+  useEffect(() => { if (phase !== "intro" && !running && phase !== "done") begin(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
-    startRef.current = Date.now();
-    const t = setInterval(() => setSeconds(Math.floor((Date.now() - startRef.current) / 1000)), 1000);
+    if (!running) return;
+    const t = setInterval(() => setSeconds(Math.floor((Date.now() - startRef.current) / 1000)), 500);
     return () => clearInterval(t);
-  }, []);
+  }, [running]);
 
   const dispense = useCallback(async (a: DispenserAnswers, r: number) => {
-    setPhase("dispensing");
+    setPhase("dispensing"); setLineStep(0);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const [res] = await Promise.all([getPicks(a, r), new Promise((ok) => setTimeout(ok, reduce ? 500 : DISPENSE_DURATION_MS))]);
-    setResult(res);
-    setPhase("picks");
+    const [res] = await Promise.all([getPicks(a, r), new Promise((ok) => setTimeout(ok, reduce ? 600 : DISPENSE_DURATION_MS))]);
+    setResult(res); setPhase("picks");
   }, []);
 
   useEffect(() => {
-    if (phase === "dispensing" && !result && answers.who && answers.occasion && answers.budget) dispense(answers as DispenserAnswers, round);
-    // run once on mount when arriving with all answers
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (phase !== "dispensing") return;
+    const t = setInterval(() => setLineStep((n) => n + 1), 620);
+    return () => clearInterval(t);
+  }, [phase]);
 
-  const answer = (key: keyof DispenserAnswers, value: string) => {
-    const next = { ...answers, [key]: value };
-    setAnswers(next);
-    const idx = QUESTIONS.findIndex((q) => q.key === key);
-    const following = QUESTIONS.slice(idx + 1).find((q) => !next[q.key]);
-    if (following) setPhase(following.key);
-    else { setResult(null); dispense(next as DispenserAnswers, round); }
+  const start = () => { begin(); setPhase(next(answers)); };
+  const answer = (key: QKey, value: string) => {
+    const a = { ...answers, [key]: value };
+    setAnswers(a);
+    const following = QUESTIONS.slice(QUESTIONS.findIndex((q) => q.key === key) + 1).find((q) => !a[q.key]);
+    setPhase(following ? following.key : "line");
   };
-  const back = () => {
-    const idx = QUESTIONS.findIndex((q) => q.key === phase);
-    setPhase(idx > 0 ? QUESTIONS[idx - 1]!.key : "intro");
-  };
-  const surprise = () => { const a = randomAnswers(); setAnswers(a); setResult(null); dispense(a, round); };
-  const again = () => { const r = round + 1; setRound(r); setResult(null); dispense(answers as DispenserAnswers, r); };
-  const change = () => { setAnswers({}); setResult(null); setPhase("who"); };
-
+  const back = () => { const i = ORDER.indexOf(phase); if (i <= 0) { setPhase("intro"); setRunning(false); } else setPhase(ORDER[i - 1]!); };
+  const finishLine = () => { setResult(null); void dispense(answers as DispenserAnswers, round); };
+  const surprise = () => { const a = randomAnswers(); setAnswers(a); setResult(null); if (!running) begin(); void dispense(a, round); };
+  const again = () => { const r = round + 1; setRound(r); setResult(null); void dispense(answers as DispenserAnswers, r); };
+  const change = () => { setAnswers({}); setResult(null); setLine(""); setPhase("who"); };
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [phase]);
+
   const q = QUESTIONS.find((x) => x.key === phase);
-  const qIndex = QUESTIONS.findIndex((x) => x.key === phase);
+  const step = ORDER.indexOf(phase);
   const shopSearch = {
     ...(answers.occasion && answers.occasion !== "just-because" ? { occasion: answers.occasion } : {}),
     ...(answers.budget ? { budget: answers.budget } : {}),
     ...(() => { const m = DISPENSER_RECIPIENTS.find((r) => r.slug === answers.who)?.matches; return m && m.length === 1 ? { recipient: m[0] } : {}; })(),
   };
+  const inFlow = phase !== "intro";
 
-  return <SiteShell><main className="surface-dark brand-pattern-plum relative overflow-hidden">
-    <div className="pattern-leaf absolute inset-0 opacity-[0.04]" />
-    <TimerRing seconds={seconds} />
-    <div className="relative mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-10">
-      {phase !== "picks" && phase !== "done" && <Machine glow={phase === "dispensing"} dropping={phase === "dispensing"}>
-        {phase === "intro" && <div className="text-center">
-          <p className="eyebrow text-gold">Gift Dispenser</p>
-          <h1 className="mt-3 text-4xl text-on-dark sm:text-6xl">Gift in <span className="text-gold">60 seconds</span></h1>
-          <p className="mt-3 text-on-dark-muted">Tell us three things. We'll do the rest.</p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2"><Button size="lg" onClick={() => setPhase("who")}>Start</Button><Button size="lg" variant="outline" className="text-on-dark" onClick={surprise}><Shuffle />Surprise me</Button></div>
-        </div>}
+  return <DispenserShell clock={running && phase !== "done" ? <ClockRing seconds={seconds} /> : undefined}>
+    <div className="dsp-grid" aria-hidden />
+    {phase === "intro" && <Landing onStart={start} onSurprise={surprise} />}
 
-        {q && <div>
-          <div className="flex items-center justify-between">
-            <Button variant="ghost" size="icon" className="-ml-2 text-on-dark" onClick={back} aria-label="Back"><ArrowLeft /></Button>
-            <div className="flex gap-2" role="progressbar" aria-valuemin={1} aria-valuemax={3} aria-valuenow={qIndex + 1} aria-label={`Question ${qIndex + 1} of 3`}>{QUESTIONS.map((x, i) => <span key={x.key} className={cn("size-2.5 rounded-full transition-colors duration-300", i <= qIndex ? "bg-gold" : "bg-line-dark")} />)}</div>
-            <span className="w-11" />
-          </div>
-          <h2 className="mt-2 text-center text-lg text-on-dark sm:text-2xl">{q.title}</h2>
-          <div key={q.key} className={cn("mt-4 grid animate-rise-in gap-2 sm:gap-3", q.key === "budget" ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-2 sm:grid-cols-4")}>
-            {q.options.map((o) => <button key={o.slug} type="button" onClick={() => answer(q.key, o.slug)} aria-pressed={answers[q.key] === o.slug} className={cn("min-h-11 rounded-md border px-3 text-sm font-semibold transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold sm:min-h-14", answers[q.key] === o.slug ? "border-gold bg-gold text-nero" : "border-line-dark text-on-dark hover:border-gold")}>{o.name}</button>)}
-          </div>
-        </div>}
+    {inFlow && phase !== "picks" && phase !== "done" && <main className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-3xl flex-col justify-center px-5 py-10 sm:py-14">
+      <div className="dsp-glow -left-40 top-10 size-80 bg-[#E7B93B]/20" aria-hidden /><div className="dsp-glow -right-40 bottom-10 size-80 bg-[#83252C]/40" aria-hidden />
+      {phase !== "dispensing" && <div className="relative">
+        <div className="flex items-center gap-4">
+          <button type="button" onClick={back} aria-label="Back" className="grid size-11 shrink-0 place-items-center rounded-full border border-white/20 hover:border-[#E7B93B] hover:bg-white/5"><ArrowLeft className="size-5" /></button>
+          <div className="flex flex-1 gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={7} aria-valuenow={Math.max(step + 1, 1)} aria-label={`Step ${step + 1} of 7`}>{ORDER.map((o, i) => <span key={o} className={cn("dsp-seg", i < step && "on")}><i style={{ width: i < step ? "100%" : i === step ? "45%" : "0" }} /></span>)}</div>
+          <span className="dsp-term text-xs text-white/60">{step + 1}/7</span>
+        </div>
+      </div>}
 
-        {phase === "dispensing" && <div className="py-4 text-center" role="status" aria-live="polite"><p className="eyebrow text-gold">Dispensing</p><p className="mt-3 text-on-dark-muted">Choosing three gifts worth a wow.</p></div>}
-      </Machine>}
+      {q && <section key={q.key} className="relative mt-10" aria-labelledby="q-title">
+        <p className="dsp-eyebrow">{q.kicker}</p>
+        <h1 id="q-title" className="mt-3 font-heading text-4xl leading-[1.05] sm:text-6xl">{q.title}</h1>
+        <p className="mt-3 max-w-xl text-white/65">{q.sub}</p>
+        <div className={cn("mt-8 grid gap-3", q.cols)}>
+          {q.options.map((o, i) => { const Ic = q.icons[o.slug] ?? Gift;
+            return <button key={o.slug} type="button" onClick={() => answer(q.key, o.slug)} aria-pressed={answers[q.key] === o.slug} className="dsp-option" style={{ animationDelay: `${i * 55}ms` }}>
+              <span className="ico"><Ic className="size-5" /></span>
+              <span className="min-w-0"><span className="block text-base font-semibold">{o.name}</span>{o.line && <span className="block text-sm text-white/55">{o.line}</span>}</span>
+              <ArrowRight className="ml-auto size-4 shrink-0 text-white/30" />
+            </button>; })}
+        </div>
+      </section>}
 
-      {phase === "picks" && result && <section aria-labelledby="picks-title">
-        <div className="px-12 text-center"><p className="eyebrow text-gold">Freshly dispensed</p><h1 id="picks-title" className="mt-2 text-4xl text-on-dark sm:text-5xl">Your three <span className="text-gold">picks</span></h1>
-          {result.restocking && <p className="mt-3 text-sm text-on-dark-muted">The machine is restocking. Here are our bestsellers instead.</p>}</div>
-        <div className="-mx-4 mt-4 flex snap-x snap-mandatory sm:mt-6 gap-4 overflow-x-auto px-4 pb-3 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
+      {phase === "line" && <section className="relative mt-10" aria-labelledby="q-title">
+        <p className="dsp-eyebrow">The finishing touch</p>
+        <h1 id="q-title" className="mt-3 font-heading text-4xl leading-[1.05] sm:text-6xl">Write one line only <span className="text-[#E7B93B]">you</span> could write.</h1>
+        <p className="mt-3 max-w-xl text-white/65">A private joke, a memory, a thank you. We will place it on the card inside the box. Optional.</p>
+        <label htmlFor="line" className="sr-only">Line for the card</label>
+        <textarea id="line" value={line} onChange={(e) => setLine(e.target.value.slice(0, 160))} rows={3} placeholder="“Happy birthday. Still the person I call first.”" className="mt-6 w-full resize-none rounded-2xl border border-white/20 bg-white/5 p-5 text-lg text-white placeholder:text-white/35 focus:border-[#E7B93B] focus:outline-none" />
+        <p className="mt-2 text-right text-xs text-white/45">{line.length}/160</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <button type="button" onClick={finishLine} className="dsp-btn dsp-btn-gold dsp-pulse"><Zap className="size-5" />Dispense my gifts</button>
+          {line && <button type="button" onClick={() => { setLine(""); finishLine(); }} className="dsp-btn dsp-btn-line">Skip the card</button>}
+          {!line && <button type="button" onClick={finishLine} className="dsp-btn dsp-btn-line">Skip this</button>}
+        </div>
+      </section>}
+
+      {phase === "dispensing" && <section className="relative text-center" role="status" aria-live="polite">
+        <div className="dsp-glass dsp-scan relative mx-auto max-w-md overflow-hidden rounded-3xl p-6">
+          <div className="grid grid-cols-5 gap-2.5">{Array.from({ length: 15 }, (_, i) => <div key={i} className="dsp-cell" style={{ animationDelay: `${((i * 7) % 15) * 160}ms` }}><Gift className="size-4 text-[#E7B93B]/70" /></div>)}</div>
+        </div>
+        <p className="dsp-eyebrow mt-8">Dispensing</p>
+        <h1 className="mt-3 font-heading text-4xl sm:text-5xl">Choosing three gifts worth a <span className="text-[#E7B93B]">wow</span></h1>
+        <ul className="dsp-term mx-auto mt-6 max-w-sm space-y-2 text-left text-sm text-white/75">
+          {["Reading the person and the moment", "Scanning the collection for taste", "Weighing the impression you want", "Checking budget and delivery date", "Wrapping up your top three"].map((t, i) => <li key={t} className={cn("flex items-center gap-3 transition-opacity", lineStep > i ? "opacity-100" : "opacity-20")}><span className={cn("grid size-5 place-items-center rounded-full", lineStep > i + 0 ? "bg-[#E7B93B] text-nero" : "border border-white/30")}>{lineStep > i + 1 || (lineStep > i && i === 4) ? <Check className="size-3" /> : null}</span>{t}</li>)}
+        </ul>
+      </section>}
+    </main>}
+
+    {phase === "picks" && result && <main className="relative mx-auto max-w-6xl px-5 py-12 sm:py-16">
+      <div className="dsp-glow left-1/2 top-0 size-[30rem] -translate-x-1/2 bg-[#E7B93B]/15" aria-hidden />
+      <section aria-labelledby="picks-title" className="relative">
+        <div className="text-center"><p className="dsp-eyebrow">Freshly dispensed · {seconds}s</p>
+          <h1 id="picks-title" className="mt-3 font-heading text-5xl sm:text-7xl">Your three <span className="text-[#E7B93B]">picks</span></h1>
+          <p className="mx-auto mt-3 max-w-xl text-white/65">Chosen for {DISPENSER_RECIPIENTS.find((r) => r.slug === answers.who)?.name.toLowerCase() ?? "them"}{answers.occasion && answers.occasion !== "just-because" ? `, for ${DISPENSER_OCCASIONS.find((o) => o.slug === answers.occasion)?.name.toLowerCase()}` : ""}. Pick one and it is on its way.</p>
+          {result.restocking && <p className="mt-3 text-sm text-[#EB826C]">Nothing matched that budget exactly, so here are our bestsellers instead.</p>}</div>
+        <div className="-mx-5 mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
           {result.picks.map((p, i) => <PickCard key={p.product.id} pick={p} index={i} onSend={() => setSending(p.product)} />)}
         </div>
-        <div className="mt-3 grid grid-cols-3 gap-1 sm:mt-5 sm:flex sm:flex-wrap sm:justify-center sm:gap-2">
-          <Button variant="outline" size="sm" className="whitespace-normal text-on-dark" onClick={again}><RefreshCw />Dispense again</Button>
-          <Button variant="ghost" size="sm" className="whitespace-normal text-on-dark" onClick={change}><SlidersHorizontal />Change my answers</Button>
-          <Button asChild variant="ghost" size="sm" className="whitespace-normal text-on-dark"><Link to="/shop" search={shopSearch}><Store />See all matching gifts</Link></Button>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <button type="button" onClick={again} className="dsp-btn dsp-btn-line"><RefreshCw className="size-4" />Dispense again</button>
+          <button type="button" onClick={change} className="dsp-btn dsp-btn-line"><SlidersHorizontal className="size-4" />Change my answers</button>
+          <Link to="/shop" search={shopSearch} className="dsp-btn dsp-btn-line"><Store className="size-4" />See all matching gifts</Link>
         </div>
-      </section>}
+      </section>
+    </main>}
 
-      {phase === "done" && order && <section className="mx-auto max-w-lg py-6 text-center" aria-live="polite">
-        <BowTie />
-        <p className="eyebrow mt-6 text-gold">Sent</p>
-        <h1 className="mt-3 text-2xl text-on-dark sm:text-4xl">Done in {order.seconds} seconds</h1>
-        <p className="mt-4 text-on-dark-muted">Order <span className="font-semibold text-on-dark">{order.order.id}</span> is being boxed for {order.order.recipient.name}, arriving {formatDayMonth(order.order.recipient.deliveryDate)}.</p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3"><Button asChild><Link to="/order/$id" params={{ id: order.order.id }}>Track this order</Link></Button><Button variant="outline" className="text-on-dark" onClick={change}>Send another</Button></div>
-      </section>}
-    </div>
+    {phase === "done" && order && <main className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-lg flex-col items-center justify-center px-5 py-16 text-center" aria-live="polite">
+      <div className="dsp-glow left-1/2 top-1/4 size-80 -translate-x-1/2 bg-[#E7B93B]/25" aria-hidden />
+      <div className="relative"><BowTie /><p className="dsp-eyebrow mt-8">Sent</p>
+        <h1 className="mt-3 font-heading text-5xl sm:text-6xl">Done in <span className="text-[#E7B93B]">{order.seconds}</span> seconds</h1>
+        <p className="mt-4 text-white/70">Order <span className="font-semibold text-white">{order.order.id}</span> is being boxed for {order.order.recipient.name}, arriving {formatDayMonth(order.order.recipient.deliveryDate)}.</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3"><Link to="/order/$id" params={{ id: order.order.id }} className="dsp-btn dsp-btn-gold">Track this order</Link><button type="button" className="dsp-btn dsp-btn-line" onClick={() => { change(); begin(); }}>Send another</button></div></div>
+    </main>}
 
-    <ExpressSheet product={sending} onClose={() => setSending(null)} onDone={(o) => { setSending(null); setOrder({ order: o, seconds: Math.max(1, Math.round((Date.now() - startRef.current) / 1000)) }); setPhase("done"); window.scrollTo({ top: 0 }); }} />
-  </main></SiteShell>;
+    <ExpressSheet product={sending} initialNote={line} onClose={() => setSending(null)} onDone={(o) => { setSending(null); setOrder({ order: o, seconds: Math.max(1, Math.round((Date.now() - startRef.current) / 1000)) }); setRunning(false); setPhase("done"); window.scrollTo({ top: 0 }); }} />
+  </DispenserShell>;
 }
 
 function PickCard({ pick, index, onSend }: { pick: Pick; index: number; onSend: () => void }) {
   const p = pick.product;
   const earliest = earliestDelivery(p.sameDay);
   const today = earliest === toIso(new Date());
-  return <article className="flex w-[78vw] max-w-xs shrink-0 snap-center animate-slide-up-in flex-col rounded-md border border-line-dark bg-nero-soft p-3 md:w-auto md:max-w-none" style={{ animationDelay: `${index * 120}ms` }}>
-    <div className="relative"><PlaceholderTile label={p.name} className="aspect-[16/9] w-full md:aspect-[5/4]" /><span className="absolute left-2 top-2 rounded-sm bg-gold px-2 py-1 text-[10px] font-bold uppercase text-nero">{pick.label}</span></div>
-    <h3 className="mt-3 text-sm text-on-dark">{p.name}</h3>
-    <p className="mt-1 font-semibold text-on-dark">{formatNaira(p.price)}</p>
-    <ul className="mt-2 space-y-0.5 text-xs text-on-dark-muted">{p.inside.slice(0, 3).map((i) => <li key={i}>· {i}</li>)}</ul>
-    <p className="mt-2 text-xs text-gold">{today ? "Arrives today in Lagos" : `Arrives from ${formatDayMonth(earliest)}`}</p>
-    <Button className="mt-3 w-full" onClick={onSend}>Send this one</Button>
+  return <article className="dsp-pick dsp-glass flex w-[82vw] max-w-sm shrink-0 snap-center flex-col rounded-3xl p-4 md:w-auto md:max-w-none" style={{ animationDelay: `${index * 160}ms` }}>
+    <div className="relative overflow-hidden rounded-2xl"><PlaceholderTile label={p.name} className="aspect-[5/4] w-full" /><span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-[#E7B93B] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-nero">{index === 0 && <Star className="size-3" />}{pick.label}</span></div>
+    <h2 className="mt-4 font-heading text-2xl leading-tight">{p.name}</h2>
+    <p className="mt-1 text-xl font-semibold text-[#E7B93B]">{formatNaira(p.price)}</p>
+    {pick.reasons.length > 0 && <div className="mt-3 rounded-xl bg-white/5 p-3"><p className="dsp-eyebrow !text-[10px]">Why this one</p><ul className="mt-2 space-y-1.5 text-sm text-white/80">{pick.reasons.map((r) => <li key={r} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-[#E7B93B]" />{r}</li>)}</ul></div>}
+    <ul className="mt-3 space-y-0.5 text-xs text-white/55">{p.inside.slice(0, 3).map((i) => <li key={i}>· {i}</li>)}</ul>
+    <p className="mt-3 text-xs font-semibold text-[#E7B93B]">{today ? "Arrives today in Lagos" : `Arrives from ${formatDayMonth(earliest)}`}</p>
+    <div className="mt-auto flex gap-2 pt-4"><button type="button" onClick={onSend} className="dsp-btn dsp-btn-gold flex-1 !min-h-12">Send this one</button><Link to="/shop/$slug" params={{ slug: p.slug }} className="dsp-btn dsp-btn-line !min-h-12 !px-5" aria-label={`View ${p.name}`}>View</Link></div>
   </article>;
 }
 
-/* ---------- Express send ---------- */
+/* ---------------- Landing ---------------- */
 
-const PAYMENTS: { slug: Order["payment"]; name: string }[] = [{ slug: "card", name: "Card" }, { slug: "transfer", name: "Bank transfer" }, { slug: "ussd", name: "USSD" }];
-
-function ExpressSheet({ product, onClose, onDone }: { product: ShopProduct | null; onClose: () => void; onDone: (o: Order) => void }) {
-  const mobile = useIsMobile();
-  const [state, setState] = useState("Lagos");
-  const [date, setDate] = useState("");
-  const [payment, setPayment] = useState<Order["payment"]>("card");
-  const [note, setNote] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const todayIso = toIso(new Date());
-  const sameDayOk = !!product?.sameDay && state === "Lagos" && new Date().getHours() < SAME_DAY_CUTOFF_HOUR;
-  const earliest = sameDayOk ? todayIso : earliestDelivery(false);
-  useEffect(() => { if (product) { setDate(earliest); setError(""); setNote(""); } }, [product, earliest]);
-  const fee = deliveryFeeFor(state);
-  const total = (product?.price ?? 0) + fee;
-  const tomorrow = (() => { const d = new Date(); d.setDate(d.getDate() + 1); return toIso(d); })();
-
-  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!product) return;
-    const fd = new FormData(e.currentTarget);
-    const v = (k: string) => String(fd.get(k) ?? "").trim();
-    if (["r_name", "r_phone", "address", "c_email", "c_phone"].some((k) => !v(k)) || !date) return setError("Please complete every field marked as required.");
-    if (!z.string().email().safeParse(v("c_email")).success) return setError("Enter a valid email address.");
-    if (date < earliest) return setError(`The earliest delivery is ${formatDayMonth(earliest)}.`);
-    setError(""); setBusy(true);
-    try {
-      const { authorizationUrl } = await startCheckout({
-        items: [{ key: `disp-${product.id}`, kind: "product", productId: product.id, slug: product.slug, name: product.name, price: product.price, quantity: 1, packaging: "signature-black", ...(note.trim() ? { note: note.trim() } : {}), deliveryDate: date }],
-        sendTo: "someone",
-        recipient: { name: v("r_name"), phone: v("r_phone"), address: v("address"), state, area: state, deliveryDate: date, notes: "", surprise: true },
-        customer: { name: v("r_name"), email: v("c_email"), phone: v("c_phone") },
-      });
-      window.location.assign(authorizationUrl);
-    } catch (err) {
-      setBusy(false);
-      setError(err instanceof Error ? err.message : "We could not start your payment. Please try again.");
-    }
-  };
-
-  return <Sheet open={!!product} onOpenChange={(o) => !o && onClose()}>
-    <SheetContent side={mobile ? "bottom" : "right"} className={cn("overflow-y-auto bg-paper p-5 sm:p-6", mobile ? "max-h-[92vh] rounded-t-lg" : "w-full sm:max-w-md")}>
-      <SheetTitle>Send {product?.name}</SheetTitle>
-      <SheetDescription>{product && `${formatNaira(product.price)} · Signature Black Box`}</SheetDescription>
-      <form onSubmit={submit} className="mt-5 space-y-4" noValidate>
-        <div className="grid grid-cols-2 gap-3">
-          <F label="Recipient name" name="r_name" />
-          <F label="Recipient phone" name="r_phone" type="tel" />
-        </div>
-        <F label="Delivery address" name="address" />
-        <div><Label htmlFor="d-state">State</Label><Select value={state} onValueChange={setState}><SelectTrigger id="d-state" className="mt-1.5 min-h-11 bg-paper"><SelectValue /></SelectTrigger><SelectContent>{STATES.map((s) => <SelectItem key={s} value={s}>{s} · {formatNaira(deliveryFeeFor(s))}</SelectItem>)}</SelectContent></Select></div>
+function Landing({ onStart, onSurprise }: { onStart: () => void; onSurprise: () => void }) {
+  const chips = ["Who is it for?", "What are we celebrating?", "What would make them light up?", "How should they feel?", "What feels right to spend?", "When must it arrive?", "One line only you could write"];
+  return <main className="relative">
+    {/* Hero */}
+    <section className="relative overflow-hidden">
+      <div className="dsp-glow -left-32 top-20 size-96 bg-[#E7B93B]/20" aria-hidden /><div className="dsp-glow -right-24 top-40 size-96 bg-[#39243F]/70" aria-hidden />
+      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-16 pt-14 md:grid-cols-[1.1fr_.9fr] md:pb-24 md:pt-20">
         <div>
-          <Label htmlFor="d-date">Delivery date</Label>
-          <div className="mt-1.5 flex flex-wrap gap-2">
-            <button type="button" disabled={!sameDayOk} onClick={() => setDate(todayIso)} aria-pressed={date === todayIso} className={cn("min-h-11 rounded-full border px-4 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40", date === todayIso ? "border-nero bg-gold text-nero" : sameDayOk ? "border-gold" : "border-border")}>Today{sameDayOk ? "" : " (unavailable)"}</button>
-            <button type="button" onClick={() => setDate(tomorrow)} aria-pressed={date === tomorrow} className={cn("min-h-11 rounded-full border px-4 text-sm font-semibold", date === tomorrow ? "border-nero bg-gold text-nero" : "border-border")}>Tomorrow</button>
-            <Input id="d-date" type="date" min={earliest} value={date} onChange={(e) => setDate(e.target.value)} className="min-h-11 w-auto bg-paper" />
+          <p className="dsp-eyebrow inline-flex items-center gap-2 rounded-full border border-[#E7B93B]/30 bg-[#E7B93B]/10 px-4 py-2"><Timer className="size-3.5" />Gift Dispenser</p>
+          <h1 className="mt-6 font-heading text-[2.9rem] leading-[0.98] sm:text-7xl lg:text-[5.4rem]">A <span className="text-[#E7B93B]">wow</span> gift.<br />In 60 seconds.</h1>
+          <p className="mt-6 max-w-xl text-lg text-white/70">Answer a few thoughtful questions about the person, the moment and the impression you want to leave. Our dispenser serves three hand-picked luxury gifts. You choose, pay and send, before the minute is up.</p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <button type="button" onClick={onStart} className="dsp-btn dsp-btn-gold dsp-pulse"><Zap className="size-5" />Start the 60-second clock</button>
+            <button type="button" onClick={onSurprise} className="dsp-btn dsp-btn-line"><Shuffle className="size-4" />Surprise me</button>
+          </div>
+          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/60">{["Hand-wrapped", "Same-day Lagos", "Delivered nationwide"].map((t) => <li key={t} className="flex items-center gap-2"><Check className="size-4 text-[#E7B93B]" />{t}</li>)}</ul>
+        </div>
+        <div className="relative mx-auto w-full max-w-md" aria-hidden>
+          <div className="dsp-glass dsp-scan relative overflow-hidden rounded-[2rem] p-8">
+            <div className="absolute right-5 top-5"><ClockRing seconds={42} size={56} /></div>
+            <img src="/home/boxes-stack.webp" alt="" className="dsp-float mx-auto w-4/5 drop-shadow-[0_30px_40px_rgba(0,0,0,.6)]" />
+            <div className="dsp-term mt-4 flex items-center justify-between text-xs text-white/60"><span>MATCH 98%</span><span className="text-[#E7B93B]">● 3 GIFTS READY</span></div>
           </div>
         </div>
-        <div><Label htmlFor="d-note">Gift note</Label><Textarea id="d-note" maxLength={GIFT_NOTE_LIMIT} value={note} onChange={(e) => setNote(e.target.value)} className="mt-1.5 min-h-16 bg-paper" /><p className="mt-1 text-right text-xs text-muted-foreground">{note.length}/{GIFT_NOTE_LIMIT}</p></div>
-        <div className="grid grid-cols-2 gap-3"><F label="Your email" name="c_email" type="email" /><F label="Your phone" name="c_phone" type="tel" /></div>
-        <fieldset><legend className="text-sm font-medium">Payment</legend><div className="mt-1.5 grid grid-cols-3 gap-2">{PAYMENTS.map((p) => <label key={p.slug} className={cn("flex min-h-11 cursor-pointer items-center justify-center rounded-md border px-2 text-center text-xs font-semibold", payment === p.slug ? "border-nero bg-ivory" : "border-border")}><input type="radio" name="pay" className="sr-only" checked={payment === p.slug} onChange={() => setPayment(p.slug)} />{p.name}</label>)}</div><p className="mt-2 text-xs text-muted-foreground">The secure payment step will appear here.</p></fieldset>
-        <p className="text-sm text-muted-foreground">Gift {formatNaira(product?.price ?? 0)} + delivery {formatNaira(fee)}</p>
-        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-        <LoadingButton type="submit" size="lg" loading={busy} className="w-full">Pay {formatNaira(total)} and send</LoadingButton>
-      </form>
-    </SheetContent>
-  </Sheet>;
-}
+      </div>
+      <div className="relative border-y border-white/10 bg-white/[.03] py-4" aria-label="The questions we ask"><div className="overflow-hidden"><div className="dsp-marquee">{[...chips, ...chips].map((c, i) => <span key={i} className="dsp-chip">{c}</span>)}</div></div></div>
+    </section>
 
-function F({ label, name, type = "text" }: { label: string; name: string; type?: string }) {
-  return <div><Label htmlFor={`d-${name}`}>{label}</Label><Input id={`d-${name}`} name={name} type={type} required maxLength={200} className="mt-1.5 min-h-11 bg-paper" /></div>;
+    {/* Concept */}
+    <section className="relative mx-auto max-w-6xl px-5 py-20 md:py-28">
+      <p className="dsp-eyebrow">The idea</p>
+      <h2 className="mt-4 max-w-3xl font-heading text-4xl leading-tight sm:text-6xl">The best gifts prove you <span className="text-[#E7B93B]">paid attention.</span></h2>
+      <p className="mt-5 max-w-2xl text-lg text-white/65">Price does not make a gift memorable. Feeling understood does. So we do not just ask your budget. We ask about them, then do the hard part of choosing.</p>
+      <div className="mt-12 grid gap-5 md:grid-cols-3">
+        {[[Heart, "Chosen for them", "Their taste, the occasion and the feeling you want to create all shape the match. Never a random bestseller."], [Gem, "Luxury, wrapped by hand", "Every box is finished in our signature packaging, with a card in your own words."], [Truck, "Sent before you know it", "Same-day in Lagos on eligible gifts. Next-day in Lagos and Abuja. Nationwide in days."]].map(([Ic, t, d]) => { const I = Ic as typeof Heart; return <div key={t as string} className="dsp-glass rounded-3xl p-7"><span className="grid size-12 place-items-center rounded-2xl bg-[#E7B93B]/15 text-[#E7B93B]"><I className="size-6" /></span><h3 className="mt-5 font-heading text-2xl">{t as string}</h3><p className="mt-2 text-white/65">{d as string}</p></div>; })}
+      </div>
+    </section>
+
+    {/* How it works */}
+    <section className="relative border-y border-white/10 bg-[#141212] py-20 md:py-28"><div className="mx-auto max-w-6xl px-5">
+      <p className="dsp-eyebrow">How it works</p><h2 className="mt-4 font-heading text-4xl sm:text-6xl">Three steps. <span className="text-[#E7B93B]">One minute.</span></h2>
+      <ol className="mt-14 grid gap-10 md:grid-cols-3">
+        {[["01", "Tell us about them", "Six quick taps: who, the moment, their taste, the impression, budget and timing. Add one personal line if you like."], ["02", "The Dispenser matches", "We rank our whole collection against your answers and serve your top pick, a crowd favourite and something different, with the reason for each."], ["03", "Choose, pay, sent", "Pick one, confirm the delivery details and pay securely. We wrap it by hand and deliver it on your date."]].map(([n, t, d]) => <li key={n}>
+          <span className="dsp-step-num" aria-hidden>{n}</span><h3 className="mt-3 font-heading text-3xl">{t}</h3><p className="mt-3 text-white/65">{d}</p></li>)}
+      </ol>
+      <div className="mt-12"><button type="button" onClick={onStart} className="dsp-btn dsp-btn-gold">Try it now <ArrowRight className="size-4" /></button></div>
+    </div></section>
+
+    {/* Proof */}
+    <section className="relative mx-auto max-w-6xl px-5 py-20 md:py-28">
+      <p className="dsp-eyebrow">Trusted to make an impression</p><h2 className="mt-4 max-w-3xl font-heading text-4xl sm:text-6xl">Gifts people <span className="text-[#E7B93B]">keep talking about.</span></h2>
+      <div className="mt-10 grid gap-4 sm:grid-cols-3">{BRAND.stats.slice(0, 3).map((s) => <div key={s.label} className="dsp-glass rounded-3xl p-7"><p className="font-heading text-5xl text-[#E7B93B]">{formatStat(s)}</p><p className="mt-2 text-white/65">{s.label}</p></div>)}</div>
+      <ul className="mt-6 grid gap-4 md:grid-cols-2">{BRAND.reviews.slice(0, 2).map((r) => <li key={r.name} className="dsp-glass rounded-3xl p-7"><div className="flex gap-1 text-[#E7B93B]" aria-label="5 out of 5 stars">{Array.from({ length: 5 }, (_, i) => <Star key={i} className="size-4 fill-current" />)}</div><h3 className="mt-3 font-heading text-2xl">{r.title}</h3><p className="mt-2 line-clamp-4 text-white/70">{r.text}</p><p className="mt-4 text-sm font-semibold text-white/90">{r.name}</p></li>)}</ul>
+    </section>
+
+    {/* FAQ */}
+    <section className="relative border-t border-white/10 bg-[#141212] py-20 md:py-24"><div className="mx-auto max-w-3xl px-5">
+      <p className="dsp-eyebrow">Good to know</p><h2 className="mt-4 font-heading text-4xl sm:text-5xl">Questions, answered</h2>
+      <Accordion type="single" collapsible className="mt-8">{FAQ.map(([q, a], i) => <AccordionItem key={q} value={`f${i}`} className="border-white/15"><AccordionTrigger className="text-left text-lg text-white hover:no-underline">{q}</AccordionTrigger><AccordionContent className="text-base text-white/70">{a}</AccordionContent></AccordionItem>)}</Accordion>
+      <p className="mt-8 text-sm text-white/60">Gifting a whole team? <Link to="/corporate/quote" className="text-[#E7B93B] underline underline-offset-4">Get an instant corporate quote</Link>.</p>
+    </div></section>
+
+    {/* Final CTA */}
+    <section className="relative overflow-hidden py-24 text-center"><div className="dsp-glow left-1/2 top-0 size-[32rem] -translate-x-1/2 bg-[#E7B93B]/20" aria-hidden />
+      <div className="relative mx-auto max-w-3xl px-5"><h2 className="font-heading text-5xl leading-tight sm:text-7xl">Ready? <span className="text-[#E7B93B]">The clock starts when you do.</span></h2>
+        <p className="mx-auto mt-5 max-w-xl text-white/65">Someone is about to feel truly seen. Let us help you make it a moment they never forget.</p>
+        <button type="button" onClick={onStart} className="dsp-btn dsp-btn-gold dsp-pulse mt-9"><Zap className="size-5" />Start the 60-second clock</button></div>
+    </section>
+  </main>;
 }
