@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DeliveryAndReturnsRouteImport } from './routes/delivery-and-returns'
@@ -20,6 +21,10 @@ import { Route as GiftCardsRouteImport } from './routes/gift-cards'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminLeadsRouteImport } from './routes/admin.leads'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as CalendarIndexRouteImport } from './routes/calendar.index'
 import { Route as CalendarOccasionRouteImport } from './routes/calendar.$occasion'
 import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
@@ -51,6 +56,11 @@ const AboutRoute = AboutRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -92,6 +102,26 @@ const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLeadsRoute = AdminLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AdminRoute,
 } as any)
 const CalendarIndexRoute = CalendarIndexRouteImport.update({
   id: '/calendar/',
@@ -183,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/delivery-and-returns': typeof DeliveryAndReturnsRoute
@@ -191,11 +222,15 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/terms': typeof TermsRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
   '/secret-santa/new': typeof SecretSantaNewRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/calendar/': typeof CalendarIndexRoute
   '/corporate/': typeof CorporateIndexRoute
   '/lookbook/': typeof LookbookIndexRoute
@@ -221,11 +256,15 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/terms': typeof TermsRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
   '/secret-santa/new': typeof SecretSantaNewRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/admin': typeof AdminIndexRoute
   '/calendar': typeof CalendarIndexRoute
   '/corporate': typeof CorporateIndexRoute
   '/lookbook': typeof LookbookIndexRoute
@@ -244,6 +283,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/account': typeof AccountRoute
+  '/admin': typeof AdminRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
   '/delivery-and-returns': typeof DeliveryAndReturnsRoute
@@ -252,11 +292,15 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
   '/terms': typeof TermsRoute
+  '/admin/leads': typeof AdminLeadsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
   '/secret-santa/new': typeof SecretSantaNewRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/admin/': typeof AdminIndexRoute
   '/calendar/': typeof CalendarIndexRoute
   '/corporate/': typeof CorporateIndexRoute
   '/lookbook/': typeof LookbookIndexRoute
@@ -276,6 +320,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
+    | '/admin'
     | '/checkout'
     | '/contact'
     | '/delivery-and-returns'
@@ -284,11 +329,15 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/terms'
+    | '/admin/leads'
+    | '/admin/orders'
+    | '/admin/products'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
     | '/secret-santa/new'
     | '/shop/$slug'
+    | '/admin/'
     | '/calendar/'
     | '/corporate/'
     | '/lookbook/'
@@ -314,11 +363,15 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/terms'
+    | '/admin/leads'
+    | '/admin/orders'
+    | '/admin/products'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
     | '/secret-santa/new'
     | '/shop/$slug'
+    | '/admin'
     | '/calendar'
     | '/corporate'
     | '/lookbook'
@@ -336,6 +389,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/account'
+    | '/admin'
     | '/checkout'
     | '/contact'
     | '/delivery-and-returns'
@@ -344,11 +398,15 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/profile'
     | '/terms'
+    | '/admin/leads'
+    | '/admin/orders'
+    | '/admin/products'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
     | '/secret-santa/new'
     | '/shop/$slug'
+    | '/admin/'
     | '/calendar/'
     | '/corporate/'
     | '/lookbook/'
@@ -367,6 +425,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
+  AdminRoute: typeof AdminRouteWithChildren
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
   DeliveryAndReturnsRoute: typeof DeliveryAndReturnsRoute
@@ -415,6 +474,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -472,6 +538,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/leads': {
+      id: '/admin/leads'
+      path: '/leads'
+      fullPath: '/admin/leads'
+      preLoaderRoute: typeof AdminLeadsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/calendar/': {
       id: '/calendar/'
@@ -595,10 +689,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminLeadsRoute: typeof AdminLeadsRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminLeadsRoute: AdminLeadsRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminProductsRoute: AdminProductsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
+  AdminRoute: AdminRouteWithChildren,
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
   DeliveryAndReturnsRoute: DeliveryAndReturnsRoute,

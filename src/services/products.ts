@@ -1,16 +1,17 @@
 import { PRODUCTS } from "@/data/products";
 import { CATEGORIES, OCCASIONS, PRICE_BANDS, RECIPIENTS } from "@/config/shop";
+import { syncCatalogue } from "@/services/catalogue";
 import type { ShopFilters, ShopProduct } from "@/types/shop";
 
 const delay = <T,>(v: T, ms = 120) => new Promise<T>((r) => setTimeout(() => r(v), ms));
 
-export const getProducts = () => delay(PRODUCTS);
+export const getProducts = async () => { await syncCatalogue(); return delay([...PRODUCTS]); };
 
-export const getProductBySlug = (slug: string) => delay(PRODUCTS.find((p) => p.slug === slug) ?? null);
+export const getProductBySlug = async (slug: string) => { await syncCatalogue(); return delay(PRODUCTS.find((p) => p.slug === slug) ?? null); };
 
 export const getProductById = (id: string) => PRODUCTS.find((p) => p.id === id) ?? null;
 
-export const getBestsellers = (limit = 8) => delay([...PRODUCTS].sort((a, b) => a.featured - b.featured).slice(0, limit));
+export const getBestsellers = async (limit = 8) => { await syncCatalogue(); return delay([...PRODUCTS].sort((a, b) => a.featured - b.featured).slice(0, limit)); };
 
 export function filterProducts(list: ShopProduct[], f: ShopFilters): ShopProduct[] {
   const band = PRICE_BANDS.find((b) => b.slug === f.budget);
