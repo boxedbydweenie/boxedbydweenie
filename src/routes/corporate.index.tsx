@@ -60,8 +60,7 @@ function CorporatePage() {
     <section className="brand-pattern-navy relative overflow-hidden text-on-dark">
       <div className={`${WRAP} grid gap-14 py-16 md:py-24 lg:grid-cols-[1.15fr_.85fr] lg:items-center lg:py-32`}>
         <div>
-          <div className="flex flex-wrap gap-2.5"><span className="pill pill-gold">Corporate gifting</span><span className="pill pill-coral">Nationwide delivery</span><span className="pill pill-sage">Nigeria and the UK</span></div>
-          <h1 className="mt-8 text-[2.75rem] leading-[1.02] md:text-7xl">
+          <h1 className="text-[2.75rem] leading-[1.02] md:text-7xl">
             <span className="rise" style={{ "--d": 0 } as React.CSSProperties}><span>Welcome to the</span></span>
             <span className="rise text-gold" style={{ "--d": 1 } as React.CSSProperties}><span>premium way</span></span>
             <span className="rise" style={{ "--d": 2 } as React.CSSProperties}><span>to say thank you.</span></span>
@@ -71,7 +70,8 @@ function CorporatePage() {
             <Link to="/corporate/quote" className={btnGold}>Get an instant quote <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link>
             <a href="#consultation" className={btnLine}>Book a consultation</a>
           </div>
-          <p className="mt-6 text-sm text-on-dark-muted">Confirm your order by <b className="text-on-dark">20 November</b> for delivery before Christmas.</p>
+          <Link to="/profile" className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-on-dark underline decoration-gold underline-offset-4 hover:text-gold">Read our company profile online <ArrowRight className="size-4 text-gold" /></Link>
+          <p className="mt-4 text-sm text-on-dark-muted">Confirm your order by <b className="text-on-dark">20 November</b> for delivery before Christmas.</p>
         </div>
         <div className="relative mx-auto w-full max-w-md lg:max-w-none">
           <div aria-hidden className="absolute -inset-3 -translate-x-4 translate-y-4 border border-gold/60" />

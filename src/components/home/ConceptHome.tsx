@@ -3,6 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useRef } from "react";
 import type React from "react";
 import { useHomeMotion } from "./useHomeMotion";
+import { BRAND } from "@/data/brand";
+import { ClientWall, Label, StatBadges } from "@/components/brand/ProfileSections";
 
 export function ConceptHome() {
   const root = useRef<HTMLDivElement>(null);
@@ -133,10 +135,31 @@ export function ConceptHome() {
   </div>
 </section>
 
-<div className="logos" aria-label="Some of our clients">
-  <p className="eyebrow">Trusted by</p>
-  <div className="track"><img src="/home/clients-strip.png" alt="Client logos including Transcorp, FBNQuest, Sterling, Workforce and Loanbox" /><img src="/home/clients-strip.png" alt="" /></div>
-</div>
+<section className="brand-pattern-black" style={{padding:"96px 0"} as React.CSSProperties}>
+  <div className="wrap" style={{color:"#fff"} as React.CSSProperties}>
+    <Label dark center>Trusted by</Label>
+    <h2 className="big-h2" style={{textAlign:"center",marginTop:"28px",color:"var(--gold)",fontFamily:"var(--font-heading)"} as React.CSSProperties}>Over 5,000 boxes delivered to over 450 clients</h2>
+    <div style={{marginTop:"56px"} as React.CSSProperties}><StatBadges brand={BRAND} /></div>
+    <div style={{marginTop:"56px"} as React.CSSProperties}><ClientWall brand={BRAND} /></div>
+  </div>
+</section>
+
+<section className="brand-pattern-green" style={{padding:"96px 0",color:"#fff"} as React.CSSProperties}>
+  <div className="wrap" style={{display:"grid",gap:"48px",alignItems:"center"} as React.CSSProperties}>
+    <div className="profile-teaser">
+      <Link to="/profile" aria-label="Read the Boxed by Dweenie company profile" className="profile-book">
+        <img src="/profile/p01.webp" alt="" loading="lazy" />
+        <img src="/profile/p03.webp" alt="" loading="lazy" className="under" />
+      </Link>
+      <div>
+        <Label dark>Company profile</Label>
+        <h2 className="big-h2" style={{marginTop:"24px",color:"#fff",fontFamily:"var(--font-heading)"} as React.CSSProperties}>Happiness <span style={{color:"var(--gold)"} as React.CSSProperties}>In a Box</span></h2>
+        <p style={{marginTop:"18px",maxWidth:"34rem",color:"rgba(255,255,255,.78)",lineHeight:1.7} as React.CSSProperties}>Our story, our boxes, our clients and how we work with you. Turn the pages online.</p>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"12px",marginTop:"28px"} as React.CSSProperties}><Link className="btn btn-gold" to="/profile">Read the profile <span className="arr">→</span></Link><Link className="btn btn-line" to="/corporate/quote">Get an instant quote</Link></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section className="quotes pad">
   <div className="wrap q-wrap">

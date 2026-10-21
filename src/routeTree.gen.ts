@@ -18,6 +18,7 @@ import { Route as DeliveryAndReturnsRouteImport } from './routes/delivery-and-re
 import { Route as DispenserRouteImport } from './routes/dispenser'
 import { Route as GiftCardsRouteImport } from './routes/gift-cards'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CalendarIndexRouteImport } from './routes/calendar.index'
 import { Route as CalendarOccasionRouteImport } from './routes/calendar.$occasion'
@@ -80,6 +81,11 @@ const GiftCardsRoute = GiftCardsRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/dispenser': typeof DispenserRoute
   '/gift-cards': typeof GiftCardsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/dispenser': typeof DispenserRoute
   '/gift-cards': typeof GiftCardsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
@@ -242,6 +250,7 @@ export interface FileRoutesById {
   '/dispenser': typeof DispenserRoute
   '/gift-cards': typeof GiftCardsRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/terms': typeof TermsRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/dispenser'
     | '/gift-cards'
     | '/privacy'
+    | '/profile'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/dispenser'
     | '/gift-cards'
     | '/privacy'
+    | '/profile'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/dispenser'
     | '/gift-cards'
     | '/privacy'
+    | '/profile'
     | '/terms'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
@@ -361,6 +373,7 @@ export interface RootRouteChildren {
   DispenserRoute: typeof DispenserRoute
   GiftCardsRoute: typeof GiftCardsRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
   TermsRoute: typeof TermsRoute
   CalendarOccasionRoute: typeof CalendarOccasionRoute
   LookbookEditionRoute: typeof LookbookEditionRoute
@@ -444,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -585,6 +605,7 @@ const rootRouteChildren: RootRouteChildren = {
   DispenserRoute: DispenserRoute,
   GiftCardsRoute: GiftCardsRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
   TermsRoute: TermsRoute,
   CalendarOccasionRoute: CalendarOccasionRoute,
   LookbookEditionRoute: LookbookEditionRoute,
