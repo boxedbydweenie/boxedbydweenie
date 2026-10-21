@@ -122,7 +122,7 @@ function QuoteResult() {
       </div>
       <aside className="space-y-6">
         <div className="rounded-md border border-border bg-ivory p-6">
-          <div className="flex items-center gap-4"><div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-nero text-on-dark" role="img" aria-label="Consultant photo placeholder"><UserRound /></div><div><p className="font-semibold">REPLACE Consultant Name</p><p className="text-xs text-muted-foreground">Corporate gifting consultant</p></div></div>
+          <div className="flex items-center gap-4"><div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-nero text-on-dark" role="img" aria-label="Consultant photo placeholder"><UserRound /></div><div><p className="font-semibold">Your gifting consultant</p><p className="text-xs text-muted-foreground">Boxed by Dweenie corporate team</p></div></div>
           <p className="mt-4 text-sm">Your gifting consultant will contact you within one working day.</p>
           <a href="tel:+2348134907391" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold underline underline-offset-4"><Phone className="size-4" />0813 490 7391</a>
         </div>

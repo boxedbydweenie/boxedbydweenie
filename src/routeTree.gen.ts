@@ -20,6 +20,7 @@ import { Route as DispenserRouteImport } from './routes/dispenser'
 import { Route as GiftCardsRouteImport } from './routes/gift-cards'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminLeadsRouteImport } from './routes/admin.leads'
@@ -96,6 +97,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/gift-cards': typeof GiftCardsRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/gift-cards': typeof GiftCardsRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/gift-cards': typeof GiftCardsRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -328,6 +337,7 @@ export interface FileRouteTypes {
     | '/gift-cards'
     | '/privacy'
     | '/profile'
+    | '/status'
     | '/terms'
     | '/admin/leads'
     | '/admin/orders'
@@ -362,6 +372,7 @@ export interface FileRouteTypes {
     | '/gift-cards'
     | '/privacy'
     | '/profile'
+    | '/status'
     | '/terms'
     | '/admin/leads'
     | '/admin/orders'
@@ -397,6 +408,7 @@ export interface FileRouteTypes {
     | '/gift-cards'
     | '/privacy'
     | '/profile'
+    | '/status'
     | '/terms'
     | '/admin/leads'
     | '/admin/orders'
@@ -433,6 +445,7 @@ export interface RootRouteChildren {
   GiftCardsRoute: typeof GiftCardsRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
+  StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   CalendarOccasionRoute: typeof CalendarOccasionRoute
   LookbookEditionRoute: typeof LookbookEditionRoute
@@ -530,6 +543,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -717,6 +737,7 @@ const rootRouteChildren: RootRouteChildren = {
   GiftCardsRoute: GiftCardsRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
+  StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   CalendarOccasionRoute: CalendarOccasionRoute,
   LookbookEditionRoute: LookbookEditionRoute,
