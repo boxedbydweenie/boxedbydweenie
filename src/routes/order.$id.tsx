@@ -32,6 +32,11 @@ function OrderPage() {
   const [pay, setPay] = useState<ServerOrder["status"] | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cards, setCards] = useState<{ code: string; amount: number }[]>([]);
+  useEffect(() => {
+    if (pay !== "paid" || !order?.customer.email) return;
+    lookupOrder(id, order.customer.email).then((o) => setCards(o.giftCards)).catch(() => undefined);
+  }, [pay, order?.customer.email, id]);
   useEffect(() => {
     let live = true;
     (async () => {
@@ -74,6 +79,7 @@ function OrderPage() {
         <div className="relative flex items-center justify-center">{i > 0 && <span className={cn("absolute right-1/2 top-1/2 h-px w-full", i <= order.status ? "bg-nero" : "bg-border")} />}<span className={cn("relative z-10 flex size-10 items-center justify-center rounded-full border text-sm font-semibold", i <= order.status ? "border-nero bg-gold text-nero" : "border-border bg-paper text-muted-foreground")}>{i < order.status ? <Check className="size-4" /> : i + 1}</span></div>
         <p className={cn("mt-3 text-xs sm:text-sm", i <= order.status ? "font-semibold" : "text-muted-foreground")}>{s}</p>
       </li>)}</ol>
+      {cards.length > 0 && <section className="mb-10 rounded-xl border-2 border-gold bg-[#FBF6E6] p-6 text-center"><p className="eyebrow">Your gift card {cards.length > 1 ? "codes" : "code"}</p><ul className="mt-3 space-y-2">{cards.map((c) => <li key={c.code} className="font-mono text-lg font-semibold tracking-wider">{c.code} <span className="font-sans text-sm font-normal text-muted-foreground">· {formatNaira(c.amount)}</span></li>)}</ul><p className="mt-3 text-sm text-muted-foreground">Enter the code at checkout to spend it. Keep it safe: anyone with the code can use it.</p></section>}
       <GoldRule className="mx-auto my-10" />
       <div className="grid gap-8 md:grid-cols-2">
         <div><h2 className="text-lg">Summary</h2><ul className="mt-4 space-y-2 text-sm">{order.items.map((i) => <li key={i.key} className="flex justify-between gap-4"><span>{i.quantity} × {i.name}</span><span>{formatNaira(i.price * i.quantity)}</span></li>)}</ul>

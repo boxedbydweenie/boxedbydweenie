@@ -59,7 +59,7 @@ function GiftCardsPage() {
     if (!to.trim() || !contact.trim()) return setError("Add the recipient's name and email or phone.");
     if (when === "later" && !sendOn) return setError("Choose the date to send.");
     setError("");
-    await addToCart({ kind: "gift-card", productId: "gift-card", name: `BBD Gift Card, ${formatNaira(value)}`, price: value, quantity: 1, giftCard: { design, recipientName: to.trim(), recipientContact: contact.trim(), message: message.trim(), sendOn: when === "later" ? sendOn : null } });
+    await addToCart({ kind: "gift-card", productId: "prd-gift-card", name: `BBD Gift Card, ${formatNaira(value)}`, price: value, quantity: 1, giftCard: { design, recipientName: to.trim(), recipientContact: contact.trim(), message: message.trim(), sendOn: when === "later" ? sendOn : null } });
     openCart();
   };
   return <SiteShell><main className="bg-paper">

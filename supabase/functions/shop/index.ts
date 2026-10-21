@@ -43,11 +43,21 @@ async function paystack(path: string, init?: RequestInit) {
 function publicOrder(o: Record<string, any>) {
   return {
     ref: o.ref, status: o.status, createdAt: o.created_at, paidAt: o.paid_at, items: o.items,
-    subtotal: o.subtotal, discount: o.discount, deliveryFee: o.delivery_fee, total: o.total,
+    subtotal: o.subtotal, discount: o.discount, deliveryFee: o.delivery_fee, total: o.total, giftCardApplied: o.gift_card_applied ?? 0, payable: o.payable ?? o.total,
     recipient: { name: o.recipient?.name, state: o.recipient?.state, area: o.recipient?.area, deliveryDate: o.recipient?.deliveryDate },
     customer: { name: o.customer?.name },
   };
 }
+
+/** A failed payment gives back any gift card balance used and voids gift cards bought on that order. */
+async function releaseOrder(order: Record<string, any>) {
+  await db.from("gift_cards").update({ status: "void" }).eq("order_ref", order.ref).eq("status", "pending");
+  if (order.gift_card_code && order.gift_card_applied > 0) {
+    const { data: gc } = await db.from("gift_cards").select("balance").eq("code", order.gift_card_code).maybeSingle();
+    if (gc) await db.from("gift_cards").update({ balance: gc.balance + order.gift_card_applied }).eq("code", order.gift_card_code).eq("balance", gc.balance);
+  }
+}
+const cardCode = () => { const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; const v = crypto.getRandomValues(new Uint8Array(12)); const c = Array.from(v, (x) => a[x % a.length]).join(""); return `BBD-${c.slice(0, 4)}-${c.slice(4, 8)}-${c.slice(8)}`; };
 
 /** Marks an order paid if Paystack's figures match ours. Safe to call more than once. */
 async function confirmPayment(reference: string) {
@@ -55,10 +65,12 @@ async function confirmPayment(reference: string) {
   if (!order) return { error: "Order not found", status: 404 };
   if (order.status !== "pending_payment" && order.status !== "payment_failed") return { order };
   const tx = await paystack(`/transaction/verify/${encodeURIComponent(reference)}`);
-  const good = tx.status === "success" && tx.currency === "NGN" && Number(tx.amount) === order.total * 100;
+  const good = tx.status === "success" && tx.currency === "NGN" && Number(tx.amount) === (order.payable ?? order.total) * 100;
   const { data: updated } = await db.from("orders")
     .update(good ? { status: "paid", paid_at: tx.paid_at ?? new Date().toISOString() } : { status: tx.status === "abandoned" ? "pending_payment" : "payment_failed" })
     .eq("id", order.id).in("status", ["pending_payment", "payment_failed"]).select("*").maybeSingle();
+  if (updated && good) await db.from("gift_cards").update({ status: "active" }).eq("order_ref", order.ref).eq("status", "pending");
+  if (updated && !good && updated.status === "payment_failed" && order.status === "pending_payment") await releaseOrder(order);
   return { order: updated ?? order };
 }
 
@@ -111,17 +123,38 @@ async function createOrder(body: Record<string, any>, origin: string | null) {
   const deliveryFee = feeMap.get(recipient.state) ?? feeMap.get("Other states") ?? 15000;
   const total = subtotal - discount + deliveryFee;
 
+  // Gift card payment (cannot be used to buy more gift cards)
+  let giftApplied = 0, giftCode: string | null = null;
+  const gcode = str(body.giftCardCode, 40).toUpperCase().replace(/\s+/g, "");
+  if (gcode) {
+    if (items.some((i) => i.giftCard)) return { error: "Gift cards cannot be used to buy gift cards.", status: 400 };
+    const { data: gc } = await db.from("gift_cards").select("balance, status").eq("code", gcode).maybeSingle();
+    if (!gc || gc.status !== "active" || gc.balance <= 0) return { error: "That gift card code is not valid or has no balance left.", status: 400 };
+    giftApplied = Math.min(gc.balance, total); giftCode = gcode;
+    const { data: upd } = await db.from("gift_cards").update({ balance: gc.balance - giftApplied }).eq("code", gcode).eq("balance", gc.balance).select("code").maybeSingle();
+    if (!upd) return { error: "That gift card was just used. Please try again.", status: 409 };
+  }
+  const payable = total - giftApplied;
+
   const ref = `BBD-${Date.now().toString(36).toUpperCase()}${crypto.getRandomValues(new Uint8Array(2)).reduce((s, b) => s + b.toString(16).padStart(2, "0"), "").toUpperCase()}`;
   const { data: order, error } = await db.from("orders").insert({
     ref, customer, recipient, send_to: sendTo, items, subtotal, discount, delivery_fee: deliveryFee, total, promo_code: promo, paystack_reference: ref,
+    gift_card_code: giftCode, gift_card_applied: giftApplied, payable, ...(payable === 0 ? { status: "paid", paid_at: new Date().toISOString() } : {}),
   }).select("*").single();
-  if (error) return { error: "We could not save your order. Please try again.", status: 500 };
+  if (error) {
+    if (giftCode) await releaseOrder({ ref, gift_card_code: giftCode, gift_card_applied: giftApplied });
+    return { error: "We could not save your order. Please try again.", status: 500 };
+  }
+  const cards: Record<string, unknown>[] = [];
+  for (const i of items) if (i.giftCard) for (let n = 0; n < i.quantity; n++) cards.push({ code: cardCode(), amount: i.price, balance: i.price, status: "pending", order_ref: ref, to_name: i.giftCard.toName || null, to_email: i.giftCard.toEmail || null, message: i.giftCard.message || null, send_on: /^\d{4}-\d{2}-\d{2}$/.test(i.giftCard.sendOn) ? i.giftCard.sendOn : null });
+  if (cards.length) await db.from("gift_cards").insert(cards);
+  if (payable === 0) return { order: publicOrder(order), authorizationUrl: null, reference: ref };
 
   const back = origin && (ALLOWED.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) ? origin : SITE_URL;
   const tx = await paystack("/transaction/initialize", {
     method: "POST",
     body: JSON.stringify({
-      email: customer.email, amount: total * 100, currency: "NGN", reference: ref,
+      email: customer.email, amount: payable * 100, currency: "NGN", reference: ref,
       callback_url: `${back}/order/${encodeURIComponent(ref)}?verify=1`,
       metadata: { order_ref: ref, customer_name: customer.name, cancel_action: `${back}/checkout` },
     }),
@@ -151,7 +184,8 @@ Deno.serve(async (req) => {
       const ref = str(body.ref, 60), email = str(body.email, 160).toLowerCase();
       const { data: o } = await db.from("orders").select("*").eq("ref", ref).maybeSingle();
       if (!o || (o.customer?.email ?? "").toLowerCase() !== email) return json({ error: "We could not find an order with those details." }, 404, h);
-      return json({ order: publicOrder(o) }, 200, h);
+      const { data: gcs } = await db.from("gift_cards").select("code, amount, status").eq("order_ref", ref).eq("status", "active");
+      return json({ order: publicOrder(o), giftCards: gcs ?? [] }, 200, h);
     }
     return json({ error: "Unknown action." }, 400, h);
   } catch (e) {

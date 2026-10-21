@@ -1,3 +1,4 @@
+import { callAccount } from "@/lib/api";
 import { Link } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -51,4 +52,25 @@ export function SummaryRows({ items, discountPercent = 0, deliveryFee }: { items
     <div className="flex justify-between"><dt>Delivery</dt><dd className="text-muted-foreground">{deliveryFee == null ? "Calculated at checkout" : formatNaira(deliveryFee)}</dd></div>
     <div className="flex justify-between border-t border-border pt-3 text-base font-semibold"><dt>Total</dt><dd>{formatNaira(subtotal - discount + (deliveryFee ?? 0))}</dd></div>
   </dl>;
+}
+
+/** Checks a gift card code and reports its balance so the checkout can apply it. */
+export function GiftCardField({ onApply }: { onApply: (code: string, balance: number) => void }) {
+  const [code, setCode] = useState("");
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const apply = async () => {
+    if (!code.trim()) return;
+    setBusy(true);
+    try {
+      const r = await callAccount<{ balance: number }>({ action: "gift-card", code });
+      onApply(code.trim().toUpperCase(), r.balance); setMsg({ ok: true, text: `Gift card applied. Balance ${formatNaira(r.balance)}.` });
+    } catch (e) { onApply("", 0); setMsg({ ok: false, text: e instanceof Error ? e.message : "We could not check that gift card." }); }
+    finally { setBusy(false); }
+  };
+  return <div className="mt-4">
+    <label htmlFor="giftcard" className="text-xs font-semibold uppercase tracking-wider">Gift card code</label>
+    <div className="mt-2 flex gap-2"><Input id="giftcard" value={code} onChange={(e) => setCode(e.target.value)} className="min-h-11 bg-paper" placeholder="BBD-XXXX-XXXX-XXXX" /><Button type="button" variant="outline" disabled={busy} onClick={apply}>Apply</Button></div>
+    {msg && <p role="status" className={`mt-2 text-xs ${msg.ok ? "text-success" : "text-destructive"}`}>{msg.text}</p>}
+  </div>;
 }

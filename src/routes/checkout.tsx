@@ -3,7 +3,7 @@ import { ChevronDown, CreditCard, Landmark, Lock, Smartphone } from "lucide-reac
 import { useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button, EmptyState, FormField, LoadingButton } from "@/components/site/Brand";
-import { CartLine, PromoField, SummaryRows } from "@/components/shop/CartParts";
+import { CartLine, GiftCardField, PromoField, SummaryRows } from "@/components/shop/CartParts";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { STATES, deliveryFeeFor } from "@/config/delivery";
 import { formatNaira } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { cartSubtotal } from "@/services/cart";
+import { cartSubtotal, clearCart } from "@/services/cart";
 import { startCheckout } from "@/services/orders";
 import { useCart, useUser } from "@/hooks/use-shop";
 import type { CartItem, Order } from "@/types/shop";
@@ -42,8 +42,12 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
   </section>;
 }
 
-function Summary({ items, fee, promo, setPromo, setPromoCode }: { items: CartItem[]; fee: number | null; promo: number; setPromo: (n: number) => void; setPromoCode: (c: string) => void }) {
-  return <><ul>{items.map((i) => <CartLine key={i.key} item={i} compact />)}</ul><div className="mt-5"><SummaryRows items={items} discountPercent={promo} deliveryFee={fee} /></div><PromoField onApply={setPromo} onCode={setPromoCode} /></>;
+function Summary({ items, fee, promo, setPromo, setPromoCode, gift, setGift }: { items: CartItem[]; fee: number | null; promo: number; setPromo: (n: number) => void; setPromoCode: (c: string) => void; gift: { code: string; balance: number }; setGift: (g: { code: string; balance: number }) => void }) {
+  const sub = items.reduce((t, i) => t + i.price * i.quantity, 0);
+  const owed = sub - Math.round((sub * promo) / 100) + (fee ?? 0);
+  const applied = Math.min(gift.balance, owed);
+  const hasCard = items.some((i) => i.kind === "gift-card");
+  return <><ul>{items.map((i) => <CartLine key={i.key} item={i} compact />)}</ul><div className="mt-5"><SummaryRows items={items} discountPercent={promo} deliveryFee={fee} /></div><PromoField onApply={setPromo} onCode={setPromoCode} />{!hasCard && <GiftCardField onApply={(code, balance) => setGift({ code, balance })} />}{applied > 0 && <p className="mt-3 flex justify-between text-sm font-semibold"><span>Gift card</span><span>−{formatNaira(applied)}</span></p>}</>;
 }
 
 function CheckoutPage() {
@@ -55,6 +59,7 @@ function CheckoutPage() {
   const [payment, setPayment] = useState<Order["payment"]>("card");
   const [promo, setPromo] = useState(0);
   const [promoCode, setPromoCode] = useState("");
+  const [gift, setGift] = useState({ code: "", balance: 0 });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const fee = state ? deliveryFeeFor(state) : null;
@@ -72,12 +77,13 @@ function CheckoutPage() {
     if (!state || required.some((k) => !v(k))) { setError("Please complete every required field, including the state."); return; }
     setError(""); setBusy(true);
     try {
-      const { authorizationUrl } = await startCheckout({
-        items, sendTo, promoCode: promo ? promoCode : "",
+      const { authorizationUrl, ref } = await startCheckout({
+        items, sendTo, promoCode: promo ? promoCode : "", giftCardCode: gift.code,
         recipient: { name: v("r_name"), phone: v("r_phone"), address: v("address"), state, area: v("area"), deliveryDate: v("date"), notes: v("notes"), surprise },
         customer: { name: v("c_name"), email: v("c_email"), phone: v("c_phone") },
       });
-      window.location.assign(authorizationUrl);
+      if (authorizationUrl) window.location.assign(authorizationUrl);
+      else { await clearCart(); window.location.assign(`/order/${encodeURIComponent(ref)}`); }
     } catch (err) {
       setBusy(false);
       setError(err instanceof Error ? err.message : "We could not start your payment. Please try again.");
@@ -88,7 +94,7 @@ function CheckoutPage() {
     <div className="brand-pattern-navy text-on-dark"><div className="mx-auto max-w-7xl px-5 py-12 md:py-16"><p className="eyebrow text-gold">Almost there</p><div aria-hidden className="mt-3 h-px w-14 bg-gold" /><h1 className="mt-5 text-4xl md:text-6xl">Check<span className="text-gold">out</span></h1></div></div>
     <Collapsible className="border-b border-border bg-ivory lg:hidden">
       <CollapsibleTrigger className="flex min-h-14 w-full items-center justify-between px-5 text-sm font-semibold">Order summary <span className="flex items-center gap-2">{formatNaira(total)}<ChevronDown className="size-4" /></span></CollapsibleTrigger>
-      <CollapsibleContent className="px-5 pb-6"><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} setPromoCode={setPromoCode} /></CollapsibleContent>
+      <CollapsibleContent className="px-5 pb-6"><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} setPromoCode={setPromoCode} gift={gift} setGift={setGift} /></CollapsibleContent>
     </Collapsible>
     <div className="mx-auto grid max-w-7xl gap-10 px-5 lg:grid-cols-[1fr_400px]">
       <form onSubmit={submit} noValidate>
@@ -119,7 +125,7 @@ function CheckoutPage() {
         {error && <p role="alert" className="mt-6 text-sm text-destructive">{error}</p>}
         <div className="py-8"><LoadingButton type="submit" size="lg" loading={busy} className="w-full">Pay {formatNaira(total)} securely</LoadingButton></div>
       </form>
-      <aside className="hidden py-8 lg:block"><div className="sticky top-24 rounded-md border border-border border-t-4 border-t-gold bg-ivory p-6 shadow-[0_24px_40px_-30px_rgba(41,40,40,.5)]"><h2 className="text-2xl">Order summary</h2><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} setPromoCode={setPromoCode} /></div></aside>
+      <aside className="hidden py-8 lg:block"><div className="sticky top-24 rounded-md border border-border border-t-4 border-t-gold bg-ivory p-6 shadow-[0_24px_40px_-30px_rgba(41,40,40,.5)]"><h2 className="text-2xl">Order summary</h2><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} setPromoCode={setPromoCode} gift={gift} setGift={setGift} /></div></aside>
     </div>
   </main></SiteShell>;
 }

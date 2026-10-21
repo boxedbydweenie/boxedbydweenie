@@ -50,7 +50,7 @@ export function ExpressSheet({ product, initialNote = "", onClose, onDone }: { p
         recipient: { name: v("r_name"), phone: v("r_phone"), address: v("address"), state, area: state, deliveryDate: date, notes: "", surprise: true },
         customer: { name: v("r_name"), email: v("c_email"), phone: v("c_phone") },
       });
-      window.location.assign(authorizationUrl);
+      if (authorizationUrl) window.location.assign(authorizationUrl);
     } catch (err) {
       setBusy(false);
       setError(err instanceof Error ? err.message : "We could not start your payment. Please try again.");

@@ -17,13 +17,15 @@ export const GROUPS: Group[] = [
     { name: "About", note: "Our story, numbers and clients, from the company profile.", state: "live" },
     { name: "Company profile flip-book", note: "Read the full profile online with page-turn sound and animation.", state: "live" },
     { name: "Contact", note: "Enquiries are saved and show in the team area.", state: "live" },
-    { name: "Delivery, Privacy and Terms", note: "Pages exist with headings; the full wording still needs to be written and approved.", state: "waiting" },
+    { name: "Delivery, Privacy and Terms", note: "Full draft wording is on the site. Needs your approval (and ideally a lawyer's read) before launch.", state: "waiting" },
   ] },
   { title: "Shop", tone: "oxblood", items: [
     { name: "Shop and product pages", note: "21 products with photos, occasion filters, packaging, gift note and delivery date.", state: "live" },
     { name: "Gift Dispenser", note: "Three questions, three picks, order in about a minute.", state: "live" },
     { name: "Checkout", note: "Delivery fees by state, promo code and order summary are ready.", state: "live" },
     { name: "Online payment (Paystack)", note: "Built and secured. Needs the Paystack account keys to take real payments.", state: "waiting" },
+    { name: "Customer accounts", note: "Real sign-up and sign-in. Orders, saved recipients, wishlist and dates follow the customer to any device.", state: "live" },
+    { name: "Gift cards", note: "Codes are created when payment succeeds and can be spent at checkout. Needs Paystack keys to test end to end.", state: "preview" },
     { name: "Order confirmation emails", note: "To the customer and to the team.", state: "next" },
     { name: "Confirm 14 draft products", note: "Photos, prices and contents for the products still marked as drafts.", state: "waiting" },
   ] },
@@ -36,9 +38,9 @@ export const GROUPS: Group[] = [
   ] },
   { title: "Team area and extras", tone: "plum", items: [
     { name: "Team area", note: "Staff sign in to manage products, prices, photos, orders and enquiries.", state: "live" },
-    { name: "Gift Calendar", note: "Works on each person's own device. Email reminders still to build.", state: "preview" },
-    { name: "Secret Santa", note: "Works for a group on one device. Company accounts and a secure draw still to build.", state: "preview" },
-    { name: "Newsletter sign-up", note: "The footer form is not connected yet.", state: "next" },
+    { name: "Gift Calendar", note: "Dates are saved to the customer's account and sync across devices. Email reminders still to build (need email set up).", state: "preview" },
+    { name: "Secret Santa", note: "Groups work across devices with a private server-side draw. Invite emails and paying for the gifts through checkout still to build.", state: "live" },
+    { name: "Newsletter sign-up", note: "Sign-ups are saved. Sending newsletters needs the email service.", state: "live" },
   ] },
 ];
 
@@ -60,5 +62,5 @@ export const PLAN: Step[] = [
   { when: "This week", title: "Test purchase", detail: "A real test order from basket to payment to confirmation email." },
   { when: "Next", title: "Final content", detail: "Confirm draft products, agree prices, approve legal wording." },
   { when: "Next", title: "Custom domain and go-live", detail: "Connect boxedbydweenie.com, make the code repository private, final check." },
-  { when: "After launch", title: "Gift Calendar reminders and Secret Santa accounts", detail: "Email reminders and secure company Secret Santa draws." },
+  { when: "After launch", title: "Reminder and invite emails", detail: "Gift Calendar reminders, Secret Santa invites, and paying for Secret Santa gifts through checkout." },
 ];
