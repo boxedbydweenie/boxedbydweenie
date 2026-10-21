@@ -128,26 +128,34 @@ function QuoteBuilder() {
 
   const panel = <EstimatePanel estimate={estimate} error={estimateError} onSave={saveLater} quantity={req.quantity} />;
 
-  return <SiteShell><main className="bg-paper pb-28 lg:pb-0">
-    <section className="brand-pattern-green relative overflow-hidden text-on-dark">
-      <div className="relative mx-auto max-w-7xl px-5 py-12 md:py-16">
-        <Eyebrow dark>Instant quote</Eyebrow><GoldRule className="mt-4" />
-        <h1 className="mt-5 text-4xl text-on-dark md:text-6xl">Build your corporate <span className="text-gold">gift quote</span></h1>
-        <p className="mt-4 max-w-2xl text-on-dark-muted">See a live estimate as you go. Share your details at the end for a formal PDF quote and a dedicated gifting consultant.</p>
+  return <SiteShell><main className="bg-[#F4EFE5] pb-28 lg:pb-0">
+    <section className="brand-pattern-navy relative overflow-hidden text-on-dark">
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-14 md:py-20 lg:grid-cols-[1.3fr_.7fr] lg:items-end">
+        <div>
+          <Eyebrow dark>Instant quote</Eyebrow><GoldRule className="mt-4" />
+          <h1 className="mt-6 text-5xl leading-[1.02] text-on-dark md:text-7xl">Corporate gifts, <span className="text-gold">priced in minutes.</span></h1>
+          <p className="mt-5 max-w-2xl text-lg text-on-dark-muted">Tell us what the gifts are for. Watch your estimate build as you go, then receive a formal quote and a dedicated gifting consultant.</p>
+          <div className="mt-7 flex flex-wrap gap-2.5"><span className="pill pill-gold">Live estimate</span><span className="pill pill-coral">Your logo on every box</span><span className="pill pill-sage">Quote saved and shareable</span></div>
+        </div>
+        <ul className="grid grid-cols-3 gap-3 text-center">{[["6", "quick steps"], ["2 min", "to finish"], ["24h", "consultant reply"]].map(([n, l], i) => <li key={l} className={cn("rounded-lg p-4", i === 0 ? "bg-gold text-nero" : i === 1 ? "bg-[#F4EFE5] text-nero" : "bg-[#86BAA3] text-nero")}><p className="font-heading text-3xl leading-none">{n}</p><p className="mt-2 text-[11px] font-semibold uppercase tracking-wider">{l}</p></li>)}</ul>
       </div>
     </section>
 
-    <div className="sticky top-14 z-20 border-b border-border bg-paper/95 backdrop-blur">
-      <div className="mx-auto max-w-7xl px-5 py-3">
-        <div className="h-1 overflow-hidden rounded-full bg-border" role="progressbar" aria-valuemin={1} aria-valuemax={6} aria-valuenow={step + 1} aria-label={`Step ${step + 1} of 6, ${STEPS[step]}`}><div className="h-full bg-gold transition-all duration-500" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} /></div>
-        <ol className="mt-2 hidden grid-cols-6 gap-2 text-xs sm:grid">{STEPS.map((s, i) => <li key={s} className={cn(i === step ? "font-semibold text-nero" : "text-muted-foreground")}>{i < step ? <button type="button" className="underline-offset-4 hover:underline" onClick={() => go(i)}>{i + 1}. {s}</button> : `${i + 1}. ${s}`}</li>)}</ol>
-        <p className="mt-2 text-xs font-semibold sm:hidden">Step {step + 1} of 6 · {STEPS[step]}</p>
+    <div className="sticky top-14 z-20 border-b border-border bg-[#F4EFE5]/95 backdrop-blur">
+      <div className="mx-auto max-w-7xl px-5 py-3.5">
+        <ol className="flex items-center gap-1 sm:gap-2" aria-label={`Step ${step + 1} of 6, ${STEPS[step]}`}>{STEPS.map((st, i) => <li key={st} className={cn("flex items-center gap-2", i < STEPS.length - 1 && "flex-1")} aria-current={i === step ? "step" : undefined}>
+          <button type="button" disabled={i >= step} onClick={() => go(i)} className={cn("flex items-center gap-2 rounded-full text-sm", i < step && "cursor-pointer")} aria-label={`${i + 1}. ${st}`}>
+            <span className={cn("grid size-9 shrink-0 place-items-center rounded-full border-2 font-heading text-base transition-colors", i < step ? "border-nero bg-nero text-gold" : i === step ? "border-gold bg-gold text-nero shadow-[0_0_0_5px_rgba(231,185,59,.25)]" : "border-nero/20 text-nero/40")}>{i < step ? <Check className="size-4" /> : i + 1}</span>
+            <span className={cn("hidden lg:inline", i === step ? "font-semibold text-nero" : "text-nero/55")}>{st}</span>
+          </button>
+          {i < STEPS.length - 1 && <span aria-hidden className={cn("h-0.5 flex-1 rounded-full transition-colors", i < step ? "bg-gold" : "bg-nero/10")} />}
+        </li>)}</ol>
       </div>
     </div>
 
-    <div className="mx-auto grid max-w-7xl gap-10 px-5 py-10 lg:grid-cols-3">
-      <div className="lg:col-span-2">
-        {draft && <div role="status" className="mb-8 flex flex-col gap-4 rounded-md border border-gold bg-ivory p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto grid max-w-7xl gap-10 px-5 py-12 lg:grid-cols-3">
+      <div className="rounded-2xl bg-white p-6 shadow-[0_30px_60px_-40px_rgba(41,40,40,.5)] md:p-10 lg:col-span-2">
+        {draft && <div role="status" className="mb-8 flex flex-col gap-4 rounded-xl border-2 border-gold bg-[#FBF6E6] p-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm">You have a saved quote from {new Date(draft.savedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}. Pick up where you left off?</p>
           <div className="flex gap-2"><Button size="sm" onClick={() => { setReq(draft.request); setStep(draft.step); setDraft(null); }}>Restore</Button><Button size="sm" variant="ghost" onClick={() => { clearDraft(); setDraft(null); }}>Start fresh</Button></div>
         </div>}
@@ -158,15 +166,15 @@ function QuoteBuilder() {
 
         {step === 1 && <StepShell title="How many and how much?">
           <Label htmlFor="qty">Number of gifts</Label>
-          <Input id="qty" type="number" inputMode="numeric" min={1} value={req.quantity || ""} onChange={(e) => set({ quantity: Math.max(0, Math.floor(Number(e.target.value))) })} aria-invalid={!!errors.quantity} className="mt-2 min-h-11 max-w-48 bg-paper" />
-          <div className="mt-3 flex flex-wrap gap-2">{QUANTITY_PICKS.map((n) => <button key={n} type="button" onClick={() => set({ quantity: n })} aria-pressed={req.quantity === n} className={cn("min-h-11 rounded-full border px-4 text-sm transition-colors", req.quantity === n ? "border-nero bg-gold text-nero" : "border-border hover:border-nero")}>{n === 1000 ? "1,000+" : n.toLocaleString("en-NG")}</button>)}</div>
+          <Input id="qty" type="number" inputMode="numeric" min={1} value={req.quantity || ""} onChange={(e) => set({ quantity: Math.max(0, Math.floor(Number(e.target.value))) })} aria-invalid={!!errors.quantity} className="mt-2 min-h-11 max-w-48 bg-white" />
+          <div className="mt-3 flex flex-wrap gap-2">{QUANTITY_PICKS.map((n) => <button key={n} type="button" onClick={() => set({ quantity: n })} aria-pressed={req.quantity === n} className={cn("min-h-11 rounded-full border px-4 text-sm transition-colors", req.quantity === n ? "border-nero bg-nero text-gold" : "border-border hover:border-nero")}>{n === 1000 ? "1,000+" : n.toLocaleString("en-NG")}</button>)}</div>
           {req.quantity > 0 && req.quantity < MIN_QUANTITY && <p className="mt-3 text-sm">For fewer than {MIN_QUANTITY} gifts, <Link to="/shop" className="font-semibold underline underline-offset-4">shop directly</Link>.</p>}
           {errors.quantity && <p className="mt-2 text-sm text-destructive">{errors.quantity}</p>}
           <div className="mt-8">
             <Label htmlFor="budget">Budget per recipient</Label>
             <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
               <Slider value={[req.budget]} onValueChange={([v]) => set({ budget: v ?? req.budget })} min={BUDGET_MIN} max={BUDGET_MAX} step={BUDGET_STEP} aria-label="Budget per recipient" className="flex-1" />
-              <div className="relative max-w-44"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₦</span><Input id="budget" inputMode="numeric" value={req.budget || ""} onChange={(e) => set({ budget: Number(e.target.value.replace(/\D/g, "")) })} aria-invalid={!!errors.budget} className="min-h-11 bg-paper pl-7" /></div>
+              <div className="relative max-w-44"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₦</span><Input id="budget" inputMode="numeric" value={req.budget || ""} onChange={(e) => set({ budget: Number(e.target.value.replace(/\D/g, "")) })} aria-invalid={!!errors.budget} className="min-h-11 bg-white pl-7" /></div>
             </div>
             <div className="mt-2 flex justify-between text-xs text-muted-foreground"><span>{formatNaira(BUDGET_MIN)}</span><span>{formatNaira(BUDGET_MAX)}</span></div>
             {errors.budget && <p className="mt-2 text-sm text-destructive">{errors.budget}</p>}
@@ -177,7 +185,7 @@ function QuoteBuilder() {
         {step === 2 && <GiftsStep products={products} req={req} set={set} error={errors.selections} />}
 
         {step === 3 && <StepShell title="Make it yours">
-          <div className="grid gap-3 sm:grid-cols-2">{BRANDING.map((b) => { const on = req.branding.includes(b.key); return <label key={b.key} className={cn("flex min-h-16 cursor-pointer items-center justify-between gap-4 rounded-md border p-4 transition-colors", on ? "border-nero bg-ivory" : "border-border hover:border-nero/50")}>
+          <div className="grid gap-3 sm:grid-cols-2">{BRANDING.map((b) => { const on = req.branding.includes(b.key); return <label key={b.key} className={cn("flex min-h-16 cursor-pointer items-center justify-between gap-4 rounded-xl border-2 p-4 transition-colors", on ? "border-gold bg-[#FBF6E6]" : "border-nero/15 bg-[#FBF9F4] hover:border-nero/40")}>
             <span><span className="block text-sm font-semibold">{b.name}</span><span className="text-xs text-muted-foreground">{formatNaira(b.perUnit)} per gift</span></span>
             <Switch checked={on} onCheckedChange={(v) => set({ branding: v ? [...req.branding, b.key] : req.branding.filter((k) => k !== b.key) })} aria-label={b.name} />
           </label>; })}</div>
@@ -202,12 +210,12 @@ function QuoteBuilder() {
         {step === 4 && <StepShell title="Delivery">
           <div className="grid gap-3 sm:grid-cols-3">{DELIVERY_MODES.map((m) => <RadioCard key={m.slug} name="mode" checked={req.deliveryMode === m.slug} onChange={() => set({ deliveryMode: m.slug })} title={m.name} line={m.line} />)}</div>
           <fieldset className="mt-8"><legend className="text-sm font-semibold">Cities or states</legend>
-            <div className="mt-3 flex flex-wrap gap-2">{QUOTE_LOCATIONS.map((l) => { const on = req.locations.includes(l); return <button key={l} type="button" aria-pressed={on} onClick={() => set({ locations: on ? req.locations.filter((x) => x !== l) : [...req.locations, l] })} className={cn("inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm transition-colors", on ? "border-nero bg-gold text-nero" : "border-border hover:border-nero")}>{on && <Check className="size-4" />}{l}</button>; })}</div>
+            <div className="mt-3 flex flex-wrap gap-2">{QUOTE_LOCATIONS.map((l) => { const on = req.locations.includes(l); return <button key={l} type="button" aria-pressed={on} onClick={() => set({ locations: on ? req.locations.filter((x) => x !== l) : [...req.locations, l] })} className={cn("inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm transition-colors", on ? "border-nero bg-nero text-gold" : "border-border hover:border-nero")}>{on && <Check className="size-4" />}{l}</button>; })}</div>
             {errors.locations && <p className="mt-2 text-sm text-destructive">{errors.locations}</p>}
           </fieldset>
           <div className="mt-8">
             <Label htmlFor="requiredBy">Required by</Label>
-            <Input id="requiredBy" type="date" min={new Date().toISOString().slice(0, 10)} value={req.requiredBy} onChange={(e) => set({ requiredBy: e.target.value })} aria-invalid={!!errors.requiredBy} className="mt-2 min-h-11 w-auto bg-paper" />
+            <Input id="requiredBy" type="date" min={new Date().toISOString().slice(0, 10)} value={req.requiredBy} onChange={(e) => set({ requiredBy: e.target.value })} aria-invalid={!!errors.requiredBy} className="mt-2 min-h-11 w-auto bg-white" />
             <p className="mt-2 text-xs text-muted-foreground">Standard lead time means we can deliver from {new Date(standardReadyDate() + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "long" })}.</p>
             {errors.requiredBy && <p className="mt-2 text-sm text-destructive">{errors.requiredBy}</p>}
             {estimate?.rush && <div role="alert" className="mt-4 flex items-start gap-3 rounded-md border-2 border-gold bg-ivory p-4 text-sm"><AlertTriangle className="mt-0.5 size-5 shrink-0" />This is a rush order. An express surcharge applies.</div>}
@@ -226,7 +234,7 @@ function QuoteBuilder() {
             <Field label="Work email" id="email" type="email" value={req.contact.email} onChange={(v) => setContact({ email: v })} error={errors.email} autoComplete="email" />
             <Field label="Phone" id="phone" type="tel" value={req.contact.phone} onChange={(v) => setContact({ phone: v })} error={errors.phone} autoComplete="tel" />
             <Field label="Role (optional)" id="role" value={req.contact.role} onChange={(v) => setContact({ role: v })} autoComplete="organization-title" />
-            <div className="sm:col-span-2"><Label htmlFor="notes">Notes (optional)</Label><Textarea id="notes" maxLength={1000} value={req.contact.notes} onChange={(e) => setContact({ notes: e.target.value })} className="mt-2 bg-paper" placeholder="Themes, colours, dietary needs, anything we should know" /></div>
+            <div className="sm:col-span-2"><Label htmlFor="notes">Notes (optional)</Label><Textarea id="notes" maxLength={1000} value={req.contact.notes} onChange={(e) => setContact({ notes: e.target.value })} className="mt-2 bg-white" placeholder="Themes, colours, dietary needs, anything we should know" /></div>
           </div>
           <label className="mt-6 flex cursor-pointer items-start gap-3 text-sm"><Checkbox checked={req.contact.consent} onCheckedChange={(v) => setContact({ consent: v === true })} className="mt-0.5" aria-invalid={!!errors.consent} /><span>I agree that Boxed by Dweenie may contact me about this quote. See our <Link to="/privacy" className="underline underline-offset-4">privacy policy</Link>.</span></label>
           {errors.consent && <p className="mt-2 text-sm text-destructive">{errors.consent}</p>}
@@ -234,36 +242,37 @@ function QuoteBuilder() {
 
         <div className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
           {step > 0 ? <Button variant="ghost" onClick={() => go(step - 1)}><ArrowLeft />Back</Button> : <span />}
-          {step < 5 ? <Button size="lg" onClick={next}>Next<ArrowRight /></Button> : <LoadingButton size="lg" loading={busy} onClick={submit}>Get my quote</LoadingButton>}
+          {step < 5 ? <Button size="lg" className="rounded-full bg-nero px-9 text-white hover:bg-nero/90" onClick={next}>Next<ArrowRight /></Button> : <LoadingButton size="lg" loading={busy} onClick={submit} className="rounded-full bg-gold px-9 text-nero">Get my quote</LoadingButton>}
         </div>
       </div>
 
       <aside className="hidden lg:block"><div className="sticky top-32">{panel}</div></aside>
     </div>
 
-    <div data-bottom-bar className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-paper px-5 py-3 shadow-soft lg:hidden">
+    <div data-bottom-bar className="fixed inset-x-0 bottom-0 z-30 border-t border-white/10 bg-nero px-5 py-3 text-white shadow-soft lg:hidden">
       <button type="button" onClick={() => setSheet(true)} className="flex min-h-12 w-full items-center justify-between gap-3 text-left" aria-label="Open your estimate">
-        <span className="min-w-0"><span className="eyebrow block text-muted-foreground">Your estimate</span><span className="block truncate font-semibold">{estimateError ? "Unavailable" : estimate ? fmtRange(estimate.total) : "Calculating"}</span></span>
+        <span className="min-w-0"><span className="eyebrow block text-gold">Your estimate</span><span className="block truncate font-semibold">{estimateError ? "Unavailable" : estimate ? fmtRange(estimate.total) : "Calculating"}</span></span>
         <ChevronUp className="size-5 shrink-0" />
       </button>
     </div>
-    <Sheet open={sheet} onOpenChange={setSheet}><SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-lg bg-paper"><SheetTitle className="sr-only">Your estimate</SheetTitle><SheetDescription className="sr-only">Live estimate breakdown</SheetDescription>{panel}</SheetContent></Sheet>
+    <Sheet open={sheet} onOpenChange={setSheet}><SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl bg-[#F4EFE5]"><SheetTitle className="sr-only">Your estimate</SheetTitle><SheetDescription className="sr-only">Live estimate breakdown</SheetDescription>{panel}</SheetContent></Sheet>
   </main></SiteShell>;
 }
 
 function StepShell({ title, error, children }: { title: string; error?: string | undefined; children: React.ReactNode }) {
-  return <section className="animate-rise-in"><h2 className="text-2xl md:text-3xl">{title}</h2><GoldRule className="mb-8 mt-4" />{children}{error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}</section>;
+  return <section className="animate-rise-in"><h2 className="text-4xl leading-tight md:text-5xl">{title}</h2><GoldRule className="mb-8 mt-4" />{children}{error && <p role="alert" className="mt-4 text-sm font-medium text-destructive">{error}</p>}</section>;
 }
 
 function RadioCard({ name, checked, onChange, title, line }: { name: string; checked: boolean; onChange: () => void; title: string; line: string }) {
-  return <label className={cn("flex min-h-16 cursor-pointer gap-3 rounded-md border p-4 transition-colors", checked ? "border-nero bg-ivory" : "border-border hover:border-nero/50")}>
-    <input type="radio" name={name} checked={checked} onChange={onChange} className="mt-1 size-4 shrink-0 accent-[var(--color-nero)]" />
-    <span><span className="block text-sm font-semibold">{title}</span><span className="text-xs text-muted-foreground">{line}</span></span>
+  return <label className={cn("relative flex min-h-20 cursor-pointer gap-3 rounded-xl border-2 p-5 transition-all duration-300 focus-within:ring-2 focus-within:ring-gold hover:-translate-y-0.5", checked ? "border-nero bg-nero text-white shadow-[0_20px_30px_-20px_rgba(41,40,40,.8)]" : "border-nero/15 bg-[#FBF9F4] hover:border-nero/50")}>
+    <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only" />
+    <span className={cn("grid size-7 shrink-0 place-items-center rounded-full border-2", checked ? "border-gold bg-gold text-nero" : "border-nero/25")}>{checked && <Check className="size-4" />}</span>
+    <span><span className="block font-heading text-xl leading-tight">{title}</span><span className={cn("mt-1 block text-sm", checked ? "text-white/70" : "text-muted-foreground")}>{line}</span></span>
   </label>;
 }
 
 function Field({ label, id, value, onChange, error, type = "text", autoComplete }: { label: string; id: string; value: string; onChange: (v: string) => void; error?: string | undefined; type?: string; autoComplete?: string }) {
-  return <div><Label htmlFor={id}>{label}</Label><Input id={id} type={type} value={value} maxLength={200} autoComplete={autoComplete} onChange={(e) => onChange(e.target.value)} aria-invalid={!!error} className="mt-2 min-h-11 bg-paper" />{error && <p className="mt-1 text-xs text-destructive">{error}</p>}</div>;
+  return <div><Label htmlFor={id}>{label}</Label><Input id={id} type={type} value={value} maxLength={200} autoComplete={autoComplete} onChange={(e) => onChange(e.target.value)} aria-invalid={!!error} className="mt-2 min-h-11 bg-white" />{error && <p className="mt-1 text-xs text-destructive">{error}</p>}</div>;
 }
 
 function GiftsStep({ products, req, set, error }: { products: ShopProduct[]; req: QuoteRequest; set: (p: Partial<QuoteRequest>) => void; error?: string | undefined }) {
@@ -279,9 +288,9 @@ function GiftsStep({ products, req, set, error }: { products: ShopProduct[]; req
   };
   const Card = ({ id, title, line, children }: { id: string; title: string; line: string; children: React.ReactNode }) => {
     const on = req.selections.includes(id);
-    return <button type="button" onClick={() => toggle(id)} aria-pressed={on} className={cn("relative rounded-md border-2 p-2 text-left transition-colors", on ? "border-nero" : "border-transparent hover:border-border")}>
+    return <button type="button" onClick={() => toggle(id)} aria-pressed={on} className={cn("relative rounded-xl border-2 p-2 text-left transition-all duration-300 hover:-translate-y-0.5", on ? "border-gold bg-[#FBF6E6] shadow-[0_20px_30px_-22px_rgba(41,40,40,.7)]" : "border-nero/10 bg-[#FBF9F4] hover:border-nero/40")}>
       {on && <span className="absolute right-3 top-3 z-10 flex size-7 items-center justify-center rounded-full bg-gold text-nero"><Check className="size-4" /></span>}
-      {children}<span className="mt-3 block text-sm font-semibold">{title}</span><span className="block text-xs text-muted-foreground">{line}</span>
+      {children}<span className="mt-3 block font-heading text-lg leading-tight">{title}</span><span className="block text-xs text-muted-foreground">{line}</span>
     </button>;
   };
   return <StepShell title="Choose a starting point" error={error}>
@@ -296,15 +305,16 @@ function GiftsStep({ products, req, set, error }: { products: ShopProduct[]; req
 
 function EstimatePanel({ estimate, error, onSave, quantity }: { estimate: Estimate | null; error: boolean; onSave: () => void; quantity: number }) {
   const wa = `${WHATSAPP}?text=${encodeURIComponent(`Hello, I am building a corporate quote for about ${quantity} gifts and would like to speak to a consultant.`)}`;
-  return <div className="rounded-md border border-border bg-ivory p-6">
-    <h2 className="text-lg">Your estimate</h2><GoldRule className="mt-3" />
-    {error ? <div role="alert" className="mt-5 flex items-start gap-3 text-sm"><AlertTriangle className="mt-0.5 size-5 shrink-0 text-destructive" />We could not calculate an estimate right now. Check the quantity and budget, or talk to a consultant.</div>
-      : !estimate ? <p className="mt-5 text-sm text-muted-foreground">Calculating</p>
+  const per = (n: number) => formatNaira(Math.round(n / Math.max(quantity, 1) / 100) * 100);
+  return <div className="brand-pattern-navy overflow-hidden rounded-2xl p-6 text-on-dark shadow-[0_30px_60px_-30px_rgba(25,40,80,.9)]">
+    <p className="eyebrow text-gold">Live estimate</p><GoldRule className="mt-3" />
+    {error ? <div role="alert" className="mt-5 flex items-start gap-3 text-sm"><AlertTriangle className="mt-0.5 size-5 shrink-0 text-coral" />We could not calculate an estimate right now. Check the quantity and budget, or talk to a consultant.</div>
+      : !estimate ? <p className="mt-5 text-sm text-on-dark-muted">Calculating</p>
       : <>
-        <dl className="mt-5 space-y-3 text-sm" aria-live="polite">{estimate.lines.map((l) => <div key={l.label} className="flex justify-between gap-4"><dt><span className="block">{l.label}</span>{l.detail && <span className="text-xs text-muted-foreground">{l.detail}</span>}</dt><dd className="shrink-0 text-right">{l.negative && l.high > 0 ? "−" : ""}{fmtRange(l)}</dd></div>)}</dl>
-        <div className="mt-5 border-t border-border pt-4"><p className="eyebrow text-muted-foreground">Estimated total</p><p className="mt-1 text-xl font-bold">{fmtRange(estimate.total)}</p></div>
+        <div className="mt-5 rounded-xl bg-white/10 p-4 backdrop-blur"><p className="text-xs font-semibold uppercase tracking-[.18em] text-on-dark-muted">Estimated total</p><p className="mt-1 font-heading text-3xl leading-tight text-gold" aria-live="polite">{fmtRange(estimate.total)}</p><p className="mt-1 text-xs text-on-dark-muted">about {per(estimate.total.low)} to {per(estimate.total.high)} per gift</p></div>
+        <dl className="mt-5 space-y-3 text-sm">{estimate.lines.map((l) => <div key={l.label} className="flex justify-between gap-4 border-b border-white/10 pb-3 last:border-0"><dt><span className="block">{l.label}</span>{l.detail && <span className="text-xs text-on-dark-muted">{l.detail}</span>}</dt><dd className="shrink-0 text-right">{l.negative && "−"}{fmtRange({ low: Math.abs(l.low), high: Math.abs(l.high) })}</dd></div>)}</dl>
       </>}
-    <p className="mt-4 text-xs text-muted-foreground">Estimate only. Your consultant confirms the final quote. Valid for {QUOTE_VALIDITY_DAYS} days.</p>
-    <div className="mt-5 grid gap-2"><Button variant="outline" onClick={onSave}>Save and continue later</Button><Button asChild variant="ghost"><a href={wa} target="_blank" rel="noreferrer">Talk to a consultant</a></Button></div>
+    <p className="mt-4 text-xs text-on-dark-muted">Estimate only. Your consultant confirms the final quote. Valid for {QUOTE_VALIDITY_DAYS} days.</p>
+    <div className="mt-5 grid gap-2"><button type="button" onClick={onSave} className="min-h-11 rounded-full border border-white/40 text-sm font-semibold transition hover:border-gold hover:bg-gold hover:text-nero">Save and continue later</button><a href={wa} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full text-sm font-semibold text-gold underline-offset-4 hover:underline">Talk to a consultant</a></div>
   </div>;
 }
