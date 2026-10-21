@@ -9,18 +9,21 @@ export const SUPABASE_KEY = env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? "sb_publisha
 
 export class ApiError extends Error {}
 
-export async function callShop<T>(action: string, body: Record<string, unknown>): Promise<T> {
+async function callFunction<T>(fn: string, body: Record<string, unknown>): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`${SUPABASE_URL}/functions/v1/shop`, {
+    res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
-      body: JSON.stringify({ action, ...body }),
+      body: JSON.stringify(body),
     });
   } catch {
-    throw new ApiError("We could not reach our checkout. Check your connection and try again.");
+    throw new ApiError("We could not reach our servers. Check your connection and try again.");
   }
   const data = (await res.json().catch(() => ({}))) as { error?: string } & T;
   if (!res.ok) throw new ApiError(data.error ?? "Something went wrong. Please try again.");
   return data;
 }
+
+export const callShop = <T>(action: string, body: Record<string, unknown>) => callFunction<T>("shop", { action, ...body });
+export const callLeads = <T>(body: Record<string, unknown>) => callFunction<T>("leads", body);

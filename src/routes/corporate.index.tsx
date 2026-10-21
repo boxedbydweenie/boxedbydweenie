@@ -173,12 +173,13 @@ const fieldCls = "mt-2 block min-h-12 w-full rounded-[2px] border border-white/2
 
 function Consultation() {
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [err, setErr] = useState("");
   const [reference, setReference] = useState("");
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget).entries()) as unknown as ConsultationRequest;
     setStatus("sending");
-    try { const res = await submitConsultation(data); setReference(res.reference); setStatus("done"); } catch { setStatus("error"); }
+    try { const res = await submitConsultation(data); setReference(res.reference); setStatus("done"); } catch (e2) { setErr(e2 instanceof Error ? e2.message : ""); setStatus("error"); }
   }
   return <section id="consultation" className="brand-pattern-plum scroll-mt-16 py-20 text-on-dark lg:py-28">
     <div className={`${WRAP} grid gap-12 lg:grid-cols-[.9fr_1.1fr]`}>
@@ -195,6 +196,7 @@ function Consultation() {
           <p className="eyebrow mt-6 text-gold">Your reference</p><p className="mt-2 font-heading text-3xl">{reference}</p>
           <p className="mt-4 text-on-dark-muted">Thank you. We will be in touch within one working day.</p>
         </div> : <form onSubmit={onSubmit} className="grid gap-5 sm:grid-cols-2">
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
           <Field label="Full name" name="name" required autoComplete="name" />
           <Field label="Company" name="company" required autoComplete="organization" />
           <Field label="Work email" name="email" type="email" required autoComplete="email" />
@@ -205,7 +207,7 @@ function Consultation() {
           </label>
           <Field label="Required by" name="requiredBy" type="date" className="sm:col-span-2" />
           <label className="text-sm font-medium sm:col-span-2">Message<textarea name="message" rows={4} className={fieldCls} placeholder="Occasion, budget per person, branding ideas" /></label>
-          {status === "error" && <p role="alert" className="text-sm text-coral sm:col-span-2">Something went wrong. Please try again or message us on WhatsApp.</p>}
+          {status === "error" && <p role="alert" className="text-sm text-coral sm:col-span-2">{err || "Something went wrong. Please try again or message us on WhatsApp."}</p>}
           <div className="sm:col-span-2"><button type="submit" disabled={status === "sending"} className={`${btnGold} w-full disabled:opacity-60 sm:w-auto`}>{status === "sending" ? "Sending…" : "Request a consultation"}</button></div>
         </form>}
       </div>
