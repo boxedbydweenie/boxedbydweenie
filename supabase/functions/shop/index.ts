@@ -8,14 +8,18 @@ import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const PAYSTACK_SECRET = Deno.env.get("PAYSTACK_SECRET_KEY") ?? "";
-const SITE_URL = Deno.env.get("SITE_URL") ?? "https://boxedbydweenie.com";
-const ALLOWED = (Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+const SITE_URL = Deno.env.get("SITE_URL") ?? "https://boxedbydweenie.boxedbydweenie.workers.dev";
+// Sites allowed to call this API. Add more with the ALLOWED_ORIGINS secret (comma-separated).
+const ALLOWED = [
+  "https://boxedbydweenie.boxedbydweenie.workers.dev", "https://boxedbydweenie.com", "https://www.boxedbydweenie.com",
+  ...(Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+];
 
 const GIFT_CARD_MIN = 5000, GIFT_CARD_MAX = 1000000, MAX_QTY = 1000, NOTE_LIMIT = 250;
 const PACKAGING = new Set(["signature-black", "ivory"]);
 
 function cors(origin: string | null) {
-  const ok = origin && (ALLOWED.length === 0 || ALLOWED.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
+  const ok = origin && (ALLOWED.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
   return {
     "Access-Control-Allow-Origin": ok ? origin! : SITE_URL,
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
