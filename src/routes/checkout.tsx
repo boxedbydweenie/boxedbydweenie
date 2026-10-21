@@ -85,7 +85,7 @@ function CheckoutPage() {
   };
 
   return <SiteShell><main className="bg-paper">
-    <div className="border-b border-border bg-ivory"><div className="mx-auto max-w-7xl px-5 py-8"><h1 className="text-3xl">Checkout</h1></div></div>
+    <div className="brand-pattern-navy text-on-dark"><div className="mx-auto max-w-7xl px-5 py-12 md:py-16"><p className="eyebrow text-gold">Almost there</p><div aria-hidden className="mt-3 h-px w-14 bg-gold" /><h1 className="mt-5 text-4xl md:text-6xl">Check<span className="text-gold">out</span></h1></div></div>
     <Collapsible className="border-b border-border bg-ivory lg:hidden">
       <CollapsibleTrigger className="flex min-h-14 w-full items-center justify-between px-5 text-sm font-semibold">Order summary <span className="flex items-center gap-2">{formatNaira(total)}<ChevronDown className="size-4" /></span></CollapsibleTrigger>
       <CollapsibleContent className="px-5 pb-6"><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} setPromoCode={setPromoCode} /></CollapsibleContent>
@@ -119,7 +119,7 @@ function CheckoutPage() {
         {error && <p role="alert" className="mt-6 text-sm text-destructive">{error}</p>}
         <div className="py-8"><LoadingButton type="submit" size="lg" loading={busy} className="w-full">Pay {formatNaira(total)} securely</LoadingButton></div>
       </form>
-      <aside className="hidden py-8 lg:block"><div className="sticky top-24 rounded-md border border-border bg-ivory p-6"><h2 className="text-lg">Order summary</h2><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} setPromoCode={setPromoCode} /></div></aside>
+      <aside className="hidden py-8 lg:block"><div className="sticky top-24 rounded-md border border-border border-t-4 border-t-gold bg-ivory p-6 shadow-[0_24px_40px_-30px_rgba(41,40,40,.5)]"><h2 className="text-2xl">Order summary</h2><Summary items={items} fee={fee} promo={promo} setPromo={setPromo} setPromoCode={setPromoCode} /></div></aside>
     </div>
   </main></SiteShell>;
 }

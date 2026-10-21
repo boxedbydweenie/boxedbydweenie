@@ -167,14 +167,14 @@ function DispenserPage() {
     ...(() => { const m = DISPENSER_RECIPIENTS.find((r) => r.slug === answers.who)?.matches; return m && m.length === 1 ? { recipient: m[0] } : {}; })(),
   };
 
-  return <SiteShell><main className="surface-dark relative overflow-hidden">
+  return <SiteShell><main className="surface-dark brand-pattern-plum relative overflow-hidden">
     <div className="pattern-leaf absolute inset-0 opacity-[0.04]" />
     <TimerRing seconds={seconds} />
     <div className="relative mx-auto max-w-6xl px-4 py-6 sm:px-5 sm:py-10">
       {phase !== "picks" && phase !== "done" && <Machine glow={phase === "dispensing"} dropping={phase === "dispensing"}>
         {phase === "intro" && <div className="text-center">
           <p className="eyebrow text-gold">Gift Dispenser</p>
-          <h1 className="mt-3 text-2xl text-on-dark sm:text-3xl">Gift in 60 seconds</h1>
+          <h1 className="mt-3 text-4xl text-on-dark sm:text-6xl">Gift in <span className="text-gold">60 seconds</span></h1>
           <p className="mt-3 text-on-dark-muted">Tell us three things. We'll do the rest.</p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2"><Button size="lg" onClick={() => setPhase("who")}>Start</Button><Button size="lg" variant="outline" className="text-on-dark" onClick={surprise}><Shuffle />Surprise me</Button></div>
         </div>}
@@ -195,7 +195,7 @@ function DispenserPage() {
       </Machine>}
 
       {phase === "picks" && result && <section aria-labelledby="picks-title">
-        <div className="px-12 text-center"><p className="eyebrow text-gold">Freshly dispensed</p><h1 id="picks-title" className="mt-2 text-2xl text-on-dark sm:text-3xl">Your three picks</h1>
+        <div className="px-12 text-center"><p className="eyebrow text-gold">Freshly dispensed</p><h1 id="picks-title" className="mt-2 text-4xl text-on-dark sm:text-5xl">Your three <span className="text-gold">picks</span></h1>
           {result.restocking && <p className="mt-3 text-sm text-on-dark-muted">The machine is restocking. Here are our bestsellers instead.</p>}</div>
         <div className="-mx-4 mt-4 flex snap-x snap-mandatory sm:mt-6 gap-4 overflow-x-auto px-4 pb-3 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
           {result.picks.map((p, i) => <PickCard key={p.product.id} pick={p} index={i} onSend={() => setSending(p.product)} />)}
