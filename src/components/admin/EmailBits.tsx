@@ -78,7 +78,7 @@ export function SendTable({ campaignId, showCampaign = true, onChanged }: { camp
     for (const r of rows ?? []) if (picked.has(r.id)) (g[r.campaign_id] ??= []).push(r.id);
     void resend(g);
   };
-  const resendable = (rows ?? []).filter((r) => RESENDABLE.includes(r.status));
+  const resendable = (rows ?? []).filter((r) => RESENDABLE.includes(r.status) && !r.is_test);
   const allPicked = resendable.length > 0 && resendable.every((r) => picked.has(r.id));
   const toggle = (id: string) => setPicked((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const pages = Math.max(1, Math.ceil(count / PAGE));
@@ -105,7 +105,7 @@ export function SendTable({ campaignId, showCampaign = true, onChanged }: { camp
         <tbody className="divide-y divide-black/5">
           {!rows && <tr><td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">Loading the log…</td></tr>}
           {rows && rows.length === 0 && <tr><td colSpan={8} className="px-3 py-10 text-center text-muted-foreground">No emails here yet.</td></tr>}
-          {rows?.map((r) => { const s = SEND_STATUS[r.status] ?? { label: r.status, cls: "bg-black/5" }; const can = RESENDABLE.includes(r.status); const latest = r.clicked_at ?? r.opened_at ?? r.delivered_at ?? r.bounced_at ?? r.complained_at ?? r.sent_at;
+          {rows?.map((r) => { const s = SEND_STATUS[r.status] ?? { label: r.status, cls: "bg-black/5" }; const can = RESENDABLE.includes(r.status) && !r.is_test; const latest = r.clicked_at ?? r.opened_at ?? r.delivered_at ?? r.bounced_at ?? r.complained_at ?? r.sent_at;
             return <tr key={r.id} className="hover:bg-[#FBF8F1]">
               <td className="px-3 py-3">{can && <input type="checkbox" aria-label={`Select ${r.email}`} checked={picked.has(r.id)} onChange={() => toggle(r.id)} className="size-4 accent-[var(--color-nero)]" />}</td>
               <td className="px-3 py-3 font-medium">{r.email}{r.is_test && <span className="ml-2 rounded bg-[#EB826C]/20 px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#83252C]">Test</span>}</td>
