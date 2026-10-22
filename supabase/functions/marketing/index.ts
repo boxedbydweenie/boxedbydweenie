@@ -1,6 +1,6 @@
 // Email marketing API for the team area. Staff only: send the signed-in user's access token as `Authorization: Bearer ...`.
 // Reads happen in the browser through row-level security; every WRITE goes through here (service role).
-// POST { action, ... }  actions: sync, import_chunk, contact_suppress, campaign_save, campaign_delete, render, test_send,
+// POST { action, ... }  actions: sync, import_chunk, contact_suppress, contact_update, campaign_save, campaign_delete, render, test_send,
 //                               campaign_send, campaign_pause, campaign_resume, campaign_cancel, requeue
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
@@ -98,6 +98,25 @@ Deno.serve(async (req) => {
       if (b.erase) Object.assign(patch, { first_name: null, last_name: null, company: null, tags: [] });
       const { error } = await db.from("marketing_contacts").update(patch).eq("id", id).in("status", ["active", "unsubscribed"]);
       if (error) throw error; return json({ ok: true }, 200, h);
+    }
+
+    if (action === "contact_update") {
+      const id = str(b.id, 40); if (!UUID.test(id)) throw new Fail(400, "Unknown contact.");
+      const { data: cur } = await db.from("marketing_contacts").select("id,email,status").eq("id", id).maybeSingle();
+      if (!cur) throw new Fail(404, "Contact not found.");
+      const now = new Date().toISOString();
+      const patch: Record<string, unknown> = { first_name: str(b.first_name, 80) || null, last_name: str(b.last_name, 80) || null, company: str(b.company, 120) || null, updated_at: now };
+      const email = str(b.email, 200).toLowerCase();
+      if (email && email !== cur.email) {
+        // Changing the address of someone who opted out, bounced or complained would let them be emailed again, so it is blocked.
+        if (cur.status !== "active") throw new Fail(409, "This contact has opted out or bounced, so the email address is locked. Their name and company can still be edited.");
+        if (!isEmail(email) || email.length > 190) throw new Fail(400, "That does not look like a valid email address.");
+        const { data: clash } = await db.from("marketing_contacts").select("id").eq("email", email).maybeSingle();
+        if (clash) throw new Fail(409, "Another contact already uses that email address.");
+        patch.email = email;
+      }
+      const { data, error } = await db.from("marketing_contacts").update(patch).eq("id", id).select("*").single();
+      if (error) throw error; return json({ contact: data }, 200, h);
     }
 
     if (action === "campaign_save") {

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Download, RefreshCw, Search, ShieldAlert, Upload, UserMinus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Pencil, RefreshCw, Search, ShieldAlert, Upload, UserMinus, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { BASES, callMarketing, fmtWhen, guessMapping, parseCsv, type AudienceSummary, type Basis, type Contact, type FieldKey } from "@/lib/marketing";
@@ -42,9 +42,115 @@ function Audience() {
       <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{BASES.map((b) => <li key={b.key} className="flex items-center gap-2.5 text-sm"><span className={cn("size-2.5 rounded-full", b.dot)} /><span className="flex-1">{b.label}</span><b>{(sum.bases?.[b.key] ?? 0).toLocaleString()}</b></li>)}</ul>
       {Object.keys(sum.tags ?? {}).length > 0 && <div className="mt-5 flex flex-wrap gap-2">{Object.entries(sum.tags).sort((a, b) => b[1] - a[1]).map(([t, n]) => <span key={t} className="rounded-full bg-[#F4EFE5] px-3 py-1 text-xs">{t} · {n}</span>)}</div>}
     </Card>}
+    <div className="mt-6"><AddContacts onDone={refresh} /></div>
     <div className="mt-6"><Importer onDone={refresh} /></div>
     <div className="mt-6"><Contacts version={version} onChanged={refresh} /></div>
     <div className="mt-6"><History version={version} /></div>
+  </div>;
+}
+
+const EMAIL_RE = /[^\s,;<>"'()]+@[^\s,;<>"'()]+\.[^\s,;<>"'()]+/g;
+interface NewRow { email: string; first_name: string; last_name: string; company: string; tags: string[] }
+
+/** Turns pasted text into contacts. Accepts one address per line, "Ada Obi <ada@x.com>", "Ada Obi, ada@x.com, Acme Ltd", or many addresses separated by commas. */
+function parsePasted(text: string): { rows: NewRow[]; invalid: number } {
+  const seen = new Set<string>(); const rows: NewRow[] = []; let invalid = 0;
+  const push = (r: NewRow) => { if (seen.has(r.email)) return; seen.add(r.email); rows.push(r); };
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim(); if (!line) continue;
+    const found = line.match(EMAIL_RE);
+    if (!found) { invalid++; continue; }
+    if (found.length > 1) { found.forEach((e) => push({ email: e.toLowerCase(), first_name: "", last_name: "", company: "", tags: [] })); continue; }
+    const parts = line.replace(found[0]!, " ").replace(/[<>"']/g, " ").split(/[,;\t|]/).map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean);
+    const [first = "", ...rest] = (parts[0] ?? "").split(" ");
+    push({ email: found[0]!.toLowerCase(), first_name: first, last_name: rest.join(" "), company: parts[1] ?? "", tags: [] });
+  }
+  return { rows, invalid };
+}
+
+function AddContacts({ onDone }: { onDone: () => void }) {
+  const [mode, setMode] = useState<"one" | "paste">("one");
+  const [f, setF] = useState({ email: "", first_name: "", last_name: "", company: "" });
+  const [pasted, setPasted] = useState("");
+  const [basis, setBasis] = useState<Basis | "">("");
+  const [tags, setTags] = useState("");
+  const [ok, setOk] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ added: number; updated: number; invalid: number; suppressed: number } | null>(null);
+  const parsed = mode === "paste" ? parsePasted(pasted) : null;
+  const rows: NewRow[] = mode === "one" ? (f.email.trim() ? [{ ...f, email: f.email.trim().toLowerCase(), tags: [] }] : []) : parsed!.rows;
+  const picked = BASES.find((b) => b.key === basis);
+  const input = "mt-1 min-h-11 w-full rounded-md border border-black/15 bg-white px-3 text-sm";
+
+  const go = async () => {
+    if (!basis || !rows.length) return;
+    setBusy(true); setResult(null);
+    const importId = crypto.randomUUID(); const total = { added: 0, updated: 0, invalid: 0, suppressed: 0 };
+    try {
+      const tagList = tags.split(",").map((x) => x.trim()).filter(Boolean);
+      for (let i = 0; i < rows.length; i += 500) {
+        const r = await callMarketing<typeof total>("import_chunk", { import_id: importId, filename: mode === "one" ? "Added by hand" : "Pasted list", basis, tags: tagList, rows: rows.slice(i, i + 500) });
+        (Object.keys(total) as (keyof typeof total)[]).forEach((k) => { total[k] += r[k]; });
+      }
+      total.invalid += parsed?.invalid ?? 0;
+      setResult(total); onDone();
+      if (total.added + total.updated > 0) { toast.success(total.added + total.updated === 1 ? "Contact saved." : `${total.added + total.updated} contacts saved.`); setF({ email: "", first_name: "", last_name: "", company: "" }); setPasted(""); setOk(false); }
+      else toast.error("Nothing was added. See the summary below.");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Could not save. Please try again."); onDone(); } finally { setBusy(false); }
+  };
+
+  return <Card title="Add contacts" hint="No CSV needed. Add one person, or paste a list of emails. Anyone who has unsubscribed or bounced is never brought back." accent="from-[#86BAA3] to-[#E7B93B]">
+    <div className="inline-flex rounded-full border border-black/15 bg-white p-1 text-sm font-semibold" role="tablist">
+      {([["one", "Add one person"], ["paste", "Paste a list"]] as const).map(([k, label]) => <button key={k} type="button" role="tab" aria-selected={mode === k} onClick={() => { setMode(k); setResult(null); }} className={cn("min-h-9 rounded-full px-4", mode === k ? "bg-nero text-white" : "hover:bg-black/5")}>{label}</button>)}
+    </div>
+    {result && <div className="mt-5 grid gap-3 rounded-xl bg-[#DDF0E6] p-4 text-sm sm:grid-cols-4"><span><b className="font-heading text-2xl">{result.added}</b><br />new contacts</span><span><b className="font-heading text-2xl">{result.updated}</b><br />updated</span><span><b className="font-heading text-2xl">{result.suppressed}</b><br />skipped (opted out or bounced)</span><span><b className="font-heading text-2xl">{result.invalid}</b><br />not valid emails</span></div>}
+    <div className="mt-5 space-y-5">
+      {mode === "one" ? <div className="grid gap-4 sm:grid-cols-2">
+        <label className="text-sm sm:col-span-2"><span className="font-semibold">Email address</span><input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="name@company.com" autoComplete="off" className={input} /></label>
+        <label className="text-sm"><span className="font-semibold">First name</span><input value={f.first_name} onChange={(e) => setF({ ...f, first_name: e.target.value })} className={input} /></label>
+        <label className="text-sm"><span className="font-semibold">Last name</span><input value={f.last_name} onChange={(e) => setF({ ...f, last_name: e.target.value })} className={input} /></label>
+        <label className="text-sm sm:col-span-2"><span className="font-semibold">Company <span className="font-normal text-muted-foreground">(optional)</span></span><input value={f.company} onChange={(e) => setF({ ...f, company: e.target.value })} className={input} /></label>
+      </div> : <div>
+        <label className="text-sm"><span className="font-semibold">Paste emails</span>
+          <textarea value={pasted} onChange={(e) => setPasted(e.target.value)} rows={7} placeholder={"ada@company.com\nBayo Ade <bayo@company.com>\nChidi Eze, chidi@company.com, Acme Ltd"} className="mt-1 w-full rounded-md border border-black/15 bg-white px-3 py-2 font-mono text-sm" /></label>
+        <p className="mt-2 text-xs text-muted-foreground">One per line, or separated by commas. You can add a name (and company) on the same line.</p>
+        {pasted.trim() && <p className="mt-2 text-sm"><b>{parsed!.rows.length}</b> valid {parsed!.rows.length === 1 ? "email" : "emails"} found{parsed!.invalid > 0 && <span className="text-[#83252C]"> · {parsed!.invalid} {parsed!.invalid === 1 ? "line" : "lines"} without an email will be skipped</span>}</p>}
+      </div>}
+      <div><p className="text-sm font-semibold">Where did {mode === "one" ? "this contact" : "these contacts"} come from?</p>
+        <select value={basis} onChange={(e) => setBasis(e.target.value as Basis)} aria-label="Where did they come from" className="mt-1.5 min-h-11 w-full rounded-md border border-black/15 bg-white px-3 text-sm sm:max-w-md"><option value="">Choose one…</option>{BASES.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}</select>
+        {picked && <p className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground"><span className={cn("size-2 rounded-full", picked.dot)} />{picked.hint}</p>}
+        {basis === "unverified" && <p className="mt-3 flex gap-2 rounded-lg bg-[#FBE0DA] p-3 text-sm text-[#83252C]"><ShieldAlert className="mt-0.5 size-4 shrink-0" />Unverified contacts are left out of campaigns unless you tick them on purpose.</p>}
+      </div>
+      <label className="block text-sm"><span className="font-semibold">Tags <span className="font-normal text-muted-foreground">(optional, comma separated)</span></span><input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g. banks, lagos-expo-2026" className={input} /></label>
+      <label className="flex gap-3 rounded-xl bg-gold/20 p-4 text-sm"><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} className="mt-0.5 size-4 accent-[var(--color-nero)]" /><span>I confirm I am allowed to email {mode === "one" ? "this person" : "these people"}, and that they can opt out at any time with the link in every email.</span></label>
+      <button type="button" disabled={busy || !ok || !basis || !rows.length} onClick={() => void go()} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-nero px-8 text-sm font-semibold text-white shadow-lg disabled:opacity-40"><UserPlus className="size-4" />{busy ? "Saving…" : rows.length > 1 ? `Add ${rows.length.toLocaleString()} contacts` : "Add contact"}</button>
+    </div>
+  </Card>;
+}
+
+function EditContact({ c, onClose, onSaved }: { c: Contact; onClose: () => void; onSaved: () => void }) {
+  const [f, setF] = useState({ email: c.email, first_name: c.first_name ?? "", last_name: c.last_name ?? "", company: c.company ?? "" });
+  const [busy, setBusy] = useState(false);
+  const locked = c.status !== "active";
+  useEffect(() => { const k = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
+  const save = async () => {
+    setBusy(true);
+    try { await callMarketing("contact_update", { id: c.id, ...f }); toast.success("Contact updated."); onSaved(); onClose(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not save."); } finally { setBusy(false); }
+  };
+  const input = "mt-1 min-h-11 w-full rounded-md border border-black/15 bg-white px-3 text-sm disabled:bg-black/5 disabled:text-muted-foreground";
+  return <div className="fixed inset-0 z-50 grid place-items-center bg-nero/60 p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div role="dialog" aria-modal="true" aria-labelledby="edit-contact-title" className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="flex items-start justify-between gap-4"><h2 id="edit-contact-title" className="font-heading text-2xl">Edit contact</h2><button type="button" onClick={onClose} aria-label="Close" className="grid size-9 place-items-center rounded-full border border-black/15 hover:bg-black/5"><X className="size-4" /></button></div>
+      <form className="mt-5 grid gap-4 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); void save(); }}>
+        <label className="text-sm sm:col-span-2"><span className="font-semibold">Email address</span><input type="email" required value={f.email} disabled={locked} onChange={(e) => setF({ ...f, email: e.target.value })} className={input} />
+          {locked && <span className="mt-1 block text-xs text-muted-foreground">This contact has opted out or bounced, so the address is locked. Name and company can still be changed.</span>}</label>
+        <label className="text-sm"><span className="font-semibold">First name</span><input autoFocus value={f.first_name} onChange={(e) => setF({ ...f, first_name: e.target.value })} className={input} /></label>
+        <label className="text-sm"><span className="font-semibold">Last name</span><input value={f.last_name} onChange={(e) => setF({ ...f, last_name: e.target.value })} className={input} /></label>
+        <label className="text-sm sm:col-span-2"><span className="font-semibold">Company</span><input value={f.company} onChange={(e) => setF({ ...f, company: e.target.value })} className={input} /></label>
+        <div className="mt-2 flex justify-end gap-3 sm:col-span-2"><button type="button" onClick={onClose} className="min-h-11 rounded-full border border-black/15 px-6 text-sm font-semibold hover:bg-black/5">Cancel</button><button type="submit" disabled={busy || !f.email.trim()} className="min-h-11 rounded-full bg-nero px-7 text-sm font-semibold text-white disabled:opacity-40">{busy ? "Saving…" : "Save changes"}</button></div>
+      </form>
+    </div>
   </div>;
 }
 
@@ -124,6 +230,7 @@ function Importer({ onDone }: { onDone: () => void }) {
 
 function Contacts({ version, onChanged }: { version: number; onChanged: () => void }) {
   const [rows, setRows] = useState<Contact[] | null>(null); const [count, setCount] = useState(0); const [page, setPage] = useState(0);
+  const [editing, setEditing] = useState<Contact | null>(null);
   const [q, setQ] = useState(""); const [qd, setQd] = useState(""); const [status, setStatus] = useState("all"); const [basis, setBasis] = useState("all");
   useEffect(() => { const t = setTimeout(() => { setQd(q.trim()); setPage(0); }, 300); return () => clearTimeout(t); }, [q]);
   const load = useCallback(async () => {
@@ -145,7 +252,7 @@ function Contacts({ version, onChanged }: { version: number; onChanged: () => vo
       <select aria-label="Status" value={status} onChange={(e) => { setStatus(e.target.value); setPage(0); }} className={sel}><option value="all">Any status</option><option value="active">Active</option><option value="unsubscribed">Unsubscribed</option><option value="bounced">Bounced</option><option value="complained">Complained</option></select>
       <select aria-label="Source" value={basis} onChange={(e) => { setBasis(e.target.value); setPage(0); }} className={sel}><option value="all">Any source</option>{BASES.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}</select>
     </div>
-    <div className="mt-4 overflow-x-auto rounded-xl border border-black/10"><table className="w-full min-w-[44rem] text-left text-sm"><thead className="bg-[#F4EFE5] text-xs uppercase tracking-wider text-nero/70"><tr><th className="px-3 py-3">Contact</th><th className="px-3 py-3">Source</th><th className="px-3 py-3">Tags</th><th className="px-3 py-3">Status</th><th className="px-3 py-3">Added</th><th className="w-24 px-3 py-3" /></tr></thead>
+    <div className="mt-4 overflow-x-auto rounded-xl border border-black/10"><table className="w-full min-w-[44rem] text-left text-sm"><thead className="bg-[#F4EFE5] text-xs uppercase tracking-wider text-nero/70"><tr><th className="px-3 py-3">Contact</th><th className="px-3 py-3">Source</th><th className="px-3 py-3">Tags</th><th className="px-3 py-3">Status</th><th className="px-3 py-3">Added</th><th className="w-36 px-3 py-3" /></tr></thead>
       <tbody className="divide-y divide-black/5">
         {!rows && <tr><td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">Loading…</td></tr>}
         {rows?.length === 0 && <tr><td colSpan={6} className="px-3 py-10 text-center text-muted-foreground">No contacts match.</td></tr>}
@@ -155,10 +262,11 @@ function Contacts({ version, onChanged }: { version: number; onChanged: () => vo
           <td className="max-w-[12rem] px-3 py-3 text-xs text-muted-foreground">{c.tags.join(", ")}</td>
           <td className="px-3 py-3"><Pill cls={STATUS_CLS[c.status] ?? ""}>{c.status}</Pill></td>
           <td className="whitespace-nowrap px-3 py-3 text-xs text-muted-foreground">{fmtWhen(c.created_at)}</td>
-          <td className="px-3 py-3 text-right">{c.status !== "bounced" && c.status !== "complained" && <span className="inline-flex gap-1">{c.status === "active" && <button type="button" onClick={() => void suppress(c, false)} aria-label={`Stop emailing ${c.email}`} title="Stop emailing" className="grid size-8 place-items-center rounded-full border border-black/15 hover:bg-black/5"><UserMinus className="size-4" /></button>}<button type="button" onClick={() => void suppress(c, true)} className="min-h-8 rounded-full border border-black/15 px-2.5 text-xs hover:bg-[#FBE0DA]">Erase</button></span>}</td></tr>; })}
+          <td className="px-3 py-3 text-right"><span className="inline-flex gap-1"><button type="button" onClick={() => setEditing(c)} aria-label={`Edit ${c.email}`} title="Edit contact" className="grid size-8 place-items-center rounded-full border border-black/15 hover:bg-black/5"><Pencil className="size-4" /></button>{c.status !== "bounced" && c.status !== "complained" && <>{c.status === "active" && <button type="button" onClick={() => void suppress(c, false)} aria-label={`Stop emailing ${c.email}`} title="Stop emailing" className="grid size-8 place-items-center rounded-full border border-black/15 hover:bg-black/5"><UserMinus className="size-4" /></button>}<button type="button" onClick={() => void suppress(c, true)} className="min-h-8 rounded-full border border-black/15 px-2.5 text-xs hover:bg-[#FBE0DA]">Erase</button></>}</span></td></tr>; })}
       </tbody></table></div>
     <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground"><span>{count ? `${page * PAGE + 1} to ${Math.min(count, page * PAGE + PAGE)} of ${count.toLocaleString()}` : ""}</span>
       <span className="flex items-center gap-1"><button type="button" aria-label="Previous page" disabled={page === 0} onClick={() => setPage((p) => p - 1)} className="grid size-9 place-items-center rounded-full border border-black/15 bg-white disabled:opacity-40"><ChevronLeft className="size-4" /></button><span className="px-2">{page + 1} / {pages}</span><button type="button" aria-label="Next page" disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)} className="grid size-9 place-items-center rounded-full border border-black/15 bg-white disabled:opacity-40"><ChevronRight className="size-4" /></button></span></div>
+    {editing && <EditContact c={editing} onClose={() => setEditing(null)} onSaved={() => { void load(); onChanged(); }} />}
   </Card>;
 }
 

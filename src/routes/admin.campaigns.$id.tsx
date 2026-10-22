@@ -33,7 +33,8 @@ function Editor() {
   const [okUnverified, setOkUnverified] = useState(false);
   const [sending, setSending] = useState(false);
   const [imgBusy, setImgBusy] = useState(false);
-  const [lastImg, setLastImg] = useState("");
+  const [imgs, setImgs] = useState<{ name: string; url: string }[]>([]);
+  const [imgDrag, setImgDrag] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
@@ -95,11 +96,21 @@ function Editor() {
     patch({ html: text });
     toast.success(`Loaded ${f.name}.`);
   };
-  const addImage = async (f: File | undefined) => {
-    if (!f) return;
+  const addImages = async (files: FileList | File[] | null | undefined) => {
+    const list = Array.from(files ?? []); if (!list.length) return;
     setImgBusy(true);
-    try { const url = await uploadEmailImage(f); setLastImg(url); await navigator.clipboard?.writeText(url).catch(() => undefined); toast.success("Image uploaded. Link copied."); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Upload failed."); } finally { setImgBusy(false); }
+    const done: { name: string; url: string }[] = []; const failed: string[] = [];
+    for (const f of list) {
+      try { done.push({ name: f.name, url: await uploadEmailImage(f) }); }
+      catch (e) { failed.push(`${f.name}: ${e instanceof Error ? e.message : "Upload failed."}`); }
+    }
+    if (done.length) {
+      setImgs((x) => [...done, ...x]);
+      await navigator.clipboard?.writeText(done.map((d) => d.url).join("\n")).catch(() => undefined);
+      toast.success(done.length === 1 ? "Image uploaded. Link copied." : `${done.length} images uploaded. Their links are copied.`);
+    }
+    failed.forEach((m) => toast.error(m));
+    setImgBusy(false);
   };
 
   const toggleBasis = (b: Basis) => {
@@ -181,6 +192,10 @@ function Editor() {
         <StatTile tone="bg-[#86BAA3] text-nero" label="Clicked" value={pct(stats?.clicked ?? 0, dlv)} />
         <StatTile tone="bg-[#192850] text-[#F4EFE5]" label="Bounced / failed" value={(stats?.bounced ?? 0) + (stats?.failed ?? 0)} />
       </div>
+      {stats && dlv >= 3 && opn === 0 && c.status !== "sending" && <div role="note" className="rounded-2xl border border-[#E7B93B] bg-[#FFF8E1] p-5 text-sm">
+        <p className="font-semibold">No opens or clicks recorded yet</p>
+        <p className="mt-1 text-muted-foreground">Delivered emails are being counted, but opens and clicks only appear once tracking is switched on in Resend. In Resend, open <b>Domains</b>, choose <b>mail.boxedbydweenie.com</b>, turn on <b>Open tracking</b> and <b>Click tracking</b>, and make sure the tracking domain shows as Verified. Then open <b>Webhooks</b> and tick <b>email.opened</b> and <b>email.clicked</b>. Opens are never exact: some inboxes (Apple Mail, Gmail) hide or pre-load them, so treat clicks as the more reliable signal.</p>
+      </div>}
       {(c.status === "sending" || c.status === "paused") && stats && <Card title={c.status === "sending" ? "Sending now" : "Paused"} hint={`${stats.total - stats.queued} of ${stats.total} processed. Started ${fmtWhen(c.queued_at)}.`}>
         <div className="h-3 overflow-hidden rounded-full bg-black/5"><div className="h-full rounded-full bg-gradient-to-r from-[#E7B93B] to-[#EB826C] transition-all" style={{ width: `${stats.total ? Math.round(((stats.total - stats.queued) / stats.total) * 100) : 0}%` }} /></div>
         <div className="mt-4 flex flex-wrap gap-3">
@@ -212,10 +227,20 @@ function Editor() {
           <div className="mt-4 flex flex-wrap items-center gap-2"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Personalise</span>
             {TAGS.map((t) => <button key={t} type="button" onClick={() => { void navigator.clipboard?.writeText(t); toast.success(`${t} copied. Paste it into your HTML.`); }} className="inline-flex min-h-8 items-center gap-1 rounded-full bg-[#F4EFE5] px-3 font-mono text-xs hover:bg-gold/40"><Copy className="size-3" />{t}</button>)}</div>
           <p className="mt-2 text-xs text-muted-foreground">{"{{unsubscribe_url}}"} is optional. If your file does not include it, we add a compliant footer with the unsubscribe link and our address automatically.</p>
-          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-[#F4EFE5]/60 p-3">
-            <button type="button" onClick={() => imgRef.current?.click()} disabled={imgBusy} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-nero px-4 text-sm font-semibold disabled:opacity-50"><ImagePlus className="size-4" />{imgBusy ? "Uploading…" : "Upload an image for your email"}</button>
-            <input ref={imgRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={(e) => { void addImage(e.target.files?.[0]); e.target.value = ""; }} />
-            {lastImg ? <button type="button" onClick={() => { void navigator.clipboard?.writeText(lastImg); toast.success("Link copied."); }} className="min-w-0 max-w-full truncate text-xs underline" title={lastImg}>{lastImg}</button> : <span className="text-xs text-muted-foreground">You get a link to use as the image src in your HTML. All your uploads live under Images.</span>}
+          <div onDragOver={(e) => { e.preventDefault(); setImgDrag(true); }} onDragLeave={() => setImgDrag(false)} onDrop={(e) => { e.preventDefault(); setImgDrag(false); void addImages(e.dataTransfer.files); }}
+            className={cn("mt-4 rounded-xl border-2 border-dashed p-3 transition", imgDrag ? "border-gold bg-gold/10" : "border-transparent bg-[#F4EFE5]/60")}>
+            <div className="flex flex-wrap items-center gap-3">
+              <button type="button" onClick={() => imgRef.current?.click()} disabled={imgBusy} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-nero px-4 text-sm font-semibold disabled:opacity-50"><ImagePlus className="size-4" />{imgBusy ? "Uploading…" : "Upload images for your email"}</button>
+              <input ref={imgRef} type="file" multiple accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" onChange={(e) => { void addImages(e.target.files); e.target.value = ""; }} />
+              <span className="text-xs text-muted-foreground">Choose as many as you like, or drop them here. Each gets its own link to use as the image src. All uploads also live under Images.</span>
+            </div>
+            {imgs.length > 0 && <ul className="mt-3 space-y-2">
+              {imgs.map((im) => <li key={im.url} className="flex items-center gap-3 rounded-lg bg-white p-2 text-xs">
+                <img src={im.url} alt="" className="size-10 shrink-0 rounded object-cover" />
+                <span className="min-w-0 flex-1"><b className="block truncate">{im.name}</b><span className="block truncate text-muted-foreground" title={im.url}>{im.url}</span></span>
+                <button type="button" onClick={() => { void navigator.clipboard?.writeText(im.url); toast.success("Link copied."); }} className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-full border border-black/15 px-3 font-semibold hover:bg-gold/30"><Copy className="size-3" />Copy link</button>
+              </li>)}
+            </ul>}
           </div>
           <details className="mt-4"><summary className="cursor-pointer text-sm font-semibold">Paste or edit the HTML</summary>
             <textarea value={c.html} onChange={(e) => patch({ html: e.target.value })} spellCheck={false} rows={12} className="mt-3 w-full rounded-md border border-black/15 bg-white p-3 font-mono text-xs" placeholder="<html>…</html>" /></details>
