@@ -24,8 +24,30 @@ export function mergeTags(text: string, r: Recipient, escapeValues: boolean) {
 
 const footerHtml = (url: string) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:26px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;color:#7a746a">You are receiving this email from Boxed by Dweenie. If you would rather not hear from us, you can <a href="${url}" style="color:#7a746a;text-decoration:underline">unsubscribe</a> at any time.<br>${esc(POSTAL)}<br><a href="${SITE_URL}/privacy" style="color:#7a746a">Privacy policy</a></td></tr></table>`;
 
+/** Plain-text twin of the HTML email. Sending both parts ("multipart/alternative") is what mail filters, Microsoft's especially, expect from real mail. */
+export function htmlToText(html: string): string {
+  const ENT: Record<string, string> = { nbsp: " ", amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", rsquo: "'", lsquo: "'", rdquo: '"', ldquo: '"', mdash: "-", ndash: "-", hellip: "...", middot: "·", rarr: "->", larr: "<-", copy: "(c)" };
+  let t = html
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<(head|style|script|title)[\s\S]*?<\/\1>/gi, "")
+    .replace(/<[^>]+display\s*:\s*none[^>]*>[\s\S]*?<\/(div|span|p|td)>/gi, "")
+    .replace(/<img[^>]*alt=["']([^"']+)["'][^>]*>/gi, " $1 ")
+    .replace(/<a\s[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_m, href: string, label: string) => {
+      const l = label.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+      if (!/^https?:\/\//i.test(href) || !l || l === href) return l;
+      return `${l} (${href})`;
+    })
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|tr|table|h[1-6]|li|ul|ol|blockquote)>/gi, "\n")
+    .replace(/<\/td>/gi, " ")
+    .replace(/<[^>]+>/g, "");
+  t = t.replace(/&#(\d+);/g, (_m, n: string) => String.fromCodePoint(Number(n))).replace(/&#x([0-9a-f]+);/gi, (_m, n: string) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&([a-z]+);/gi, (m, n: string) => ENT[n.toLowerCase()] ?? m);
+  return t.split("\n").map((l) => l.replace(/[ \t\u00a0\u200c\u034f]+/g, " ").trim()).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 /** Final HTML for one recipient: merge tags filled, script tags removed, compliance footer added when the file has no unsubscribe link of its own. */
-export function renderEmail(o: { html: string; preheader?: string }, r: Recipient): { html: string; warnings: string[] } {
+export function renderEmail(o: { html: string; preheader?: string }, r: Recipient): { html: string; text: string; warnings: string[] } {
   const warnings: string[] = [];
   const src = String(o.html ?? "").replace(/<script[\s\S]*?<\/script>/gi, "");
   const hasUnsub = /\{\{\s*unsubscribe_url\s*\}\}/i.test(src);
@@ -40,7 +62,7 @@ export function renderEmail(o: { html: string; preheader?: string }, r: Recipien
   if (/<img[^>]+src=["'](?!https:\/\/)/i.test(src)) warnings.push("Some images do not start with https://. Email apps cannot see images stored on your computer. Upload them in the Images page and use those links.");
   if (out.length > 100_000) warnings.push("This email is large. Gmail cuts off emails over about 100 KB, which can hide the unsubscribe link.");
   if (!/<a\s[^>]*href=/i.test(src)) warnings.push("There are no links in this email. Most campaigns have at least one button or link.");
-  return { html: out, warnings };
+  return { html: out, text: htmlToText(out), warnings };
 }
 
 /** Headers Gmail and Yahoo look for: one-click unsubscribe. */
@@ -49,7 +71,7 @@ export const listHeaders = (token: string) => ({
   "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
 });
 
-export interface OutEmail { from: string; to: string[]; subject: string; html: string; reply_to: string; headers: Record<string, string>; tags: { name: string; value: string }[] }
+export interface OutEmail { from: string; to: string[]; subject: string; html: string; text?: string; reply_to: string; headers: Record<string, string>; tags: { name: string; value: string }[] }
 export type SendResult = { ok: true; ids: string[] } | { ok: false; status: number; error: string; rateLimited: boolean; quota: boolean };
 
 async function post(path: string, body: unknown): Promise<SendResult> {

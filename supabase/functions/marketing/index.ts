@@ -157,7 +157,8 @@ Deno.serve(async (req) => {
       const results: { to: string; ok: boolean; error?: string }[] = [];
       for (const addr of to) {
         const r = { email: addr, unsub_token: TEST_TOKEN, first_name: null };
-        const res = await sendOne({ from: fromHeader(c.from_name), to: [addr], subject: "[TEST] " + mergeTags(c.subject, r, false), html: renderEmail({ html: c.html, preheader: c.preheader }, r).html,
+        const rendered = renderEmail({ html: c.html, preheader: c.preheader }, r);
+        const res = await sendOne({ from: fromHeader(c.from_name), to: [addr], subject: "[TEST] " + mergeTags(c.subject, r, false), html: rendered.html, text: rendered.text,
           reply_to: REPLY_TO, headers: listHeaders(TEST_TOKEN), tags: [{ name: "campaign_id", value: c.id }, { name: "kind", value: "test" }] });
         await db.from("email_sends").insert({ campaign_id: c.id, email: addr, is_test: true, status: res.ok ? "sent" : "failed", resend_id: res.ok ? res.ids[0] : null, error: res.ok ? null : res.error, attempts: 1, sent_at: res.ok ? new Date().toISOString() : null });
         results.push({ to: addr, ok: res.ok, error: res.ok ? undefined : res.error });

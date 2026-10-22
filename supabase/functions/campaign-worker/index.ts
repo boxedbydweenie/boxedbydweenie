@@ -33,7 +33,8 @@ Deno.serve(async () => {
       for (const r of rows) {
         const c = C.get(r.campaign_id), p = P.get(r.contact_id);
         if (!c || !p || p.status !== "active") { suppressed.push({ id: r.id, campaign_id: r.campaign_id, email: r.email, status: "suppressed", error: !p ? "Contact was removed" : `Contact is ${p?.status}`, claimed_at: null }); continue; }
-        items.push({ row: r, mail: { from: fromHeader(c.from_name), to: [p.email], subject: mergeTags(c.subject, p, false), html: renderEmail({ html: c.html, preheader: c.preheader }, p).html,
+        const rendered = renderEmail({ html: c.html, preheader: c.preheader }, p);
+        items.push({ row: r, mail: { from: fromHeader(c.from_name), to: [p.email], subject: mergeTags(c.subject, p, false), html: rendered.html, text: rendered.text,
           reply_to: REPLY_TO, headers: listHeaders(p.unsub_token), tags: [{ name: "campaign_id", value: c.id }, { name: "send_id", value: r.id }] } });
       }
       if (suppressed.length) await db.from("email_sends").upsert(suppressed, { onConflict: "id" });
