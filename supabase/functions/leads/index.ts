@@ -23,12 +23,15 @@ const str = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 
+let mailError = "";
 async function email(to: string[], subject: string, html: string, replyTo?: string) {
-  if (!RESEND || !to.length) return false;
+  if (!RESEND) { mailError = "RESEND_API_KEY is not set on the server"; console.error(mailError); return false; }
+  if (!to.length) { mailError = "no recipient"; console.error(mailError); return false; }
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
     body: JSON.stringify({ from: FROM, to, subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
   });
+  if (!r.ok) { mailError = `Resend ${r.status}: ${(await r.text().catch(() => "")).slice(0, 200)}`; console.error(mailError); }
   return r.ok;
 }
 
@@ -52,7 +55,7 @@ Deno.serve(async (req) => {
       if (!isEmail(to)) return json({ error: "Please enter a valid email address." }, 400, h);
       const total = data.details?.estimate?.total;
       const ok = await email([to], `Your Boxed by Dweenie quote ${data.ref}`, `<p>Hello ${esc(data.name.split(" ")[0]!)},</p><p>Your corporate gift estimate${total ? ` is between <b>₦${Math.round(total.low).toLocaleString("en-NG")}</b> and <b>₦${Math.round(total.high).toLocaleString("en-NG")}</b>` : " is ready"}.</p><p><a href="${SITE_URL}/corporate/quote/${encodeURIComponent(data.ref)}">View your full quote</a></p><p>A gifting consultant will contact you within one working day.</p><p>Happiness In a Box,<br>Boxed by Dweenie</p>`);
-      return json({ sent: ok }, 200, h);
+      return json({ sent: ok, ...(ok ? {} : { reason: mailError }) }, 200, h);
     }
     if (str(b.website)) return json({ reference: "BBD-OK" }, 200, h); // honeypot: silently accept bots
     const kind = b.kind === "consultation" ? "consultation" : b.kind === "contact" ? "contact" : b.kind === "quote" ? "quote" : "";
