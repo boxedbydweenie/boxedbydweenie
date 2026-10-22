@@ -11,7 +11,10 @@ const ALLOWED = [
   ...(Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
 ];
 const RESEND = Deno.env.get("RESEND_API_KEY") ?? "";
-const NOTIFY = (Deno.env.get("NOTIFY_EMAIL") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+const envList = (k: string, d: string[]) => { const v = (Deno.env.get(k) ?? "").split(",").map((s) => s.trim()).filter(Boolean); return v.length ? v : d; };
+// Team alerts: main inbox + Cc list. Add more Cc addresses here (or set the NOTIFY_CC secret, comma separated).
+const NOTIFY = envList("NOTIFY_EMAIL", ["hello@boxedbydweenie.com"]);
+const NOTIFY_CC = envList("NOTIFY_CC", ["ibrahimdurosimi@gmail.com"]);
 const FROM = "Boxed by Dweenie <hello@mail.boxedbydweenie.com>"; // sending domain verified in Resend
 
 function cors(origin: string | null) {
@@ -24,12 +27,12 @@ const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 
 let mailError = "";
-async function email(to: string[], subject: string, html: string, replyTo?: string) {
+async function email(to: string[], subject: string, html: string, replyTo?: string, cc?: string[]) {
   if (!RESEND) { mailError = "RESEND_API_KEY is not set on the server"; console.error(mailError); return false; }
   if (!to.length) { mailError = "no recipient"; console.error(mailError); return false; }
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to, subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
+    body: JSON.stringify({ from: FROM, to, ...(cc?.length ? { cc } : {}), subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
   });
   if (!r.ok) { mailError = `Resend ${r.status}: ${(await r.text().catch(() => "")).slice(0, 200)}`; console.error(mailError); }
   return r.ok;
@@ -82,7 +85,7 @@ Deno.serve(async (req) => {
 
     const lines = Object.entries({ Reference: ref, Type: kind, "Estimated total": quote?.estimate?.total ? `₦${Math.round(quote.estimate.total.low).toLocaleString("en-NG")} to ₦${Math.round(quote.estimate.total.high).toLocaleString("en-NG")}` : null, Name: name, Email: emailAddr, Phone: row.phone, Company: row.company, Role: row.role, Quantity: row.quantity, "Required by": row.required_by, "Enquiry type": row.enquiry_type, Message: row.message })
       .filter(([, v]) => v).map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#666">${k}</td><td style="padding:4px 0"><b>${esc(String(v))}</b></td></tr>`).join("");
-    const sent = await email(NOTIFY, `New ${kind === "consultation" ? "corporate consultation" : kind === "quote" ? "quote request" : "enquiry"} ${ref}: ${name}`, `<table>${lines}</table>`, emailAddr);
+    const sent = await email(NOTIFY, `New ${kind === "consultation" ? "corporate consultation" : kind === "quote" ? "quote request" : "enquiry"} ${ref}: ${name}`, `<table>${lines}</table>`, emailAddr, NOTIFY_CC);
     await email([emailAddr], kind === "quote" ? "Your Boxed by Dweenie quote " + ref : "We have received your enquiry", `<p>Hello ${esc(name.split(" ")[0]!)},</p><p>Thank you for contacting Boxed by Dweenie. Your reference is <b>${ref}</b>.${kind === "quote" ? ` <a href="${SITE_URL}/corporate/quote/${ref}">View your quote</a>.` : ""} We will reply within one working day (we are open 9am to 6pm).</p><p>Happiness In a Box,<br>Boxed by Dweenie</p>`);
     if (sent) await db.from("leads").update({ notified: true }).eq("ref", ref);
     return json({ reference: ref }, 200, h);
