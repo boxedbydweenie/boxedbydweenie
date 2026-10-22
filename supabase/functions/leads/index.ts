@@ -12,7 +12,7 @@ const ALLOWED = [
 ];
 const RESEND = Deno.env.get("RESEND_API_KEY") ?? "";
 const NOTIFY = (Deno.env.get("NOTIFY_EMAIL") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-const FROM = Deno.env.get("MAIL_FROM") ?? "Boxed by Dweenie <hello@boxedbydweenie.com>";
+const FROM = "Boxed by Dweenie <hello@mail.boxedbydweenie.com>"; // sending domain verified in Resend
 
 function cors(origin: string | null) {
   const ok = origin && (ALLOWED.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin));
