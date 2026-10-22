@@ -12,7 +12,7 @@ const toUser = (u: { email?: string | undefined; user_metadata?: Record<string, 
 });
 
 /** Create a real customer account, then sign in. */
-export async function signUp(input: { name: string; email: string; phone: string; password: string }) {
+export async function signUp(input: { name: string; email: string; phone: string; password: string; marketing?: boolean }) {
   await callAccount({ action: "signup", ...input });
   await signIn(input.email, input.password);
 }

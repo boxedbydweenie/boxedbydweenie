@@ -22,7 +22,11 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAudienceRouteImport } from './routes/admin.audience'
+import { Route as AdminEmailLogRouteImport } from './routes/admin.email-log'
+import { Route as AdminImagesRouteImport } from './routes/admin.images'
 import { Route as AdminLeadsRouteImport } from './routes/admin.leads'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
@@ -36,6 +40,8 @@ import { Route as SecretSantaIndexRouteImport } from './routes/secret-santa.inde
 import { Route as SecretSantaNewRouteImport } from './routes/secret-santa.new'
 import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
+import { Route as AdminCampaignsIndexRouteImport } from './routes/admin.campaigns.index'
+import { Route as AdminCampaignsIdRouteImport } from './routes/admin.campaigns.$id'
 import { Route as CalendarMyDatesIndexRouteImport } from './routes/calendar.my-dates.index'
 import { Route as CalendarMyDatesPersonIdRouteImport } from './routes/calendar.my-dates.$personId'
 import { Route as CorporateQuoteIndexRouteImport } from './routes/corporate.quote.index'
@@ -109,9 +115,29 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAudienceRoute = AdminAudienceRouteImport.update({
+  id: '/audience',
+  path: '/audience',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEmailLogRoute = AdminEmailLogRouteImport.update({
+  id: '/email-log',
+  path: '/email-log',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminImagesRoute = AdminImagesRouteImport.update({
+  id: '/images',
+  path: '/images',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminLeadsRoute = AdminLeadsRouteImport.update({
@@ -179,6 +205,16 @@ const ShopSlugRoute = ShopSlugRouteImport.update({
   path: '/shop/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCampaignsIndexRoute = AdminCampaignsIndexRouteImport.update({
+  id: '/campaigns/',
+  path: '/campaigns/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCampaignsIdRoute = AdminCampaignsIdRouteImport.update({
+  id: '/campaigns/$id',
+  path: '/campaigns/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 const CalendarMyDatesIndexRoute = CalendarMyDatesIndexRouteImport.update({
   id: '/calendar/my-dates/',
   path: '/calendar/my-dates/',
@@ -229,6 +265,10 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/audience': typeof AdminAudienceRoute
+  '/admin/email-log': typeof AdminEmailLogRoute
+  '/admin/images': typeof AdminImagesRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -243,10 +283,12 @@ export interface FileRoutesByFullPath {
   '/lookbook/': typeof LookbookIndexRoute
   '/secret-santa/': typeof SecretSantaIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
   '/secret-santa/join/$code': typeof SecretSantaJoinCodeRoute
+  '/admin/campaigns/': typeof AdminCampaignsIndexRoute
   '/calendar/my-dates/': typeof CalendarMyDatesIndexRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
   '/secret-santa/$id/': typeof SecretSantaIdIndexRoute
@@ -264,6 +306,10 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/audience': typeof AdminAudienceRoute
+  '/admin/email-log': typeof AdminEmailLogRoute
+  '/admin/images': typeof AdminImagesRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -278,10 +324,12 @@ export interface FileRoutesByTo {
   '/lookbook': typeof LookbookIndexRoute
   '/secret-santa': typeof SecretSantaIndexRoute
   '/shop': typeof ShopIndexRoute
+  '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
   '/secret-santa/join/$code': typeof SecretSantaJoinCodeRoute
+  '/admin/campaigns': typeof AdminCampaignsIndexRoute
   '/calendar/my-dates': typeof CalendarMyDatesIndexRoute
   '/corporate/quote': typeof CorporateQuoteIndexRoute
   '/secret-santa/$id': typeof SecretSantaIdIndexRoute
@@ -301,6 +349,10 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
+  '/unsubscribe': typeof UnsubscribeRoute
+  '/admin/audience': typeof AdminAudienceRoute
+  '/admin/email-log': typeof AdminEmailLogRoute
+  '/admin/images': typeof AdminImagesRoute
   '/admin/leads': typeof AdminLeadsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -315,10 +367,12 @@ export interface FileRoutesById {
   '/lookbook/': typeof LookbookIndexRoute
   '/secret-santa/': typeof SecretSantaIndexRoute
   '/shop/': typeof ShopIndexRoute
+  '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
   '/secret-santa/join/$code': typeof SecretSantaJoinCodeRoute
+  '/admin/campaigns/': typeof AdminCampaignsIndexRoute
   '/calendar/my-dates/': typeof CalendarMyDatesIndexRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
   '/secret-santa/$id/': typeof SecretSantaIdIndexRoute
@@ -339,6 +393,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/status'
     | '/terms'
+    | '/unsubscribe'
+    | '/admin/audience'
+    | '/admin/email-log'
+    | '/admin/images'
     | '/admin/leads'
     | '/admin/orders'
     | '/admin/products'
@@ -353,10 +411,12 @@ export interface FileRouteTypes {
     | '/lookbook/'
     | '/secret-santa/'
     | '/shop/'
+    | '/admin/campaigns/$id'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
     | '/secret-santa/join/$code'
+    | '/admin/campaigns/'
     | '/calendar/my-dates/'
     | '/corporate/quote/'
     | '/secret-santa/$id/'
@@ -374,6 +434,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/status'
     | '/terms'
+    | '/unsubscribe'
+    | '/admin/audience'
+    | '/admin/email-log'
+    | '/admin/images'
     | '/admin/leads'
     | '/admin/orders'
     | '/admin/products'
@@ -388,10 +452,12 @@ export interface FileRouteTypes {
     | '/lookbook'
     | '/secret-santa'
     | '/shop'
+    | '/admin/campaigns/$id'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
     | '/secret-santa/join/$code'
+    | '/admin/campaigns'
     | '/calendar/my-dates'
     | '/corporate/quote'
     | '/secret-santa/$id'
@@ -410,6 +476,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/status'
     | '/terms'
+    | '/unsubscribe'
+    | '/admin/audience'
+    | '/admin/email-log'
+    | '/admin/images'
     | '/admin/leads'
     | '/admin/orders'
     | '/admin/products'
@@ -424,10 +494,12 @@ export interface FileRouteTypes {
     | '/lookbook/'
     | '/secret-santa/'
     | '/shop/'
+    | '/admin/campaigns/$id'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
     | '/secret-santa/join/$code'
+    | '/admin/campaigns/'
     | '/calendar/my-dates/'
     | '/corporate/quote/'
     | '/secret-santa/$id/'
@@ -447,6 +519,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   CalendarOccasionRoute: typeof CalendarOccasionRoute
   LookbookEditionRoute: typeof LookbookEditionRoute
   OrderIdRoute: typeof OrderIdRoute
@@ -559,11 +632,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/audience': {
+      id: '/admin/audience'
+      path: '/audience'
+      fullPath: '/admin/audience'
+      preLoaderRoute: typeof AdminAudienceRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/email-log': {
+      id: '/admin/email-log'
+      path: '/email-log'
+      fullPath: '/admin/email-log'
+      preLoaderRoute: typeof AdminEmailLogRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/images': {
+      id: '/admin/images'
+      path: '/images'
+      fullPath: '/admin/images'
+      preLoaderRoute: typeof AdminImagesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/leads': {
@@ -657,6 +758,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/campaigns/': {
+      id: '/admin/campaigns/'
+      path: '/campaigns'
+      fullPath: '/admin/campaigns/'
+      preLoaderRoute: typeof AdminCampaignsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/campaigns/$id': {
+      id: '/admin/campaigns/$id'
+      path: '/campaigns/$id'
+      fullPath: '/admin/campaigns/$id'
+      preLoaderRoute: typeof AdminCampaignsIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/calendar/my-dates/': {
       id: '/calendar/my-dates/'
       path: '/calendar/my-dates'
@@ -710,17 +825,27 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAudienceRoute: typeof AdminAudienceRoute
+  AdminEmailLogRoute: typeof AdminEmailLogRoute
+  AdminImagesRoute: typeof AdminImagesRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminCampaignsIdRoute: typeof AdminCampaignsIdRoute
+  AdminCampaignsIndexRoute: typeof AdminCampaignsIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAudienceRoute: AdminAudienceRoute,
+  AdminEmailLogRoute: AdminEmailLogRoute,
+  AdminImagesRoute: AdminImagesRoute,
   AdminLeadsRoute: AdminLeadsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminCampaignsIdRoute: AdminCampaignsIdRoute,
+  AdminCampaignsIndexRoute: AdminCampaignsIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -739,6 +864,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   CalendarOccasionRoute: CalendarOccasionRoute,
   LookbookEditionRoute: LookbookEditionRoute,
   OrderIdRoute: OrderIdRoute,

@@ -23,6 +23,14 @@ const SECTIONS = [
     ]
   },
   {
+    "title": "Marketing emails",
+    "body": [
+      "We send news, offers and gifting ideas by email to people who have asked to hear from us (for example by joining our newsletter, or ticking the box when creating an account or checking out), and to existing customers and contacts where we believe our messages will be relevant to them.",
+      "Every marketing email has an unsubscribe link, and we stop emailing you as soon as you use it. You can also email hello@boxedbydweenie.com to ask us to stop. We keep a record of when and how you agreed, and of anyone who has unsubscribed, so that you are not emailed again by mistake.",
+      "Our emails are sent for us by our email provider, which also tells us whether a message was delivered, opened or clicked so we can improve what we send. Order updates and account messages are not marketing and are still sent to you."
+    ]
+  },
+  {
     "title": "Sharing with delivery partners and service providers",
     "body": [
       "We share only what is needed with delivery partners (recipient name, phone and address), our payment provider, and technology providers that host the site and send email for us. We do not sell your personal information."

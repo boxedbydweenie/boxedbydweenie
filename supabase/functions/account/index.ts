@@ -36,12 +36,14 @@ Deno.serve(async (req) => {
         if (/already|registered|exists/i.test(error.message)) return json({ error: "An account with this email already exists. Please sign in." }, 409, h);
         throw error;
       }
+      if (b.marketing === true) await db.rpc("marketing_subscribe", { p_email: email, p_source: "signup", p_first_name: name.split(" ")[0] || null }); // only when the person ticked the box
       return json({ ok: true }, 200, h);
     }
     if (b.action === "subscribe") {
       const email = str(b.email, 160).toLowerCase();
       if (!isEmail(email)) return json({ error: "Please enter a valid email address." }, 400, h);
       await db.from("newsletter_subscribers").upsert({ email, source: str(b.source, 40) || "footer" }, { onConflict: "email", ignoreDuplicates: true });
+      await db.rpc("marketing_subscribe", { p_email: email, p_source: str(b.source, 40) || "footer", p_first_name: str(b.name, 60).split(" ")[0] || null }); // consent record for email marketing
       return json({ ok: true }, 200, h);
     }
     if (b.action === "gift-card") {

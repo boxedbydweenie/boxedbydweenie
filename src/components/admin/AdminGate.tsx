@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { KeyRound, LayoutDashboard, LogOut, Mail, Package, ReceiptText, ExternalLink } from "lucide-react";
+import { KeyRound, LayoutDashboard, LogOut, Mail, Package, ReceiptText, ExternalLink, Megaphone, Users, ListChecks, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,10 @@ const NAV = [
   { to: "/admin/products", label: "Products", icon: Package },
   { to: "/admin/orders", label: "Orders", icon: ReceiptText },
   { to: "/admin/leads", label: "Enquiries", icon: Mail },
+  { to: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
+  { to: "/admin/audience", label: "Audience", icon: Users },
+  { to: "/admin/email-log", label: "Send log", icon: ListChecks },
+  { to: "/admin/images", label: "Images", icon: ImageIcon },
 ] as const;
 
 export function AdminGate({ children }: { children: ReactNode }) {

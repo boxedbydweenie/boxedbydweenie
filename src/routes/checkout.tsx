@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { STATES, deliveryFeeFor } from "@/config/delivery";
 import { formatNaira } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { callAccount } from "@/lib/api";
 import { cartSubtotal, clearCart } from "@/services/cart";
 import { startCheckout } from "@/services/orders";
 import { useCart, useUser } from "@/hooks/use-shop";
@@ -77,6 +78,7 @@ function CheckoutPage() {
     if (!state || required.some((k) => !v(k))) { setError("Please complete every required field, including the state."); return; }
     setError(""); setBusy(true);
     try {
+      if (fd.get("marketing") === "on") await callAccount({ action: "subscribe", email: v("c_email"), name: v("c_name"), source: "checkout" }).catch(() => undefined); // only when the box is ticked; never blocks the order
       const { authorizationUrl, ref } = await startCheckout({
         items, sendTo, promoCode: promo ? promoCode : "", giftCardCode: gift.code,
         recipient: { name: v("r_name"), phone: v("r_phone"), address: v("address"), state, area: v("area"), deliveryDate: v("date"), notes: v("notes"), surprise },
@@ -118,6 +120,7 @@ function CheckoutPage() {
             <FormField label="Email" name="c_email" type="email" required autoComplete="email" defaultValue={user?.email ?? ""} />
             <FormField label="Phone" name="c_phone" type="tel" required autoComplete="tel" defaultValue={user?.phone ?? ""} />
           </div>
+          <label className="mt-5 flex cursor-pointer items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" name="marketing" className="mt-1 size-4 shrink-0 accent-[var(--color-nero)]" /><span>Send me gift ideas, offers and news from Boxed by Dweenie. You can unsubscribe at any time. (Order updates are always sent.)</span></label>
         </Step>
         <Step n={3} title="Payment">
           <div className="mt-5 flex items-start gap-3 rounded-md border border-border bg-ivory px-5 py-4 text-sm text-muted-foreground"><Lock className="mt-0.5 size-4 shrink-0" /><span>Next, you will pay securely on Paystack with your card, a bank transfer or USSD. We never see your card details.</span></div>

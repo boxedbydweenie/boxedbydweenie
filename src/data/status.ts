@@ -40,7 +40,8 @@ export const GROUPS: Group[] = [
     { name: "Team area", note: "Staff sign in to manage products, prices, photos, orders and enquiries.", state: "live" },
     { name: "Gift Calendar", note: "Dates are saved to the customer's account and sync across devices. Email reminders are live: a daily 7am job emails customers before their dates.", state: "live" },
     { name: "Secret Santa", note: "Groups work across devices with a private server-side draw. Invite emails are live. Paying for the gifts through checkout is still to build.", state: "live" },
-    { name: "Newsletter sign-up", note: "Sign-ups are saved. Sending newsletters is the next project (email marketing: sending, tracking and resending).", state: "next" },
+    { name: "Newsletter sign-up", note: "Footer, account and checkout sign-ups are saved with consent and flow into the Audience.", state: "live" },
+    { name: "Email marketing", note: "Upload contacts and HTML emails, send tests, send campaigns in batches, track delivery, resend failures, and honour unsubscribes. Needs the Resend webhook connected for delivered and opened statuses.", state: "preview" },
   ] },
 ];
 
@@ -65,6 +66,7 @@ export const PLAN: Step[] = [
   { when: "This week", title: "Test purchase", detail: "A real test order from basket to payment to confirmation email." },
   { when: "Next", title: "Final content", detail: "Confirm draft products, agree prices, approve legal wording." },
   { when: "Next", title: "Custom domain and go-live", detail: "Connect boxedbydweenie.com, make the code repository private, final check." },
-  { when: "After launch", title: "Email marketing", detail: "Send newsletters and campaigns from our own system, with sent history, delivery tracking and resend for failures." },
-  { when: "After launch", title: "More to build", detail: "Team views for gift cards, newsletter and Secret Santa; paying for Secret Santa gifts through checkout; lighter look for the remaining dark pages; branded quote PDF." },
+  { when: "Next", title: "Email marketing, connect Resend", detail: "Add the Resend webhook and secret, switch on open tracking, remove test contacts, confirm the postal address wording." },
+  { when: "After launch", title: "Email marketing, round two", detail: "Visual block editor, scheduled sends and click tracking." },
+  { when: "After launch", title: "More to build", detail: "Team views for gift cards and Secret Santa; paying for Secret Santa gifts through checkout; lighter look for the remaining dark pages; branded quote PDF." },
 ];

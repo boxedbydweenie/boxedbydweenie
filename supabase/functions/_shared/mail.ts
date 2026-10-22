@@ -64,7 +64,7 @@ export async function sendOrderEmails(db: any, order: Record<string, any>) {
   await sendMail({
     to: TEAM, cc: TEAM_CC, replyTo: c.email,
     subject: `New paid order ${order.ref}: ${naira(order.payable ?? order.total)} from ${c.name}`,
-    html: layout({ heading: "New paid order", cta: { label: "Open in admin", url: `${SITE_URL}/team` },
+    html: layout({ heading: "New paid order", cta: { label: "Open in admin", url: `${SITE_URL}/admin` },
       body: p(`<b>${esc(c.name)}</b><br>${esc(c.email)}<br>${esc(c.phone)}`) + `<table width="100%">${lines}</table>${money}` + (onlyCards ? "" : p(`<b>Deliver to:</b> ${esc(r.name)} (${esc(r.phone)})<br>${esc(r.address)}${r.area ? ", " + esc(r.area) : ""}, ${esc(r.state)}<br><b>Date:</b> ${esc(r.deliveryDate)}${r.notes ? "<br><b>Notes:</b> " + esc(r.notes) : ""}`)) }),
   });
 }

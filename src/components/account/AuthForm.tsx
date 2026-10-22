@@ -13,7 +13,7 @@ export function AuthForm({ cta = "Continue", intro }: { cta?: string; intro?: st
     setErr(""); setBusy(true);
     try {
       if (mode === "in") await signIn(v("email"), String(f.get("password") ?? ""));
-      else await signUp({ name: v("name"), email: v("email"), phone: v("phone"), password: String(f.get("password") ?? "") });
+      else await signUp({ name: v("name"), email: v("email"), phone: v("phone"), password: String(f.get("password") ?? ""), marketing: f.get("marketing") === "on" });
     } catch (x) { setErr(x instanceof Error ? x.message : "Something went wrong. Please try again."); setBusy(false); }
   };
   return <div className="mx-auto max-w-md rounded-2xl border border-nero/10 bg-white p-8 shadow-[0_30px_60px_-40px_rgba(41,40,40,.5)]">
@@ -24,6 +24,7 @@ export function AuthForm({ cta = "Continue", intro }: { cta?: string; intro?: st
       <FormField label="Email" name="email" type="email" autoComplete="email" required />
       {mode === "up" && <FormField label="Phone (optional)" name="phone" type="tel" autoComplete="tel" />}
       <FormField label={mode === "up" ? "Password (8+ characters)" : "Password"} name="password" type="password" autoComplete={mode === "up" ? "new-password" : "current-password"} minLength={8} required />
+      {mode === "up" && <label className="flex cursor-pointer items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" name="marketing" className="mt-1 size-4 shrink-0 accent-[var(--color-nero)]" /><span>Send me gift ideas, offers and news from Boxed by Dweenie. You can unsubscribe at any time.</span></label>}
       {err && <p role="alert" className="text-sm font-medium text-destructive">{err}</p>}
       <Button type="submit" className="w-full" disabled={busy}>{busy ? "One moment…" : mode === "in" ? cta : "Create my account"}</Button>
       {mode === "in" && <p className="text-center text-xs text-muted-foreground">Forgot your password? Message us on WhatsApp or email hello@boxedbydweenie.com and we will reset it.</p>}
