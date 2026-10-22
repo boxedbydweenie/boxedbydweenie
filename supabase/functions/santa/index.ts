@@ -2,6 +2,7 @@
 // Nobody can see a match but its giver (the organiser only if they opted in before the draw). The draw happens on the server.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+import { sendMail, layout, p as para, esc, naira, isEmail, SITE_URL as SITE, TEAM } from "../_shared/mail.ts";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const SITE_URL = Deno.env.get("SITE_URL") ?? "https://boxedbydweenie.boxedbydweenie.workers.dev";
@@ -151,8 +152,17 @@ async function handle(b: any) {
       needOrg();
       const list = (Array.isArray(b.people) ? b.people : []).slice(0, 300);
       let added = 0;
-      for (const p of list) { const name = str(p.name, 120); if (!name || doc.participants.length >= 400) continue; doc.participants.push({ ...blank(ex.id, name, str(p.contact, 160)), status: "invited" }); added++; }
-      await save(row, doc); return { added, view: view(doc, c) };
+      const toEmail: { name: string; email: string }[] = [];
+      for (const p of list) { const name = str(p.name, 120); if (!name || doc.participants.length >= 400) continue; const contact = str(p.contact, 160); doc.participants.push({ ...blank(ex.id, name, contact), status: "invited" }); added++; if (isEmail(contact)) toEmail.push({ name, email: contact }); }
+      await save(row, doc);
+      let emailed = 0;
+      for (const t of toEmail.slice(0, 50)) {
+        const r = await sendMail({ to: [t.email], replyTo: TEAM[0], subject: `${ex.organiserName} invited you to a Secret Santa: ${ex.name}`,
+          html: layout({ preheader: "Join the gift exchange", heading: `You're invited, ${esc(t.name.split(" ")[0])}`, cta: { label: "Join the exchange", url: `${SITE}/secret-santa/join/${ex.code}` },
+            body: para(`<b>${esc(ex.organiserName)}</b> has invited you to <b>${esc(ex.name)}</b>, a Secret Santa gift exchange.`) + para(`Budget: <b>${naira(ex.budget)}</b><br>Join by: <b>${esc(ex.dates.joinBy)}</b><br>Names are drawn on: <b>${esc(ex.dates.draw)}</b>`) + (ex.welcome ? para(`&ldquo;${esc(ex.welcome)}&rdquo;`) : "") + para(`Your exchange code is <b>${ex.code}</b>. Nobody, not even the organiser, will know who you are matched with.`) }) });
+        if (r.ok) emailed++;
+      }
+      return { added, emailed, view: view(doc, c) };
     }
     case "remove-participant": {
       needOrg(); if (ex.status !== "open") throw new Fail("Names are already drawn.");

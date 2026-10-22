@@ -5,6 +5,7 @@
 // with Paystack's API before an order changes, so a forged call cannot mark an order paid.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+import { afterPaid } from "../_shared/mail.ts";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const SECRET = Deno.env.get("PAYSTACK_SECRET_KEY") ?? "";
@@ -32,14 +33,15 @@ Deno.serve(async (req) => {
   if (event.event !== "charge.success" || !event.data?.reference) return new Response("ok", { status: 200 });
 
   const reference = event.data.reference;
-  const { data: order } = await db.from("orders").select("id, total, status").eq("paystack_reference", reference).maybeSingle();
+  const { data: order } = await db.from("orders").select("id, ref, total, payable, status").eq("paystack_reference", reference).maybeSingle();
   if (!order || order.status === "paid") return new Response("ok", { status: 200 });
 
   const r = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, { headers: { Authorization: `Bearer ${SECRET}` } });
   const tx = (await r.json().catch(() => ({})))?.data;
-  if (tx?.status === "success" && tx.currency === "NGN" && Number(tx.amount) === order.total * 100) {
-    await db.from("orders").update({ status: "paid", paid_at: tx.paid_at ?? new Date().toISOString() })
-      .eq("id", order.id).in("status", ["pending_payment", "payment_failed"]);
+  if (tx?.status === "success" && tx.currency === "NGN" && Number(tx.amount) === (order.payable ?? order.total) * 100) {
+    const { data: done } = await db.from("orders").update({ status: "paid", paid_at: tx.paid_at ?? new Date().toISOString() })
+      .eq("id", order.id).in("status", ["pending_payment", "payment_failed"]).select("*").maybeSingle();
+    if (done) { await db.from("gift_cards").update({ status: "active" }).eq("order_ref", order.ref).eq("status", "pending"); await afterPaid(db, done); }
   }
   return new Response("ok", { status: 200 });
 });

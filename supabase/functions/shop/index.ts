@@ -5,6 +5,7 @@
 // Prices, delivery fees and discounts are always recalculated here from the database; the browser's numbers are ignored.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+import { afterPaid } from "../_shared/mail.ts";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const PAYSTACK_SECRET = Deno.env.get("PAYSTACK_SECRET_KEY") ?? "";
@@ -69,7 +70,7 @@ async function confirmPayment(reference: string) {
   const { data: updated } = await db.from("orders")
     .update(good ? { status: "paid", paid_at: tx.paid_at ?? new Date().toISOString() } : { status: tx.status === "abandoned" ? "pending_payment" : "payment_failed" })
     .eq("id", order.id).in("status", ["pending_payment", "payment_failed"]).select("*").maybeSingle();
-  if (updated && good) await db.from("gift_cards").update({ status: "active" }).eq("order_ref", order.ref).eq("status", "pending");
+  if (updated && good) { await db.from("gift_cards").update({ status: "active" }).eq("order_ref", order.ref).eq("status", "pending"); await afterPaid(db, updated); }
   if (updated && !good && updated.status === "payment_failed" && order.status === "pending_payment") await releaseOrder(order);
   return { order: updated ?? order };
 }
@@ -148,7 +149,7 @@ async function createOrder(body: Record<string, any>, origin: string | null) {
   const cards: Record<string, unknown>[] = [];
   for (const i of items) if (i.giftCard) for (let n = 0; n < i.quantity; n++) cards.push({ code: cardCode(), amount: i.price, balance: i.price, status: "pending", order_ref: ref, to_name: i.giftCard.toName || null, to_email: i.giftCard.toEmail || null, message: i.giftCard.message || null, send_on: /^\d{4}-\d{2}-\d{2}$/.test(i.giftCard.sendOn) ? i.giftCard.sendOn : null });
   if (cards.length) await db.from("gift_cards").insert(cards);
-  if (payable === 0) return { order: publicOrder(order), authorizationUrl: null, reference: ref };
+  if (payable === 0) { await db.from("gift_cards").update({ status: "active" }).eq("order_ref", ref).eq("status", "pending"); await afterPaid(db, order); return { order: publicOrder(order), authorizationUrl: null, reference: ref }; }
 
   const back = origin && (ALLOWED.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) ? origin : SITE_URL;
   const tx = await paystack("/transaction/initialize", {
