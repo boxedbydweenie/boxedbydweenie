@@ -1,7 +1,7 @@
 // Email marketing API for the team area. Staff only: send the signed-in user's access token as `Authorization: Bearer ...`.
 // Reads happen in the browser through row-level security; every WRITE goes through here (service role).
 // POST { action, ... }  actions: sync, import_chunk, contact_suppress, contact_update, campaign_save, campaign_delete, render, test_send,
-//                               campaign_send, campaign_pause, campaign_resume, campaign_cancel, requeue
+//                               campaign_send, campaign_limit, campaign_pause, campaign_resume, campaign_cancel, requeue
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import { FUNCTIONS_URL, REPLY_TO, SITE_URL, TEST_TOKEN, fromHeader, isEmail, listHeaders, mergeTags, renderEmail, sendOne } from "../_shared/marketing.ts";
@@ -29,6 +29,19 @@ function cleanTags(v: unknown): string[] {
 function cleanAudience(a: Record<string, unknown> | undefined) {
   const bases = (Array.isArray(a?.bases) ? a!.bases as unknown[] : []).map(String).filter((b) => BASES.includes(b));
   return { bases: bases.length ? bases : ["opted_in", "customer", "contact", "prospect"], tags: cleanTags(a?.tags), exclude_tags: cleanTags(a?.exclude_tags) };
+}
+/** Pacing fields from a request: daily_limit (null = no limit), daily_step (extra emails allowed each new day), bounce_pause_pct (null = never auto-pause). Only fields that were sent are returned. */
+function cleanPace(b: Record<string, unknown>): Record<string, number | null> {
+  const out: Record<string, number | null> = {};
+  const whole = (v: unknown, lo: number, hi: number, msg: string) => { const n = Number(v); if (!Number.isInteger(n) || n < lo || n > hi) throw new Fail(400, msg); return n; };
+  if ("daily_limit" in b) out.daily_limit = b.daily_limit === null || b.daily_limit === "" ? null : whole(b.daily_limit, 1, 100000, "The daily limit must be a whole number from 1 to 100,000.");
+  if ("daily_step" in b) out.daily_step = b.daily_step === null || b.daily_step === "" ? 0 : whole(b.daily_step, 0, 100000, "The daily increase must be a whole number from 0 to 100,000.");
+  if ("bounce_pause_pct" in b) {
+    if (b.bounce_pause_pct === null || b.bounce_pause_pct === "") out.bounce_pause_pct = null;
+    else { const n = Number(b.bounce_pause_pct); if (!Number.isFinite(n) || n < 1 || n > 50) throw new Fail(400, "The bounce limit must be between 1% and 50%."); out.bounce_pause_pct = Math.round(n * 10) / 10; }
+  }
+  if (out.daily_limit === null) out.daily_step = 0;
+  return out;
 }
 // deno-lint-ignore no-explicit-any
 const kick = () => { const p = fetch(`${FUNCTIONS_URL}/campaign-worker`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).catch(() => {}); try { (globalThis as any).EdgeRuntime?.waitUntil(p); } catch { /* ignore */ } };
@@ -177,6 +190,8 @@ Deno.serve(async (req) => {
       const { data: n } = await db.rpc("audience_count", { p_audience: c.audience });
       if (!n) throw new Fail(400, "No one matches this audience.");
       if (Number(b.confirm_count) !== n) throw new Fail(409, `The audience is now ${n} people, not ${Number(b.confirm_count) || 0}. Please check and confirm again.`);
+      const pace = cleanPace(b);
+      if (Object.keys(pace).length) { const { error: pe } = await db.from("email_campaigns").update(pace).eq("id", c.id).eq("status", "draft"); if (pe) throw pe; }
       const { data: queued, error } = await db.rpc("queue_campaign", { p_campaign: c.id });
       if (error) throw error;
       if (queued === -1) throw new Fail(409, "This campaign has already been queued.");
@@ -184,10 +199,22 @@ Deno.serve(async (req) => {
       return json({ queued }, 200, h);
     }
 
+    if (action === "campaign_limit") { // change the pace of a campaign that is sending or paused
+      const id = str(b.id, 40);
+      if (!UUID.test(id)) throw new Fail(400, "Campaign not found.");
+      const pace = cleanPace(b);
+      if (!Object.keys(pace).length) throw new Fail(400, "Nothing to change.");
+      const { data, error } = await db.from("email_campaigns").update({ ...pace, updated_at: new Date().toISOString() }).eq("id", id).in("status", ["sending", "paused"]).select("id").maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Fail(409, "Only a campaign that is sending or paused can be changed.");
+      kick();
+      return json({ ok: true }, 200, h);
+    }
+
     if (action === "campaign_pause" || action === "campaign_resume" || action === "campaign_cancel") {
       const id = str(b.id, 40);
-      if (action === "campaign_pause") await db.from("email_campaigns").update({ status: "paused", updated_at: new Date().toISOString() }).eq("id", id).eq("status", "sending");
-      if (action === "campaign_resume") { await db.from("email_campaigns").update({ status: "sending", updated_at: new Date().toISOString() }).eq("id", id).eq("status", "paused"); kick(); }
+      if (action === "campaign_pause") await db.from("email_campaigns").update({ status: "paused", pause_reason: null, updated_at: new Date().toISOString() }).eq("id", id).eq("status", "sending");
+      if (action === "campaign_resume") { await db.from("email_campaigns").update({ status: "sending", pause_reason: null, brake_since: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", id).eq("status", "paused"); kick(); }
       if (action === "campaign_cancel") {
         await db.from("email_campaigns").update({ status: "cancelled", finished_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", id).in("status", ["sending", "paused"]);
         await db.from("email_sends").update({ status: "cancelled" }).eq("campaign_id", id).eq("status", "queued").eq("is_test", false);

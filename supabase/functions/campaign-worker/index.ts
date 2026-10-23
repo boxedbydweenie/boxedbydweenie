@@ -20,6 +20,8 @@ Deno.serve(async () => {
 
     while (Date.now() - t0 < 60_000 && rounds < 10) {
       rounds++;
+      // Safety brake: pauses a campaign whose bounce rate or spam complaints are too high, before more mail goes out.
+      await db.rpc("auto_pause_campaigns");
       const { data: claimed, error } = await db.rpc("claim_email_sends", { p_limit: 100 });
       if (error) throw error;
       const rows = (claimed ?? []) as Row[];

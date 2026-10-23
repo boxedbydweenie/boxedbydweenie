@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Check, Copy, FileUp, ImagePlus, Monitor, Pause, Play, Rocket, Smartphone, Trash2, TriangleAlert, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { BASES, callMarketing, CAMPAIGN_STATUS, fmtWhen, pct, uploadEmailImage, type AudienceSummary, type Basis, type Campaign, type CampaignStats } from "@/lib/marketing";
+import { allowanceToday, BASES, callMarketing, CAMPAIGN_STATUS, fmtWhen, lagosDayStart, paceSchedule, pct, uploadEmailImage, type AudienceSummary, type Basis, type Campaign, type CampaignStats } from "@/lib/marketing";
 import { Card, Pill, SendTable, StatTile } from "@/components/admin/EmailBits";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,15 @@ function Editor() {
   const fileRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
+  // Pacing: chosen in the send dialog, changeable later while the campaign runs.
+  const [pace, setPace] = useState<"all" | "ramp" | "custom">("all");
+  const [pLimit, setPLimit] = useState("100");
+  const [pStep, setPStep] = useState("100");
+  const [brakeOn, setBrakeOn] = useState(true);
+  const [brakePct, setBrakePct] = useState("5");
+  const [sentToday, setSentToday] = useState(0);
+  const [editPace, setEditPace] = useState(false);
+  const [savingPace, setSavingPace] = useState(false);
 
   const load = useCallback(async () => {
     const sb = supabase();
@@ -46,6 +55,8 @@ function Editor() {
     setC(data as Campaign);
     const s = await sb.rpc("email_campaign_stats");
     setStats(((s.data ?? []) as CampaignStats[]).find((x) => x.campaign_id === id) ?? null);
+    const t = await sb.from("email_sends").select("id", { count: "exact", head: true }).eq("campaign_id", id).eq("is_test", false).gte("sent_at", lagosDayStart());
+    setSentToday(t.count ?? 0);
   }, [id]);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => { void supabase().rpc("marketing_audience_summary").then(({ data }) => { if (data) setSummary(data as AudienceSummary); }); }, []);
@@ -138,14 +149,37 @@ function Editor() {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Test failed."); } finally { setTesting(false); }
   };
 
+  const paceNums = () => ({ limit: pace === "all" ? null : Math.floor(Number(pLimit)), step: pace === "all" ? 0 : Math.max(0, Math.floor(Number(pStep) || 0)) });
+  const paceBad = pace !== "all" && !(Number(pLimit) >= 1 && Number.isFinite(Number(pLimit))) || (brakeOn && !(Number(brakePct) >= 1 && Number(brakePct) <= 50));
+  const openSend = () => {
+    setTyped(""); setOkUnverified(false);
+    // Big lists default to the careful ramp; small ones go out at once.
+    if ((count ?? 0) > 150) { setPace("ramp"); setPLimit("100"); setPStep("100"); } else setPace("all");
+    setBrakeOn(true); setBrakePct("5"); setConfirmOpen(true);
+  };
   const doSend = async () => {
     if (!c || count == null) return;
     setSending(true);
     try {
-      const r = await callMarketing<{ queued: number }>("campaign_send", { id: c.id, confirm_count: count, confirm_unverified: c.audience.bases.includes("unverified") ? okUnverified : undefined });
-      toast.success(`Sending to ${r.queued} people. Emails go out in batches over the next minutes.`);
+      const { limit, step } = paceNums();
+      const r = await callMarketing<{ queued: number }>("campaign_send", { id: c.id, confirm_count: count, confirm_unverified: c.audience.bases.includes("unverified") ? okUnverified : undefined,
+        daily_limit: limit, daily_step: step, bounce_pause_pct: brakeOn ? Number(brakePct) : null });
+      toast.success(limit ? `${r.queued} emails queued. They go out in daily batches, 08:00 to 17:00 Lagos time.` : `Sending to ${r.queued} people. Emails go out in batches over the next minutes.`);
       setConfirmOpen(false); setTyped(""); await load();
     } catch (e) { toast.error(e instanceof Error ? e.message : "Could not start the send."); } finally { setSending(false); }
+  };
+  const startEditPace = () => {
+    if (!c) return;
+    setPLimit(String(c.daily_limit ?? "")); setPStep(String(c.daily_step ?? 0));
+    setBrakeOn(c.bounce_pause_pct != null); setBrakePct(String(c.bounce_pause_pct ?? 5)); setEditPace(true);
+  };
+  const savePace = async () => {
+    if (!c) return;
+    setSavingPace(true);
+    try {
+      await callMarketing("campaign_limit", { id: c.id, daily_limit: pLimit.trim() === "" ? null : Number(pLimit), daily_step: Number(pStep) || 0, bounce_pause_pct: brakeOn ? Number(brakePct) : null });
+      toast.success("Pace updated."); setEditPace(false); await load();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Could not update the pace."); } finally { setSavingPace(false); }
   };
   const control = async (action: "campaign_pause" | "campaign_resume" | "campaign_cancel", msg: string) => {
     if (!c) return;
@@ -196,14 +230,31 @@ function Editor() {
         <p className="font-semibold">No opens or clicks recorded yet</p>
         <p className="mt-1 text-muted-foreground">Delivered emails are being counted, but opens and clicks only appear once tracking is switched on in Resend. In Resend, open <b>Domains</b>, choose <b>mail.boxedbydweenie.com</b>, turn on <b>Open tracking</b> and <b>Click tracking</b>, and make sure the tracking domain shows as Verified. Then open <b>Webhooks</b> and tick <b>email.opened</b> and <b>email.clicked</b>. Opens are never exact: some inboxes (Apple Mail, Gmail) hide or pre-load them, so treat clicks as the more reliable signal.</p>
       </div>}
+      {c.status === "paused" && c.pause_reason && <div role="alert" className="flex gap-3 rounded-2xl border border-[#83252C]/40 bg-[#FBE0DA] p-5 text-sm text-[#83252C]">
+        <TriangleAlert className="mt-0.5 size-5 shrink-0" /><div><p className="font-semibold">Sending was paused for you</p><p className="mt-1">{c.pause_reason}</p>
+          <p className="mt-2 text-[#83252C]/80">Download the problem list below, remove those addresses from your audience, then resume. After you resume, the safety check starts counting again from zero.</p></div>
+      </div>}
       {(c.status === "sending" || c.status === "paused") && stats && <Card title={c.status === "sending" ? "Sending now" : "Paused"} hint={`${stats.total - stats.queued} of ${stats.total} processed. Started ${fmtWhen(c.queued_at)}.`}>
         <div className="h-3 overflow-hidden rounded-full bg-black/5"><div className="h-full rounded-full bg-gradient-to-r from-[#E7B93B] to-[#EB826C] transition-all" style={{ width: `${stats.total ? Math.round(((stats.total - stats.queued) / stats.total) * 100) : 0}%` }} /></div>
+        {(() => { const cap = allowanceToday(c); return <div className="mt-4 rounded-xl bg-[#F4EFE5]/70 p-4 text-sm">
+          {cap != null ? <p><b>Today:</b> {sentToday.toLocaleString()} of {cap.toLocaleString()} allowed sent. {stats.queued > 0 ? (sentToday >= cap ? "Today's batch is done. The next one starts tomorrow from 08:00 (Lagos time)." : "The rest of today's batch is released steadily until about 14:00, and nothing is sent after 17:00 (Lagos time).") : ""}</p>
+            : <p>No daily limit: everything goes out as fast as possible.</p>}
+          <p className="mt-1 text-muted-foreground">{c.bounce_pause_pct != null ? `Safety check on: this campaign pauses itself if more than ${c.bounce_pause_pct}% of sent emails bounce, or if 2 people mark it as spam.` : "Safety check is off."}</p>
+          {!editPace ? <button type="button" onClick={startEditPace} className="mt-3 min-h-9 rounded-full border border-nero/30 px-4 text-xs font-semibold hover:border-nero">Change pace and safety</button>
+            : <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <label className="text-xs font-semibold">Emails on the first day<input value={pLimit} onChange={(e) => setPLimit(e.target.value.replace(/\D/g, ""))} inputMode="numeric" placeholder="Empty = no limit" className={cn(field, "mt-1 font-normal")} /></label>
+              <label className="text-xs font-semibold">Extra each new day<input value={pStep} onChange={(e) => setPStep(e.target.value.replace(/\D/g, ""))} inputMode="numeric" className={cn(field, "mt-1 font-normal")} /></label>
+              <label className="text-xs font-semibold">Pause above this bounce %<input value={brakeOn ? brakePct : ""} disabled={!brakeOn} onChange={(e) => setBrakePct(e.target.value.replace(/[^\d.]/g, ""))} inputMode="decimal" className={cn(field, "mt-1 font-normal disabled:opacity-40")} /></label>
+              <label className="flex items-center gap-2 text-xs sm:col-span-3"><input type="checkbox" checked={brakeOn} onChange={(e) => setBrakeOn(e.target.checked)} className="size-4 accent-[var(--color-nero)]" />Pause automatically when bounces are too high</label>
+              <div className="flex gap-2 sm:col-span-3"><button type="button" disabled={savingPace || (brakeOn && !(Number(brakePct) >= 1 && Number(brakePct) <= 50))} onClick={() => void savePace()} className="min-h-9 rounded-full bg-nero px-5 text-xs font-semibold text-white disabled:opacity-40">{savingPace ? "Saving…" : "Save"}</button><button type="button" onClick={() => setEditPace(false)} className="min-h-9 rounded-full border border-black/20 px-4 text-xs">Cancel</button></div>
+            </div>}
+        </div>; })()}
         <div className="mt-4 flex flex-wrap gap-3">
           {c.status === "sending" ? <button type="button" onClick={() => void control("campaign_pause", "Paused.")} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-nero px-5 text-sm font-semibold"><Pause className="size-4" />Pause</button>
             : <button type="button" onClick={() => void control("campaign_resume", "Resumed.")} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-nero px-5 text-sm font-semibold text-white"><Play className="size-4" />Resume</button>}
           <button type="button" onClick={() => void control("campaign_cancel", "Cancelled.")} className="min-h-10 rounded-full border border-[#83252C]/40 px-5 text-sm font-semibold text-[#83252C]">Cancel campaign</button>
         </div></Card>}
-      <Card title="Who got it" hint="Every email, with its status. Failed and soft-bounced emails can be resent."><SendTable campaignId={c.id} showCampaign={false} onChanged={() => void load()} /></Card>
+      <Card title="Who got it" hint="Every email, with its status. Failed and soft-bounced emails can be resent."><SendTable campaignId={c.id} campaignName={c.name} showCampaign={false} onChanged={() => void load()} /></Card>
       <Card title="What was sent"><dl className="grid gap-4 text-sm sm:grid-cols-2"><div><dt className="text-muted-foreground">Subject</dt><dd className="font-medium">{c.subject}</dd></div><div><dt className="text-muted-foreground">From</dt><dd className="font-medium">{c.from_name}</dd></div></dl></Card>
     </div>}
 
@@ -282,7 +333,7 @@ function Editor() {
           </Card>
           <Card title="Ready to send?" accent="from-[#86BAA3] to-[#263D35]">
             <ul className="space-y-2.5">{checks.map((k) => <li key={k.label} className="flex items-center gap-2.5 text-sm"><span className={cn("grid size-5 place-items-center rounded-full", k.ok ? "bg-[#86BAA3] text-nero" : "bg-black/10")}>{k.ok ? <Check className="size-3.5" /> : <X className="size-3 opacity-50" />}</span><span className={k.ok ? "" : "text-muted-foreground"}>{k.label}</span></li>)}</ul>
-            <button type="button" disabled={!ready || dirty || saving} onClick={() => { setTyped(""); setOkUnverified(false); setConfirmOpen(true); }} className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E7B93B] to-[#EB826C] text-sm font-bold text-nero shadow-lg transition hover:-translate-y-0.5 disabled:opacity-40 disabled:shadow-none"><Rocket className="size-4" />Send campaign</button>
+            <button type="button" disabled={!ready || dirty || saving} onClick={openSend} className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E7B93B] to-[#EB826C] text-sm font-bold text-nero shadow-lg transition hover:-translate-y-0.5 disabled:opacity-40 disabled:shadow-none"><Rocket className="size-4" />Send campaign</button>
             {!ready && <p className="mt-2 text-xs text-muted-foreground">Finish the checklist to unlock sending. Any edit means a fresh test.</p>}
           </Card>
         </div>
@@ -290,11 +341,36 @@ function Editor() {
     </div>}
 
     <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-      <DialogContent><DialogHeader><DialogTitle>Send to {count?.toLocaleString()} people?</DialogTitle><DialogDescription>“{c.subject}” goes out in batches over the next few minutes. Once started you can pause or cancel, but emails already sent cannot be recalled.</DialogDescription></DialogHeader>
+      <DialogContent className="max-h-[92vh] overflow-y-auto"><DialogHeader><DialogTitle>Send to {count?.toLocaleString()} people?</DialogTitle><DialogDescription>“{c.subject}” — once started you can pause or cancel, but emails already sent cannot be recalled.</DialogDescription></DialogHeader>
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-semibold">How fast should it go out?</legend>
+          {([["ramp", "Careful ramp (recommended for cold lists)", "Start small and send more each day. Builds trust with Gmail and Microsoft, and shows problems early."],
+            ["custom", "Choose my own pace", "Set the first day and the daily increase yourself."],
+            ["all", "All at once", "Everything goes out in the next few minutes. Fine for people who know you."]] as const).map(([k, t, d]) =>
+            <label key={k} className={cn("flex cursor-pointer items-start gap-3 rounded-xl border p-3", pace === k ? "border-nero bg-[#F4EFE5]/60" : "border-black/10 hover:border-black/30")}>
+              <input type="radio" name="pace" checked={pace === k} onChange={() => { setPace(k); if (k === "ramp") { setPLimit("100"); setPStep("100"); } }} className="mt-1 size-4 accent-[var(--color-nero)]" />
+              <span><span className="block text-sm font-semibold">{t}</span><span className="block text-xs text-muted-foreground">{d}</span></span>
+            </label>)}
+        </fieldset>
+        {pace !== "all" && <div className="rounded-xl bg-[#F4EFE5]/70 p-4 text-sm">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="text-xs font-semibold">Emails on the first day<input value={pLimit} onChange={(e) => { setPLimit(e.target.value.replace(/\D/g, "")); setPace("custom"); }} inputMode="numeric" className={cn(field, "mt-1 font-normal")} /></label>
+            <label className="text-xs font-semibold">Extra emails each new day<input value={pStep} onChange={(e) => { setPStep(e.target.value.replace(/\D/g, "")); setPace("custom"); }} inputMode="numeric" className={cn(field, "mt-1 font-normal")} /></label>
+          </div>
+          {(() => { const { limit, step } = paceNums(); const days = limit && limit >= 1 && count ? paceSchedule(count, limit, step) : []; return days.length ? <p className="mt-3">
+            <b>{days.length} {days.length === 1 ? "day" : "days"}:</b> {days.slice(0, 7).map((n, i) => `day ${i + 1}: ${n.toLocaleString()}`).join(" · ")}{days.length > 7 ? ` · … (finishes on day ${days.length})` : ""}.
+            <span className="mt-1 block text-xs text-muted-foreground">Sent between 08:00 and 17:00 Lagos time, released steadily through the morning. If you start after 17:00, day 1 begins at 08:00 the next morning.</span></p> : null; })()}
+        </div>}
+        <label className="flex items-start gap-3 rounded-xl border border-black/10 p-3 text-sm">
+          <input type="checkbox" checked={brakeOn} onChange={(e) => setBrakeOn(e.target.checked)} className="mt-1 size-4 accent-[var(--color-nero)]" />
+          <span className="min-w-0 flex-1"><span className="block font-semibold">Pause automatically if too many emails bounce</span>
+            <span className="block text-xs text-muted-foreground">Checked after at least 30 emails have gone out, and if 2 people mark it as spam. Protects your sending domain from being blocked.</span>
+            <span className="mt-2 flex items-center gap-2 text-xs">Pause above <input value={brakePct} disabled={!brakeOn} onChange={(e) => setBrakePct(e.target.value.replace(/[^\d.]/g, ""))} inputMode="decimal" aria-label="Bounce percentage limit" className={cn(field, "!min-h-9 w-20 font-normal disabled:opacity-40")} /> % bounced</span></span>
+        </label>
         <label className="block text-sm font-semibold">Type {count} to confirm<input value={typed} onChange={(e) => setTyped(e.target.value)} inputMode="numeric" className={cn(field, "mt-1.5")} /></label>
         {unverified && <label className="flex gap-2 rounded-lg bg-[#FBE0DA] p-3 text-sm text-[#83252C]"><input type="checkbox" checked={okUnverified} onChange={(e) => setOkUnverified(e.target.checked)} className="mt-0.5 size-4" />I understand this includes unverified (bought or scraped) contacts and accept the risk.</label>}
         <DialogFooter><button type="button" onClick={() => setConfirmOpen(false)} className="min-h-11 rounded-full border border-black/20 px-5 text-sm">Not yet</button>
-          <button type="button" disabled={sending || typed.trim() !== String(count) || (unverified && !okUnverified)} onClick={() => void doSend()} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-nero px-6 text-sm font-semibold text-white disabled:opacity-40"><Rocket className="size-4" />{sending ? "Starting…" : "Send now"}</button></DialogFooter>
+          <button type="button" disabled={sending || paceBad || typed.trim() !== String(count) || (unverified && !okUnverified)} onClick={() => void doSend()} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-nero px-6 text-sm font-semibold text-white disabled:opacity-40"><Rocket className="size-4" />{sending ? "Starting…" : "Send now"}</button></DialogFooter>
       </DialogContent>
     </Dialog>
   </div>;

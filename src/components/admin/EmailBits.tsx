@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { ChevronLeft, ChevronRight, RotateCcw, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, RotateCcw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { callMarketing, fmtWhen, SEND_STATUS, type Send } from "@/lib/marketing";
+import { callMarketing, downloadResults, fmtWhen, SEND_STATUS, type Send } from "@/lib/marketing";
 import { cn } from "@/lib/utils";
 
 /** Page heading used by every email page: eyebrow, gold rule, title, optional actions on the right. */
@@ -38,7 +38,7 @@ const PAGE = 50;
 const RESENDABLE = ["failed", "bounced"];
 
 /** The send log: one row per email with its status, filters, search, and resend for failures (one by one or in bulk). */
-export function SendTable({ campaignId, showCampaign = true, onChanged }: { campaignId?: string; showCampaign?: boolean; onChanged?: () => void }) {
+export function SendTable({ campaignId, campaignName, showCampaign = true, onChanged }: { campaignId?: string; campaignName?: string; showCampaign?: boolean; onChanged?: () => void }) {
   const [rows, setRows] = useState<Send[] | null>(null);
   const [count, setCount] = useState(0);
   const [page, setPage] = useState(0);
@@ -47,6 +47,16 @@ export function SendTable({ campaignId, showCampaign = true, onChanged }: { camp
   const [tests, setTests] = useState(false);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const exportCsv = async (problemsOnly: boolean) => {
+    if (!campaignId) return;
+    setExporting(true);
+    try {
+      const n = await downloadResults(campaignId, campaignName ?? "campaign", problemsOnly);
+      toast.success(n ? `Downloaded ${n.toLocaleString()} ${n === 1 ? "row" : "rows"}. Open it in Excel or Google Sheets.` : "Nothing to download yet.");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Could not download the results."); } finally { setExporting(false); }
+  };
 
   useEffect(() => { const t = setTimeout(() => { setQDebounced(q.trim()); setPage(0); }, 300); return () => clearTimeout(t); }, [q]);
 
@@ -92,6 +102,10 @@ export function SendTable({ campaignId, showCampaign = true, onChanged }: { camp
       <label className="flex min-h-10 cursor-pointer items-center gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={tests} onChange={(e) => { setTests(e.target.checked); setPage(0); }} className="size-4 accent-[var(--color-nero)]" />Show test emails</label>
       <div className="ml-auto flex flex-wrap gap-2">
         {picked.size > 0 && <button type="button" disabled={busy} onClick={resendPicked} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-nero px-4 text-sm font-semibold text-white disabled:opacity-50"><RotateCcw className="size-4" />Resend {picked.size} selected</button>}
+        {campaignId && <>
+          <button type="button" disabled={exporting} onClick={() => void exportCsv(false)} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-nero/30 px-4 text-sm font-semibold hover:border-nero disabled:opacity-50"><Download className="size-4" />{exporting ? "Preparing…" : "Download all results"}</button>
+          <button type="button" disabled={exporting} onClick={() => void exportCsv(true)} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-[#83252C]/40 px-4 text-sm font-semibold text-[#83252C] hover:bg-[#FBE0DA] disabled:opacity-50"><Download className="size-4" />Download problems only</button>
+        </>}
         {campaignId && <button type="button" disabled={busy} onClick={() => { if (window.confirm("Resend every failed and soft-bounced email in this campaign? Hard bounces and unsubscribed addresses are skipped.")) void resend({ [campaignId]: null }); }} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-nero px-4 text-sm font-semibold hover:bg-nero hover:text-white disabled:opacity-50"><RotateCcw className="size-4" />Resend all failed</button>}
       </div>
     </div>
