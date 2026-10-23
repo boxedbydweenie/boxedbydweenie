@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "render") {
-      const out = renderEmail({ html: String(b.html ?? ""), preheader: str(b.preheader, 200) }, { email: "ada@example.com", first_name: "Ada", unsub_token: TEST_TOKEN });
+      const out = renderEmail({ html: String(b.html ?? ""), preheader: str(b.preheader, 200) }, { email: "ada@example.com", first_name: "Ada", company: "Sample Company Ltd", unsub_token: TEST_TOKEN });
       return json(out, 200, h);
     }
 
@@ -169,7 +169,7 @@ Deno.serve(async (req) => {
       if (!to.length) throw new Fail(400, "Enter at least one valid email address.");
       const results: { to: string; ok: boolean; error?: string }[] = [];
       for (const addr of to) {
-        const r = { email: addr, unsub_token: TEST_TOKEN, first_name: null };
+        const r = { email: addr, unsub_token: TEST_TOKEN, first_name: null, company: "Sample Company Ltd" };
         const rendered = renderEmail({ html: c.html, preheader: c.preheader }, r);
         const res = await sendOne({ from: fromHeader(c.from_name), to: [addr], subject: "[TEST] " + mergeTags(c.subject, r, false), html: rendered.html, text: rendered.text,
           reply_to: REPLY_TO, headers: listHeaders(TEST_TOKEN), tags: [{ name: "campaign_id", value: c.id }, { name: "kind", value: "test" }] });
