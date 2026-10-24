@@ -35,14 +35,14 @@ export function JumpMenu({ open, onOpenChange }: { open: boolean; onOpenChange: 
         <Command.List className="max-h-[55vh] overflow-y-auto p-2">
           <Command.Empty className="px-4 py-8 text-center text-sm text-muted-foreground">Nothing matches that. Try “orders”, “audience” or “health”.</Command.Empty>
           <Command.Group heading="Quick actions" className="px-1 pb-1 text-[11px] font-semibold uppercase tracking-[.14em] text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-2">
-            <Command.Item value="new campaign write email" onSelect={() => go("/admin/campaigns")} className={item}><Plus className="size-4" />Start a new campaign<CornerDownLeft className="ml-auto size-3.5 opacity-50" /></Command.Item>
-            <Command.Item value="view site website open" onSelect={() => { onOpenChange(false); window.open("/", "_blank", "noopener"); }} className={item}><ExternalLink className="size-4" />Open the website<CornerDownLeft className="ml-auto size-3.5 opacity-50" /></Command.Item>
+            <Command.Item value="Start a new campaign" keywords={["write", "email"]} onSelect={() => go("/admin/campaigns")} className={item}><Plus className="size-4" />Start a new campaign<CornerDownLeft className="ml-auto size-3.5 opacity-50" /></Command.Item>
+            <Command.Item value="Open the website" keywords={["view", "site"]} onSelect={() => { onOpenChange(false); window.open("/", "_blank", "noopener"); }} className={item}><ExternalLink className="size-4" />Open the website<CornerDownLeft className="ml-auto size-3.5 opacity-50" /></Command.Item>
           </Command.Group>
           <Command.Group heading="Dashboard" className="px-1 pb-1 text-[11px] font-semibold uppercase tracking-[.14em] text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-2">
-            <Command.Item value={`${DASHBOARD.label} ${DASHBOARD.desc} home overview`} onSelect={() => go(DASHBOARD.to)} className={item}><DASHBOARD.icon className="size-4" /><span>{DASHBOARD.label}<span className="ml-2 text-xs opacity-60">{DASHBOARD.desc}</span></span></Command.Item>
+            <Command.Item value={`${DASHBOARD.label} home`} keywords={[DASHBOARD.desc, "overview"]} onSelect={() => go(DASHBOARD.to)} className={item}><DASHBOARD.icon className="size-4" /><span>{DASHBOARD.label}<span className="ml-2 text-xs opacity-60">{DASHBOARD.desc}</span></span></Command.Item>
           </Command.Group>
           {NAV_GROUPS.map((g) => <Command.Group key={g.id} heading={g.label} className="px-1 pb-1 text-[11px] font-semibold uppercase tracking-[.14em] text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-2">
-            {g.items.map((it) => <Command.Item key={it.to} value={`${g.label} ${it.label} ${it.desc}`} onSelect={() => go(it.to)} className={item}>
+            {g.items.map((it) => <Command.Item key={it.to} value={`${g.label} ${it.label}`} keywords={[it.desc]} onSelect={() => go(it.to)} className={item}>
               <it.icon className="size-4" /><span className="min-w-0 truncate">{it.label}<span className="ml-2 text-xs opacity-60">{it.desc}</span></span>
               {it.soon && <span className="ml-auto rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider aria-selected:bg-white/20">Soon</span>}
             </Command.Item>)}
