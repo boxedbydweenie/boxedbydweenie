@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Check, Copy, FileUp, ImagePlus, Monitor, Pause, Play, Rocket, Smartphone, Trash2, TriangleAlert, X } from "lucide-react";
+import { ArrowLeft, Check, Copy, CopyPlus, FileUp, ImagePlus, Monitor, Pause, Play, Rocket, Smartphone, Trash2, TriangleAlert, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { allowanceToday, BASES, callMarketing, CAMPAIGN_STATUS, fmtWhen, lagosDayStart, paceSchedule, pct, uploadEmailImage, type AudienceSummary, type Basis, type Campaign, type CampaignStats } from "@/lib/marketing";
@@ -154,8 +154,12 @@ function Editor() {
   const openSend = () => {
     setTyped(""); setOkUnverified(false);
     // Big lists default to the careful ramp; small ones go out at once.
-    if ((count ?? 0) > 150) { setPace("ramp"); setPLimit("100"); setPStep("100"); } else setPace("all");
-    setBrakeOn(true); setBrakePct("5"); setConfirmOpen(true);
+    // A duplicated campaign keeps its saved pace and bounce limit, so only the changes need making here.
+    if (c?.daily_limit != null) {
+      setPLimit(String(c.daily_limit)); setPStep(String(c.daily_step ?? 0));
+      setPace(c.daily_limit === 100 && (c.daily_step ?? 0) === 100 ? "ramp" : "custom");
+    } else if ((count ?? 0) > 150) { setPace("ramp"); setPLimit("100"); setPStep("100"); } else setPace("all");
+    setBrakeOn(c ? c.bounce_pause_pct != null : true); setBrakePct(String(c?.bounce_pause_pct ?? 5)); setConfirmOpen(true);
   };
   const doSend = async () => {
     if (!c || count == null) return;
@@ -191,6 +195,19 @@ function Editor() {
     try { await callMarketing("campaign_delete", { id: c.id }); setDirty(false); void nav({ to: "/admin/campaigns" }); } catch (e) { toast.error(e instanceof Error ? e.message : "Failed."); }
   };
 
+  const [duplicating, setDuplicating] = useState(false);
+  const duplicate = async () => {
+    if (!c || duplicating) return;
+    setDuplicating(true);
+    try {
+      if (dirty) await save();
+      const r = await callMarketing<{ campaign: Campaign }>("campaign_duplicate", { id: c.id });
+      toast.success("Copied into a new draft. Change the audience or pace, then test and send.");
+      void nav({ to: "/admin/campaigns/$id", params: { id: r.campaign.id } });
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Could not duplicate the campaign."); }
+    setDuplicating(false);
+  };
+
   const unverified = c?.audience.bases.includes("unverified") ?? false;
   const checks = useMemo(() => !c ? [] : [
     { ok: !!c.subject.trim(), label: "Subject line written" },
@@ -212,6 +229,7 @@ function Editor() {
         {isDraft ? <input aria-label="Campaign name" value={c.name} onChange={(e) => patch({ name: e.target.value })} className="mt-3 w-full border-0 border-b-2 border-transparent bg-transparent font-heading text-4xl hover:border-black/10 focus:border-gold focus:outline-none md:text-5xl" /> : <h1 className="mt-4 text-4xl md:text-5xl">{c.name}</h1>}
       </div>
       <div className="flex items-center gap-3"><Pill cls={st.cls}>{st.label}</Pill>
+        <button type="button" onClick={() => void duplicate()} disabled={duplicating} title="Copy this campaign into a new draft" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-black/15 px-4 text-sm font-semibold hover:bg-gold/30 disabled:opacity-50"><CopyPlus className="size-4" />{duplicating ? "Copying…" : "Duplicate"}</button>
         {isDraft && <><span className="text-xs text-muted-foreground" role="status">{saving ? "Saving…" : dirty ? "Unsaved changes" : "All changes saved"}</span>
           <button type="button" onClick={() => void save()} disabled={saving || !dirty} className="min-h-10 rounded-full border border-nero px-5 text-sm font-semibold hover:bg-nero hover:text-white disabled:opacity-40">Save</button>
           <button type="button" onClick={() => void remove()} aria-label="Delete draft" className="grid size-10 place-items-center rounded-full border border-black/15 text-[#83252C] hover:bg-[#FBE0DA]"><Trash2 className="size-4" /></button></>}

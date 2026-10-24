@@ -1,7 +1,7 @@
 // Email marketing API for the team area. Staff only: send the signed-in user's access token as `Authorization: Bearer ...`.
 // Reads happen in the browser through row-level security; every WRITE goes through here (service role).
 // POST { action, ... }  actions: sync, import_chunk, contact_suppress, contact_update, campaign_save, campaign_delete, render, test_send,
-//                               campaign_send, campaign_limit, campaign_pause, campaign_resume, campaign_cancel, requeue
+//                               campaign_duplicate, campaign_send, campaign_limit, campaign_pause, campaign_resume, campaign_cancel, requeue
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import { FUNCTIONS_URL, REPLY_TO, SITE_URL, TEST_TOKEN, fromHeader, isEmail, listHeaders, mergeTags, renderEmail, sendOne } from "../_shared/marketing.ts";
@@ -153,6 +153,17 @@ Deno.serve(async (req) => {
     if (action === "campaign_delete") {
       const { error } = await db.from("email_campaigns").delete().eq("id", str(b.id, 40)).eq("status", "draft");
       if (error) throw error; return json({ ok: true }, 200, h);
+    }
+
+    if (action === "campaign_duplicate") { // copy any campaign (draft, sent, paused...) into a fresh draft; the copy must be tested again before it can be sent
+      const { data: src } = await db.from("email_campaigns").select("*").eq("id", str(b.id, 40)).single();
+      if (!src) throw new Fail(404, "Campaign not found.");
+      const name = `${String(src.name).replace(/\s*\(copy\)$/i, "")} (copy)`.slice(0, 120);
+      const { data, error } = await db.from("email_campaigns").insert({
+        name, subject: src.subject, preheader: src.preheader, from_name: src.from_name, html: src.html, audience: src.audience,
+        daily_limit: src.daily_limit, daily_step: src.daily_step, bounce_pause_pct: src.bounce_pause_pct, created_by: who,
+      }).select("*").single();
+      if (error) throw error; return json({ campaign: data }, 200, h);
     }
 
     if (action === "render") {
