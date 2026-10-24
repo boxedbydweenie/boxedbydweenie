@@ -26,7 +26,7 @@ export function Pill({ cls, children }: { cls: string; children: ReactNode }) {
   return <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider", cls)}>{children}</span>;
 }
 
-export function Card({ title, hint, children, className, accent = "from-[#E7B93B] to-[#EB826C]" }: { title?: string; hint?: string; children: ReactNode; className?: string; accent?: string }) {
+export function Card({ title, hint, children, className, accent = "from-[#E7B93B] to-[#EB826C]" }: { title?: string; hint?: string | undefined; children: ReactNode; className?: string; accent?: string }) {
   return <section className={cn("overflow-hidden rounded-2xl bg-white shadow-[0_20px_40px_-32px_rgba(41,40,40,.5)]", className)}>
     <div className={cn("h-1.5 bg-gradient-to-r", accent)} />
     <div className="p-5 md:p-6">{title && <h2 className="font-heading text-2xl">{title}</h2>}{hint && <p className="mt-1 text-sm text-muted-foreground">{hint}</p>}<div className={title ? "mt-5" : ""}>{children}</div></div>

@@ -1,27 +1,13 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
-import { KeyRound, LayoutDashboard, LogOut, Mail, Package, ReceiptText, ExternalLink, Megaphone, Users, ListChecks, Image as ImageIcon } from "lucide-react";
-import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { AdminShell } from "./AdminShell";
 
 type State = { phase: "loading" } | { phase: "out" } | { phase: "denied"; email: string } | { phase: "in"; email: string };
 const Ctx = createContext<{ email: string }>({ email: "" });
 export const useAdmin = () => useContext(Ctx);
-
-const NAV = [
-  { to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
-  { to: "/admin/products", label: "Products", icon: Package },
-  { to: "/admin/orders", label: "Orders", icon: ReceiptText },
-  { to: "/admin/leads", label: "Enquiries", icon: Mail },
-  { to: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
-  { to: "/admin/audience", label: "Audience", icon: Users },
-  { to: "/admin/email-log", label: "Send log", icon: ListChecks },
-  { to: "/admin/images", label: "Images", icon: ImageIcon },
-] as const;
 
 export function AdminGate({ children }: { children: ReactNode }) {
   const [s, setS] = useState<State>({ phase: "loading" });
@@ -42,7 +28,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
   if (s.phase === "loading") return <div className="grid min-h-screen place-items-center bg-ivory text-sm text-muted-foreground">Loading</div>;
   if (s.phase === "out") return <Login />;
   if (s.phase === "denied") return <Denied email={s.email} />;
-  return <Ctx.Provider value={{ email: s.email }}><Shell email={s.email}>{children}</Shell></Ctx.Provider>;
+  return <Ctx.Provider value={{ email: s.email }}><AdminShell email={s.email}>{children}</AdminShell></Ctx.Provider>;
 }
 
 function Frame({ children }: { children: ReactNode }) {
@@ -81,42 +67,4 @@ function Denied({ email }: { email: string }) {
     <p className="mt-3 text-sm text-muted-foreground">{email} is signed in but is not on the team list. Ask the owner to add you.</p>
     <Button className="mt-6" variant="outline" onClick={() => void supabase().auth.signOut()}>Sign out</Button>
   </Frame>;
-}
-
-function Shell({ email, children }: { email: string; children: ReactNode }) {
-  const path = useRouterState({ select: (r) => r.location.pathname });
-  const [pwOpen, setPwOpen] = useState(false);
-  return <div className="min-h-screen bg-[#F7F4EC] text-nero md:grid md:grid-cols-[250px_1fr]">
-    <aside className="brand-pattern-black text-on-dark md:sticky md:top-0 md:h-screen">
-      <div className="flex items-center justify-between gap-4 p-5 md:block">
-        <img src="/brand/logo-on-dark.svg" alt="Boxed by Dweenie" className="h-10 w-auto" />
-        <p className="eyebrow hidden text-gold md:mt-5 md:block">Team area</p>
-      </div>
-      <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:block md:space-y-1 md:px-3" aria-label="Admin">
-        {NAV.map((n) => { const on = "exact" in n && n.exact ? path === n.to : path.startsWith(n.to);
-          return <Link key={n.to} to={n.to} className={cn("flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium transition", on ? "bg-gold text-nero" : "text-on-dark hover:bg-white/10")}><n.icon className="size-4" />{n.label}</Link>; })}
-        <a href="/" target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm text-on-dark-muted hover:bg-white/10"><ExternalLink className="size-4" />View site</a>
-      </nav>
-      <div className="hidden p-4 md:absolute md:bottom-0 md:block md:w-full">
-        <p className="truncate text-xs text-on-dark-muted">{email}</p>
-        <button type="button" onClick={() => setPwOpen((v) => !v)} className="mt-2 flex min-h-9 items-center gap-2 text-sm text-on-dark hover:text-gold"><KeyRound className="size-4" />Change password</button>
-        {pwOpen && <PasswordForm onDone={() => setPwOpen(false)} />}
-        <button type="button" onClick={() => void supabase().auth.signOut()} className="flex min-h-9 items-center gap-2 text-sm text-on-dark hover:text-gold"><LogOut className="size-4" />Sign out</button>
-      </div>
-    </aside>
-    <main className="min-w-0 p-5 md:p-10">{children}
-      <div className="mt-12 flex gap-4 border-t border-black/10 pt-4 text-sm md:hidden"><button type="button" onClick={() => void supabase().auth.signOut()} className="underline">Sign out</button><span className="text-muted-foreground">{email}</span></div>
-    </main>
-  </div>;
-}
-
-function PasswordForm({ onDone }: { onDone: () => void }) {
-  const [v, setV] = useState("");
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (v.length < 10) { toast.error("Use at least 10 characters."); return; }
-    const { error } = await supabase().auth.updateUser({ password: v });
-    if (error) toast.error(error.message); else { toast.success("Password changed."); setV(""); onDone(); }
-  };
-  return <form onSubmit={save} className="my-2 space-y-2"><Input type="password" autoComplete="new-password" value={v} onChange={(e) => setV(e.target.value)} placeholder="New password (10+ characters)" className="min-h-10 bg-white text-nero" /><Button type="submit" size="sm" className="min-h-9 w-full bg-gold text-nero">Save password</Button></form>;
 }

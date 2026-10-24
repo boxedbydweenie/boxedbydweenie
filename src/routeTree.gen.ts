@@ -25,11 +25,19 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAudienceRouteImport } from './routes/admin.audience'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminEmailLogRouteImport } from './routes/admin.email-log'
+import { Route as AdminEngagementRouteImport } from './routes/admin.engagement'
+import { Route as AdminGiftCardsRouteImport } from './routes/admin.gift-cards'
 import { Route as AdminImagesRouteImport } from './routes/admin.images'
 import { Route as AdminLeadsRouteImport } from './routes/admin.leads'
+import { Route as AdminMarketingRouteImport } from './routes/admin.marketing'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminSalesRouteImport } from './routes/admin.sales'
+import { Route as AdminSecretSantaRouteImport } from './routes/admin.secret-santa'
+import { Route as AdminSystemRouteImport } from './routes/admin.system'
+import { Route as AdminTeamRouteImport } from './routes/admin.team'
 import { Route as CalendarIndexRouteImport } from './routes/calendar.index'
 import { Route as CalendarOccasionRouteImport } from './routes/calendar.$occasion'
 import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
@@ -42,6 +50,7 @@ import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as AdminCampaignsIndexRouteImport } from './routes/admin.campaigns.index'
 import { Route as AdminCampaignsIdRouteImport } from './routes/admin.campaigns.$id'
+import { Route as AdminSoonSlugRouteImport } from './routes/admin.soon.$slug'
 import { Route as CalendarMyDatesIndexRouteImport } from './routes/calendar.my-dates.index'
 import { Route as CalendarMyDatesPersonIdRouteImport } from './routes/calendar.my-dates.$personId'
 import { Route as CorporateQuoteIndexRouteImport } from './routes/corporate.quote.index'
@@ -130,9 +139,24 @@ const AdminAudienceRoute = AdminAudienceRouteImport.update({
   path: '/audience',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminEmailLogRoute = AdminEmailLogRouteImport.update({
   id: '/email-log',
   path: '/email-log',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEngagementRoute = AdminEngagementRouteImport.update({
+  id: '/engagement',
+  path: '/engagement',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminGiftCardsRoute = AdminGiftCardsRouteImport.update({
+  id: '/gift-cards',
+  path: '/gift-cards',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminImagesRoute = AdminImagesRouteImport.update({
@@ -145,6 +169,11 @@ const AdminLeadsRoute = AdminLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminMarketingRoute = AdminMarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -153,6 +182,26 @@ const AdminOrdersRoute = AdminOrdersRouteImport.update({
 const AdminProductsRoute = AdminProductsRouteImport.update({
   id: '/products',
   path: '/products',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSalesRoute = AdminSalesRouteImport.update({
+  id: '/sales',
+  path: '/sales',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSecretSantaRoute = AdminSecretSantaRouteImport.update({
+  id: '/secret-santa',
+  path: '/secret-santa',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSystemRoute = AdminSystemRouteImport.update({
+  id: '/system',
+  path: '/system',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTeamRoute = AdminTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
   getParentRoute: () => AdminRoute,
 } as any)
 const CalendarIndexRoute = CalendarIndexRouteImport.update({
@@ -215,6 +264,11 @@ const AdminCampaignsIdRoute = AdminCampaignsIdRouteImport.update({
   path: '/campaigns/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSoonSlugRoute = AdminSoonSlugRouteImport.update({
+  id: '/soon/$slug',
+  path: '/soon/$slug',
+  getParentRoute: () => AdminRoute,
+} as any)
 const CalendarMyDatesIndexRoute = CalendarMyDatesIndexRouteImport.update({
   id: '/calendar/my-dates/',
   path: '/calendar/my-dates/',
@@ -267,11 +321,19 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/audience': typeof AdminAudienceRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/email-log': typeof AdminEmailLogRoute
+  '/admin/engagement': typeof AdminEngagementRoute
+  '/admin/gift-cards': typeof AdminGiftCardsRoute
   '/admin/images': typeof AdminImagesRoute
   '/admin/leads': typeof AdminLeadsRoute
+  '/admin/marketing': typeof AdminMarketingRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/sales': typeof AdminSalesRoute
+  '/admin/secret-santa': typeof AdminSecretSantaRoute
+  '/admin/system': typeof AdminSystemRoute
+  '/admin/team': typeof AdminTeamRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
@@ -284,6 +346,7 @@ export interface FileRoutesByFullPath {
   '/secret-santa/': typeof SecretSantaIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
+  '/admin/soon/$slug': typeof AdminSoonSlugRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
@@ -308,11 +371,19 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/audience': typeof AdminAudienceRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/email-log': typeof AdminEmailLogRoute
+  '/admin/engagement': typeof AdminEngagementRoute
+  '/admin/gift-cards': typeof AdminGiftCardsRoute
   '/admin/images': typeof AdminImagesRoute
   '/admin/leads': typeof AdminLeadsRoute
+  '/admin/marketing': typeof AdminMarketingRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/sales': typeof AdminSalesRoute
+  '/admin/secret-santa': typeof AdminSecretSantaRoute
+  '/admin/system': typeof AdminSystemRoute
+  '/admin/team': typeof AdminTeamRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
@@ -325,6 +396,7 @@ export interface FileRoutesByTo {
   '/secret-santa': typeof SecretSantaIndexRoute
   '/shop': typeof ShopIndexRoute
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
+  '/admin/soon/$slug': typeof AdminSoonSlugRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
@@ -351,11 +423,19 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin/audience': typeof AdminAudienceRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/email-log': typeof AdminEmailLogRoute
+  '/admin/engagement': typeof AdminEngagementRoute
+  '/admin/gift-cards': typeof AdminGiftCardsRoute
   '/admin/images': typeof AdminImagesRoute
   '/admin/leads': typeof AdminLeadsRoute
+  '/admin/marketing': typeof AdminMarketingRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
+  '/admin/sales': typeof AdminSalesRoute
+  '/admin/secret-santa': typeof AdminSecretSantaRoute
+  '/admin/system': typeof AdminSystemRoute
+  '/admin/team': typeof AdminTeamRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
@@ -368,6 +448,7 @@ export interface FileRoutesById {
   '/secret-santa/': typeof SecretSantaIndexRoute
   '/shop/': typeof ShopIndexRoute
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
+  '/admin/soon/$slug': typeof AdminSoonSlugRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
@@ -395,11 +476,19 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/admin/audience'
+    | '/admin/customers'
     | '/admin/email-log'
+    | '/admin/engagement'
+    | '/admin/gift-cards'
     | '/admin/images'
     | '/admin/leads'
+    | '/admin/marketing'
     | '/admin/orders'
     | '/admin/products'
+    | '/admin/sales'
+    | '/admin/secret-santa'
+    | '/admin/system'
+    | '/admin/team'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
@@ -412,6 +501,7 @@ export interface FileRouteTypes {
     | '/secret-santa/'
     | '/shop/'
     | '/admin/campaigns/$id'
+    | '/admin/soon/$slug'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
@@ -436,11 +526,19 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/admin/audience'
+    | '/admin/customers'
     | '/admin/email-log'
+    | '/admin/engagement'
+    | '/admin/gift-cards'
     | '/admin/images'
     | '/admin/leads'
+    | '/admin/marketing'
     | '/admin/orders'
     | '/admin/products'
+    | '/admin/sales'
+    | '/admin/secret-santa'
+    | '/admin/system'
+    | '/admin/team'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
@@ -453,6 +551,7 @@ export interface FileRouteTypes {
     | '/secret-santa'
     | '/shop'
     | '/admin/campaigns/$id'
+    | '/admin/soon/$slug'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
@@ -478,11 +577,19 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/admin/audience'
+    | '/admin/customers'
     | '/admin/email-log'
+    | '/admin/engagement'
+    | '/admin/gift-cards'
     | '/admin/images'
     | '/admin/leads'
+    | '/admin/marketing'
     | '/admin/orders'
     | '/admin/products'
+    | '/admin/sales'
+    | '/admin/secret-santa'
+    | '/admin/system'
+    | '/admin/team'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
@@ -495,6 +602,7 @@ export interface FileRouteTypes {
     | '/secret-santa/'
     | '/shop/'
     | '/admin/campaigns/$id'
+    | '/admin/soon/$slug'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
@@ -653,11 +761,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAudienceRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/email-log': {
       id: '/admin/email-log'
       path: '/email-log'
       fullPath: '/admin/email-log'
       preLoaderRoute: typeof AdminEmailLogRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/engagement': {
+      id: '/admin/engagement'
+      path: '/engagement'
+      fullPath: '/admin/engagement'
+      preLoaderRoute: typeof AdminEngagementRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/gift-cards': {
+      id: '/admin/gift-cards'
+      path: '/gift-cards'
+      fullPath: '/admin/gift-cards'
+      preLoaderRoute: typeof AdminGiftCardsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/images': {
@@ -674,6 +803,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLeadsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/marketing': {
+      id: '/admin/marketing'
+      path: '/marketing'
+      fullPath: '/admin/marketing'
+      preLoaderRoute: typeof AdminMarketingRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/orders'
@@ -686,6 +822,34 @@ declare module '@tanstack/react-router' {
       path: '/products'
       fullPath: '/admin/products'
       preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/sales': {
+      id: '/admin/sales'
+      path: '/sales'
+      fullPath: '/admin/sales'
+      preLoaderRoute: typeof AdminSalesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/secret-santa': {
+      id: '/admin/secret-santa'
+      path: '/secret-santa'
+      fullPath: '/admin/secret-santa'
+      preLoaderRoute: typeof AdminSecretSantaRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/system': {
+      id: '/admin/system'
+      path: '/system'
+      fullPath: '/admin/system'
+      preLoaderRoute: typeof AdminSystemRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/team': {
+      id: '/admin/team'
+      path: '/team'
+      fullPath: '/admin/team'
+      preLoaderRoute: typeof AdminTeamRouteImport
       parentRoute: typeof AdminRoute
     }
     '/calendar/': {
@@ -772,6 +936,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCampaignsIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/soon/$slug': {
+      id: '/admin/soon/$slug'
+      path: '/soon/$slug'
+      fullPath: '/admin/soon/$slug'
+      preLoaderRoute: typeof AdminSoonSlugRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/calendar/my-dates/': {
       id: '/calendar/my-dates/'
       path: '/calendar/my-dates'
@@ -826,25 +997,43 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAudienceRoute: typeof AdminAudienceRoute
+  AdminCustomersRoute: typeof AdminCustomersRoute
   AdminEmailLogRoute: typeof AdminEmailLogRoute
+  AdminEngagementRoute: typeof AdminEngagementRoute
+  AdminGiftCardsRoute: typeof AdminGiftCardsRoute
   AdminImagesRoute: typeof AdminImagesRoute
   AdminLeadsRoute: typeof AdminLeadsRoute
+  AdminMarketingRoute: typeof AdminMarketingRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
+  AdminSalesRoute: typeof AdminSalesRoute
+  AdminSecretSantaRoute: typeof AdminSecretSantaRoute
+  AdminSystemRoute: typeof AdminSystemRoute
+  AdminTeamRoute: typeof AdminTeamRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminCampaignsIdRoute: typeof AdminCampaignsIdRoute
+  AdminSoonSlugRoute: typeof AdminSoonSlugRoute
   AdminCampaignsIndexRoute: typeof AdminCampaignsIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAudienceRoute: AdminAudienceRoute,
+  AdminCustomersRoute: AdminCustomersRoute,
   AdminEmailLogRoute: AdminEmailLogRoute,
+  AdminEngagementRoute: AdminEngagementRoute,
+  AdminGiftCardsRoute: AdminGiftCardsRoute,
   AdminImagesRoute: AdminImagesRoute,
   AdminLeadsRoute: AdminLeadsRoute,
+  AdminMarketingRoute: AdminMarketingRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,
+  AdminSalesRoute: AdminSalesRoute,
+  AdminSecretSantaRoute: AdminSecretSantaRoute,
+  AdminSystemRoute: AdminSystemRoute,
+  AdminTeamRoute: AdminTeamRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminCampaignsIdRoute: AdminCampaignsIdRoute,
+  AdminSoonSlugRoute: AdminSoonSlugRoute,
   AdminCampaignsIndexRoute: AdminCampaignsIndexRoute,
 }
 
