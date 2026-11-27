@@ -1,9 +1,8 @@
-import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { AddPersonSheet } from "@/components/calendar/AddPersonSheet";
-import { usePeople } from "@/hooks/use-calendar";
-import { daysUntil, formatLong, initials, nextDateFor } from "@/services/calendar";
+import { usePeople, useScheduledGifts } from "@/hooks/use-calendar";
+import { C, avatarColour, shortDate, status, upcomingItems, whenText } from "@/components/app/kit";
 
 export const Route = createFileRoute("/app/people/")({
   validateSearch: z.object({ add: z.boolean().optional().catch(undefined) }),
@@ -12,55 +11,167 @@ export const Route = createFileRoute("/app/people/")({
 
 function AppPeople() {
   const people = usePeople();
+  const scheduled = useScheduledGifts();
   const { add } = Route.useSearch();
-  const [open, setOpen] = useState(Boolean(add));
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (add) void navigate({ to: "/app/people/new", replace: true });
+  }, [add, navigate]);
+
+  // Each person's next date, soonest first.
+  const items = upcomingItems(people, scheduled, []);
+  const nextFor = new Map<string, (typeof items)[number]>();
+  for (const i of items) if (i.personId && !nextFor.has(i.personId)) nextFor.set(i.personId, i);
+  const sorted = [...people].sort((a, b) =>
+    (nextFor.get(a.id)?.date ?? "9999").localeCompare(nextFor.get(b.id)?.date ?? "9999"),
+  );
+
   return (
-    <section className="px-4 pt-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8E6A10]">People</p>
-      <h1 className="mt-1 font-display text-4xl">
-        Everyone <span className="text-[#8E6A10]">you remember.</span>
-      </h1>
+    <div className="a-top-pattern" style={{ padding: "54px 16px 16px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          padding: "0 6px",
+        }}
+      >
+        <div>
+          <div className="a-eye">People</div>
+          <h1 className="a-dsp" style={{ fontSize: 38, marginTop: 6 }}>
+            Everyone <span style={{ color: C.goldText }}>you remember.</span>
+          </h1>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, margin: "16px 6px 0" }}>
+        <Link to="/app/people/new" className="a-abtn a-ink" style={{ flex: 1 }}>
+          Add a person
+        </Link>
+        <Link
+          to="/app/welcome"
+          search={{ step: "import", from: "people" }}
+          className="a-abtn a-line"
+          style={{ flex: 1 }}
+        >
+          Import a list
+        </Link>
+      </div>
+
       {people.length === 0 ? (
-        <p className="mt-6 text-sm text-muted-foreground">
-          No one yet. Add the first birthday or anniversary below.
-        </p>
+        <div
+          style={{
+            margin: "18px 6px 0",
+            background: "#FFFFFF",
+            borderRadius: 20,
+            border: `1.5px solid ${C.line}`,
+            padding: 20,
+            textAlign: "center",
+          }}
+        >
+          <img src="/brand/bow-gold.svg" alt="" style={{ width: 70, height: "auto" }} />
+          <p className="a-dsp" style={{ fontSize: 22, marginTop: 10 }}>
+            No one here yet.
+          </p>
+          <p style={{ fontSize: 13, color: C.muted, marginTop: 6 }}>
+            Add the first birthday or anniversary and we'll remind you in good time.
+          </p>
+        </div>
       ) : (
-        <ul className="mt-6 divide-y divide-border rounded-2xl border border-border bg-card">
-          {people.map((p) => {
-            const n = nextDateFor(p);
+        <div
+          style={{
+            marginTop: 16,
+            background: "#FFFFFF",
+            borderRadius: 20,
+            border: `1.5px solid ${C.line}`,
+            padding: "4px 16px",
+          }}
+        >
+          {sorted.map((p, n) => {
+            const i = nextFor.get(p.id);
+            const s = i ? status(i) : null;
             return (
-              <li key={p.id}>
-                <Link
-                  to="/app/people/$personId"
-                  params={{ personId: p.id }}
-                  className="flex items-center gap-4 px-4 py-3"
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#86BAA3] font-semibold">
-                    {initials(p.name)}
+              <Link
+                key={p.id}
+                to="/app/people/$personId"
+                params={{ personId: p.id }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "12px 0",
+                  borderTop: n ? `1px solid ${C.line}` : 0,
+                }}
+              >
+                {p.photo ? (
+                  <img
+                    src={p.photo}
+                    alt=""
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      flexShrink: 0,
+                    }}
+                  />
+                ) : (
+                  <span
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: "50%",
+                      ...avatarColour(p.id),
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {p.name.slice(0, 1).toUpperCase()}
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{p.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {n ? `${n.date.label}, ${formatLong(n.on)}` : p.relationship}
-                    </p>
-                  </div>
-                  {n && (
-                    <span className="shrink-0 text-xs font-semibold">{daysUntil(n.on)} days</span>
-                  )}
-                </Link>
-              </li>
+                )}
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <strong
+                    style={{
+                      display: "block",
+                      fontSize: 15,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {p.name}
+                  </strong>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: 12,
+                      color: C.muted,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {i
+                      ? `${i.title.charAt(0).toUpperCase()}${i.title.slice(1)} · ${shortDate(i.date)}`
+                      : p.relationship}
+                  </span>
+                </span>
+                {i && s?.label && s.label !== "No gift yet" ? (
+                  <span className="a-pill" style={{ background: s.bg, color: s.fg }}>
+                    {s.label}
+                  </span>
+                ) : i ? (
+                  <span style={{ fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
+                    {whenText(i.days).replace(" to go", "")}
+                  </span>
+                ) : null}
+              </Link>
             );
           })}
-        </ul>
+        </div>
       )}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="mt-6 flex h-12 w-full items-center justify-center rounded-lg bg-[#292828] text-sm font-semibold text-white"
-      >
-        Add a person
-      </button>
-      <AddPersonSheet open={open} onOpenChange={setOpen} />
-    </section>
+    </div>
   );
 }

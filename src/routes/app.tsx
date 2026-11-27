@@ -1,7 +1,15 @@
 import { useEffect } from "react";
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useUser } from "@/hooks/use-shop";
-import { CalendarDays, Gift, Home, Users } from "lucide-react";
+import {
+  AppStyles,
+  C,
+  IconCalendar,
+  IconGift,
+  IconHome,
+  IconPeople,
+  IconPlus,
+} from "@/components/app/kit";
 
 /**
  * Standalone Gift Calendar app (installable PWA).
@@ -30,15 +38,10 @@ export const Route = createFileRoute("/app")({
   component: AppLayout,
 });
 
-const TABS = [
-  { to: "/app", label: "Home", Icon: Home },
-  { to: "/app/calendar", label: "Calendar", Icon: CalendarDays },
-  { to: "/app/people", label: "People", Icon: Users },
-  { to: "/app/vouchers", label: "Vouchers", Icon: Gift },
-] as const;
-
 /** Screens anyone can see. Everything else needs a BBD account. */
 const OPEN = new Set(["/app", "/app/signin"]);
+/** Full-screen steps that hide the bottom bar. */
+const NO_NAV = /^\/app\/(signin|welcome|send)/;
 
 function AppLayout() {
   const path = useLocation({ select: (l) => l.pathname.replace(/\/$/, "") || "/" });
@@ -51,21 +54,21 @@ function AppLayout() {
   }, []);
 
   const locked = !user && !OPEN.has(path);
-  const showNav = Boolean(user) && path !== "/app/signin";
+  const showNav = Boolean(user) && !NO_NAV.test(path);
 
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col bg-ivory text-foreground">
-      <main className={`flex-1 ${showNav ? "pb-28" : ""}`}>
+    <div className="bbd-app mx-auto flex min-h-[100dvh] w-full max-w-[430px] flex-col">
+      <AppStyles />
+      <main className="flex-1" style={{ paddingBottom: showNav ? 112 : 0 }}>
         {locked ? (
-          <section className="px-5 pt-16 text-center">
-            <h1 className="font-display text-3xl">Sign in to see your calendar</h1>
-            <p className="mt-3 text-sm text-muted-foreground">
+          <section style={{ padding: "64px 22px 0", textAlign: "center" }}>
+            <h1 className="a-dsp" style={{ fontSize: 34 }}>
+              Sign in to see <span style={{ color: C.goldText }}>your calendar.</span>
+            </h1>
+            <p style={{ marginTop: 12, fontSize: 14, color: C.muted }}>
               Your dates and reminders are saved to your Boxed by Dweenie account.
             </p>
-            <Link
-              to="/app/signin"
-              className="mt-6 inline-flex h-12 items-center rounded-lg bg-[#292828] px-6 text-sm font-semibold text-white"
-            >
+            <Link to="/app/signin" className="a-abtn a-lg a-ink" style={{ marginTop: 24 }}>
               Sign in
             </Link>
           </section>
@@ -73,28 +76,88 @@ function AppLayout() {
           <Outlet />
         )}
       </main>
-      {showNav && (
-        <nav
-          aria-label="App"
-          className="fixed bottom-4 left-1/2 z-50 flex h-16 w-[calc(100%-2rem)] max-w-[398px] -translate-x-1/2 items-center justify-around rounded-3xl border border-border bg-card px-2 shadow-lg"
-          style={{ marginBottom: "env(safe-area-inset-bottom)" }}
-        >
-          {TABS.map(({ to, label, Icon }) => {
-            const active = to === "/app" ? path === "/app" : path.startsWith(to);
-            return (
-              <Link
-                key={to}
-                to={to}
-                aria-current={active ? "page" : undefined}
-                className={`flex min-w-14 flex-col items-center gap-1 rounded-xl px-2 py-1 text-[11px] font-semibold ${active ? "text-foreground" : "text-muted-foreground"}`}
-              >
-                <Icon className="h-5 w-5" aria-hidden="true" />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-      )}
+      {showNav && <BottomNav path={path} />}
     </div>
+  );
+}
+
+const TABS = [
+  { to: "/app", label: "Home", Icon: IconHome },
+  { to: "/app/calendar", label: "Calendar", Icon: IconCalendar },
+  { to: "/app/people", label: "People", Icon: IconPeople },
+  { to: "/app/vouchers", label: "Vouchers", Icon: IconGift },
+] as const;
+
+function BottomNav({ path }: { path: string }) {
+  const tab = (t: (typeof TABS)[number]) => {
+    const on = t.to === "/app" ? path === "/app" : path.startsWith(t.to);
+    return (
+      <Link
+        key={t.to}
+        to={t.to}
+        aria-current={on ? "page" : undefined}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 3,
+          fontSize: 11,
+          minWidth: 56,
+          padding: "6px 0",
+          color: on ? C.nero : C.muted,
+          fontWeight: on ? 700 : 400,
+        }}
+      >
+        <t.Icon />
+        {t.label}
+      </Link>
+    );
+  };
+  return (
+    <nav
+      aria-label="App"
+      style={{
+        position: "fixed",
+        left: "50%",
+        transform: "translateX(-50%)",
+        bottom: "calc(22px + env(safe-area-inset-bottom, 0px))",
+        width: "calc(100% - 28px)",
+        maxWidth: 402,
+        height: 70,
+        background: "#FFFFFF",
+        borderRadius: 24,
+        boxShadow: "0 10px 30px rgba(41,40,40,.14)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-around",
+        padding: "0 6px",
+        zIndex: 50,
+      }}
+    >
+      {tab(TABS[0])}
+      {tab(TABS[1])}
+      <Link
+        to="/app/people"
+        search={{ add: true }}
+        aria-label="Add a date"
+        style={{
+          width: 58,
+          height: 58,
+          borderRadius: "50%",
+          background: C.nero,
+          color: C.gold,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: -34,
+          boxShadow: "0 8px 20px rgba(41,40,40,.3)",
+          border: `4px solid ${C.ivory}`,
+        }}
+      >
+        <IconPlus style={{ width: 26, height: 26, strokeWidth: 2.2 }} />
+      </Link>
+      {tab(TABS[2])}
+      {tab(TABS[3])}
+    </nav>
   );
 }
