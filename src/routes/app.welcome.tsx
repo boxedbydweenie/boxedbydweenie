@@ -604,6 +604,67 @@ function parseLine(line: string): Row | null {
 
 const ready = (r: Row) => Boolean(r.name && r.day && r.month && r.kind);
 
+/** Reads a vCard date: 19900214, 1990-02-14, --0214, --02-14 (no year). */
+function vDate(v: string): { day: number; month: number; year: number | null } | null {
+  const m = v.trim().match(/^(\d{4}|--)-?(\d{2})-?(\d{2})/);
+  if (!m) return null;
+  const year = m[1] === "--" || m[1] === "1604" ? null : +m[1]!; // iPhone saves "no year" as 1604
+  const month = +m[2]!;
+  const day = +m[3]!;
+  return month >= 1 && month <= 12 && day >= 1 && day <= 31 ? { day, month, year } : null;
+}
+
+/**
+ * Reads a contacts file (.vcf) exported from an iPhone, Android or Google Contacts.
+ * Keeps each person's birthday and anniversary when the phone has them.
+ */
+function parseVcf(text: string): { rows: Row[]; undated: string[] } {
+  const rows: Row[] = [];
+  const undated: string[] = [];
+  const unfolded = text.replace(/\r?\n[ \t]/g, "");
+  for (const card of unfolded.split(/BEGIN:VCARD/i).slice(1)) {
+    const lines = card.split(/\r?\n/);
+    const val = (l: string) =>
+      l
+        .slice(l.indexOf(":") + 1)
+        .replace(/\\([,;\\])/g, "$1")
+        .replace(/\\n/gi, " ")
+        .trim();
+    let name = "";
+    let structured = "";
+    const labels = new Map<string, string>();
+    const dates: { group: string; kind: Row["kind"]; v: string }[] = [];
+    for (const l of lines) {
+      const key = l.slice(0, l.indexOf(":")).toUpperCase();
+      const [prop, group] = key.includes(".")
+        ? [key.split(";")[0]!.split(".")[1]!, key.split(".")[0]!]
+        : [key.split(";")[0]!, ""];
+      if (prop === "FN") name = val(l);
+      else if (prop === "N") structured = val(l);
+      else if (prop === "BDAY") dates.push({ group, kind: "birthday", v: val(l) });
+      else if (prop === "ANNIVERSARY" || prop === "X-ANNIVERSARY")
+        dates.push({ group, kind: "anniversary", v: val(l) });
+      else if (prop === "X-ABDATE") dates.push({ group, kind: null, v: val(l) });
+      else if (prop === "X-ABLABEL") labels.set(group, val(l).toLowerCase());
+    }
+    if (!name && structured) {
+      const [last = "", first = ""] = structured.split(";");
+      name = `${first} ${last}`.trim();
+    }
+    if (!name) continue;
+    let found = false;
+    for (const d of dates) {
+      const kind = d.kind ?? (/anniv/.test(labels.get(d.group) ?? "") ? "anniversary" : null);
+      const date = vDate(d.v);
+      if (!kind || !date) continue;
+      found = true;
+      rows.push({ id: crypto.randomUUID(), name, kind, ...date });
+    }
+    if (!found) undated.push(name);
+  }
+  return { rows, undated };
+}
+
 function Import({
   onBack,
   onDone,
@@ -619,6 +680,13 @@ function Import({
   const [busy, setBusy] = useState(false);
   const people = usePeople();
   const fileRef = useRef<HTMLInputElement>(null);
+  const vcfRef = useRef<HTMLInputElement>(null);
+  const [undated, setUndated] = useState<string[]>([]);
+  const [showUndated, setShowUndated] = useState(false);
+  const isIos =
+    typeof navigator !== "undefined" &&
+    (/iP(hone|ad|od)/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
   const hasContacts =
     typeof navigator !== "undefined" &&
     "contacts" in navigator &&
@@ -632,6 +700,28 @@ function Import({
         .map(parseLine)
         .filter((r): r is Row => r !== null),
     );
+  const readVcf = (t: string) => {
+    const out = parseVcf(t);
+    setUndated(out.undated);
+    setShowUndated(false);
+    setRows(out.rows);
+    if (!out.rows.length && !out.undated.length)
+      toast("We couldn't read any contacts from that file.");
+  };
+  const addUndated = () => {
+    setRows((rs) => [
+      ...rs,
+      ...undated.map((name) => ({
+        id: crypto.randomUUID(),
+        name,
+        day: null,
+        month: null,
+        year: null,
+        kind: null,
+      })),
+    ]);
+    setShowUndated(true);
+  };
   const pickContacts = async () => {
     setMode("contacts");
     try {
@@ -785,9 +875,7 @@ function Import({
         {option(
           "contacts",
           "From my phone contacts",
-          hasContacts
-            ? "Pick names from your phone, then add their dates."
-            : "Works in Chrome on Android phones.",
+          "Works on iPhone and Android. Brings in saved birthdays too.",
           C.nero,
           C.gold,
           <svg className="a-ico" viewBox="0 0 24 24" aria-hidden="true">
@@ -795,8 +883,10 @@ function Import({
             <circle cx="12" cy="10" r="2.6" />
             <path d="M8.5 16.5c.6-1.7 2-2.6 3.5-2.6s2.9.9 3.5 2.6M3 7h2M3 12h2M3 17h2" />
           </svg>,
-          () => void pickContacts(),
-          !hasContacts,
+          () => {
+            setMode("contacts");
+            setRows([]);
+          },
         )}
         {option(
           "paste",
@@ -836,6 +926,26 @@ function Import({
         />
       </div>
 
+      <input
+        ref={vcfRef}
+        type="file"
+        accept=".vcf,.vcard,text/vcard,text/x-vcard,text/directory"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void f.text().then(readVcf);
+          e.target.value = "";
+        }}
+      />
+      {mode === "contacts" && (
+        <ContactsHelp
+          isIos={isIos}
+          canPick={hasContacts}
+          onFile={() => vcfRef.current?.click()}
+          onPick={() => void pickContacts()}
+        />
+      )}
+
       {mode === "paste" && (
         <textarea
           aria-label="Paste your list"
@@ -863,7 +973,7 @@ function Import({
         />
       )}
 
-      {rows.length > 0 && (
+      {(rows.length > 0 || undated.length > 0) && (
         <div
           style={{
             marginTop: 16,
@@ -888,6 +998,32 @@ function Import({
               {good.length} ready
             </span>
           </div>
+          {undated.length > 0 && !showUndated && (
+            <div
+              style={{
+                background: C.ivory,
+                borderRadius: 14,
+                padding: "10px 12px",
+                fontSize: 12.5,
+                lineHeight: 1.5,
+                margin: "4px 0 8px",
+              }}
+            >
+              {undated.length} more {undated.length === 1 ? "contact has" : "contacts have"} no
+              birthday saved on the phone.{" "}
+              {undated.length <= 60 ? (
+                <button
+                  type="button"
+                  onClick={addUndated}
+                  style={{ fontWeight: 700, textDecoration: "underline", color: C.nero }}
+                >
+                  Add them and type the dates
+                </button>
+              ) : (
+                "Add the ones you need from People."
+              )}
+            </div>
+          )}
           {rows.map((r) => (
             <ImportRow
               key={r.id}
@@ -915,6 +1051,130 @@ function Import({
         {standalone ? "Back" : "I'll do this later"}
       </button>
     </>
+  );
+}
+
+function ContactsHelp({
+  isIos,
+  canPick,
+  onFile,
+  onPick,
+}: {
+  isIos: boolean;
+  canPick: boolean;
+  onFile: () => void;
+  onPick: () => void;
+}) {
+  const [tab, setTab] = useState<"iphone" | "android">(isIos ? "iphone" : "android");
+  const steps =
+    tab === "iphone"
+      ? [
+          <>
+            Open the <strong>Contacts</strong> app and tap <strong>Lists</strong> (top left).
+          </>,
+          <>
+            Press and hold <strong>All Contacts</strong>, then tap <strong>Export</strong>.
+          </>,
+          <>
+            Tap <strong>Save to Files</strong>, then come back here.
+          </>,
+          <>
+            Tap <strong>Choose contacts file</strong> below and pick it.
+          </>,
+        ]
+      : [
+          <>
+            Open the <strong>Contacts</strong> app and tap the menu or{" "}
+            <strong>Fix &amp; manage</strong>.
+          </>,
+          <>
+            Tap <strong>Export to file</strong> (on Samsung:{" "}
+            <strong>Manage contacts → Import or export → Export</strong>).
+          </>,
+          <>Save it to your phone, then come back here.</>,
+          <>
+            Tap <strong>Choose contacts file</strong> below and pick it.
+          </>,
+        ];
+  return (
+    <div
+      className="a-pat-plum"
+      style={{ marginTop: 16, borderRadius: 22, padding: 18, color: C.ivory }}
+    >
+      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+        {(["iphone", "android"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            aria-pressed={tab === t}
+            style={{
+              padding: "7px 14px",
+              borderRadius: 999,
+              fontSize: 13,
+              fontWeight: 700,
+              background: tab === t ? C.gold : "rgba(244,239,229,.12)",
+              color: tab === t ? C.nero : C.ivory,
+            }}
+          >
+            {t === "iphone" ? "iPhone" : "Android"}
+          </button>
+        ))}
+      </div>
+      <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 10 }}>
+        {steps.map((s, i) => (
+          <li key={i} style={{ display: "flex", gap: 12, fontSize: 14, lineHeight: 1.45 }}>
+            <span
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: "50%",
+                border: `1.5px solid ${C.gold}`,
+                color: C.gold,
+                fontSize: 12,
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {i + 1}
+            </span>
+            <span>{s}</span>
+          </li>
+        ))}
+      </ol>
+      <button
+        type="button"
+        className="a-abtn a-gold"
+        onClick={onFile}
+        style={{ width: "100%", marginTop: 16 }}
+      >
+        Choose contacts file
+      </button>
+      {canPick && tab === "android" && (
+        <button
+          type="button"
+          onClick={onPick}
+          style={{
+            display: "block",
+            width: "100%",
+            marginTop: 10,
+            fontSize: 13,
+            fontWeight: 600,
+            color: C.ivory,
+            textDecoration: "underline",
+          }}
+        >
+          Or pick names one by one (no birthdays)
+        </button>
+      )}
+      <p style={{ fontSize: 12, opacity: 0.75, margin: "12px 0 0", lineHeight: 1.5 }}>
+        Your contacts stay on your phone. We only read names and dates, and you check them before
+        anything is saved.
+      </p>
+    </div>
   );
 }
 
