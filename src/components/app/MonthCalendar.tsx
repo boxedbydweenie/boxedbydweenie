@@ -18,6 +18,10 @@ export interface DayEvent {
   occasionSlug?: string;
   shopOccasion?: string;
   work: boolean;
+  /** Federal Government public holiday. */
+  publicHoliday?: boolean;
+  /** Date still to be confirmed (follows the moon). */
+  tbc?: boolean;
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -67,6 +71,8 @@ export function useCalendarEvents(year: number) {
         occasionSlug: f.occasion.slug,
         ...(shop?.occasion ? { shopOccasion: shop.occasion } : {}),
         work: f.occasion.category === "workplace",
+        publicHoliday: Boolean(f.occasion.publicHoliday),
+        tbc: f.tbc,
       });
     }
     return map;
@@ -280,14 +286,16 @@ export function MonthGrid({
                       boxSizing: "border-box",
                       ...(e.kind === "person"
                         ? { background: C.coral, color: C.nero }
-                        : e.work
-                          ? { background: C.ivory, border: `1.5px solid ${C.gold}` }
-                          : { background: C.gold, color: C.nero }),
+                        : e.publicHoliday
+                          ? { background: C.forest, color: "#FFFFFF" }
+                          : e.work
+                            ? { background: C.ivory, border: `1.5px solid ${C.gold}` }
+                            : { background: C.gold, color: C.nero }),
                     }}
                   >
                     {e.kind === "person"
                       ? `${e.name.split(" ")[0]} · ${e.title.split(" ")[0]}`
-                      : e.name}
+                      : `${e.name}${e.tbc ? " (TBC)" : ""}`}
                   </span>
                 ))}
                 {ev.length > 3 && (
@@ -345,7 +353,13 @@ export function MonthGrid({
                       borderRadius: "50%",
                       display: "block",
                       background:
-                        e.kind === "person" ? C.coral : isPicked && isFestival ? C.nero : C.gold,
+                        e.kind === "person"
+                          ? C.coral
+                          : e.publicHoliday
+                            ? C.forest
+                            : isPicked && isFestival
+                              ? C.nero
+                              : C.gold,
                     }}
                   />
                 ))}
@@ -387,6 +401,18 @@ export function MonthGrid({
             }}
           />
           Festivals
+        </span>
+        <span style={legend}>
+          <i
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: "50%",
+              background: C.forest,
+              display: "block",
+            }}
+          />
+          Public holidays
         </span>
         <span style={legend}>
           <i

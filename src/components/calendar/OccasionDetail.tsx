@@ -28,7 +28,7 @@ export function OccasionDetail({ inst, compact }: { inst: OccasionInstance; comp
   const o = inst.occasion;
   const products = curatedProducts(o, 6);
   return <div>
-    <Eyebrow>{o.category === "workplace" ? "Workplace moment" : o.category}</Eyebrow>
+    <Eyebrow>{o.publicHoliday ? "Public holiday" : o.category === "workplace" ? "Workplace moment" : o.category === "national" ? "National day" : o.category}</Eyebrow>
     <GoldRule className="mt-4" />
     <h2 className={cn("mt-4", compact ? "text-2xl" : "text-3xl md:text-4xl")}>{o.name}</h2>
     <p className="mt-2 text-muted-foreground">{o.line}</p>

@@ -355,6 +355,7 @@ function Verify({ onBack, onDone }: { onBack: () => void; onDone: () => void }) 
 
 /* ---------- 1.4 Moments you gift for ---------- */
 const GROUPS: [string, string][] = [
+  ["national", "National days"],
   ["faith", "Faith and festivals"],
   ["family", "Family"],
   ["celebrations", "Celebrations"],
@@ -364,14 +365,23 @@ const DEFAULT_MOMENTS = [
   "christmas-day",
   "eid-al-fitr",
   "eid-al-adha",
+  "eid-el-maulud",
+  "easter",
+  "ramadan-begins",
   "mothering-sunday",
+  "fathers-day",
   "valentines-day",
+  "new-years-eve",
   "year-end-staff-gifts",
 ];
 const SHORT: Record<string, string> = {
   "christmas-day": "Christmas",
   "international-womens-day": "Women's Day",
   "international-mens-day": "Men's Day",
+  "international-nurses-day": "Nurses' Day",
+  "international-friendship-day": "Friendship Day",
+  "friendship-day": "Friendship Day",
+  "administrative-professionals-day": "Admin Professionals' Day",
   "year-end-staff-gifts": "Year-end staff gifts",
 };
 
@@ -403,7 +413,8 @@ function Moments({
         Which moments do you <span style={{ color: C.goldText }}>gift for?</span>
       </h1>
       <p style={{ fontSize: 14, lineHeight: 1.55, color: C.muted, margin: "8px 0 0" }}>
-        We&rsquo;ll add each one with an order-by date, so the box always arrives on time.
+        We&rsquo;ll add each one with an order-by date, so the box always arrives on time. Public
+        holidays (marked PH) are always on your calendar.
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 20 }}>
         {GROUPS.map(([cat, name]) => {
@@ -414,14 +425,18 @@ function Moments({
               <div className="a-eye">{name}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {items.map((o) => {
-                  const isOn = on.has(o.slug);
+                  const isOn = Boolean(o.publicHoliday) || on.has(o.slug);
                   return (
                     <button
                       key={o.slug}
                       type="button"
                       aria-pressed={isOn}
-                      onClick={() => toggle(o.slug)}
-                      style={chip(isOn)}
+                      aria-disabled={o.publicHoliday ? true : undefined}
+                      title={
+                        o.publicHoliday ? "Public holiday, always on your calendar" : undefined
+                      }
+                      onClick={() => !o.publicHoliday && toggle(o.slug)}
+                      style={{ ...chip(isOn), cursor: o.publicHoliday ? "default" : "pointer" }}
                     >
                       {isOn && (
                         <IconCheck
@@ -429,6 +444,19 @@ function Moments({
                         />
                       )}
                       {SHORT[o.slug] ?? o.name}
+                      {o.publicHoliday && (
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: ".08em",
+                            color: C.gold,
+                            marginLeft: 2,
+                          }}
+                        >
+                          PH
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -463,7 +491,7 @@ function Moments({
             flexShrink: 0,
           }}
         >
-          {on.size}
+          {new Set([...on, ...dated.filter((o) => o.publicHoliday).map((o) => o.slug)]).size}
         </span>
         moments on your calendar. Change them any time.
       </div>

@@ -9,8 +9,10 @@ import { formatNaira } from "@/lib/format";
 import type { OccasionInstance, Person } from "@/types/calendar";
 import type { ShopProduct } from "@/types/shop";
 import {
+  BrandStrip,
   C,
   InstallHelp,
+  Ring,
   IconBell,
   IconPlus,
   avatarColour,
@@ -213,7 +215,9 @@ function Home({ name }: { name: string }) {
 
   const greetingBlock = (
     <div style={{ minWidth: 0 }}>
-      <div style={{ fontSize: 13, color: C.muted }}>{todayText}</div>
+      <div style={{ fontSize: 13, color: wide ? "rgba(255,255,255,.72)" : C.muted }}>
+        {todayText}
+      </div>
       <h1 className="a-dsp" style={{ fontSize: wide ? 40 : 30, marginTop: 4 }}>
         {greeting()},{" "}
         <span className="a-scr" style={{ color: C.goldText, fontSize: wide ? 52 : 38 }}>
@@ -231,9 +235,10 @@ function Home({ name }: { name: string }) {
         return m < 1 ? { y: c.y - 1, m: 12 } : m > 12 ? { y: c.y + 1, m: 1 } : { y: c.y, m };
       });
     return (
-      <div className="a-top-pattern" style={{ padding: "32px 40px" }}>
+      <div style={{ padding: "0 40px 32px" }}>
         <div className="a-wide" style={{ display: "flex", flexDirection: "column", gap: 22 }}>
           <div
+            className="a-dark-head a-bleed a-pat-plum"
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -247,11 +252,11 @@ function Home({ name }: { name: string }) {
               <Link
                 to="/app/welcome"
                 search={{ step: "import", from: "people" }}
-                className="a-abtn a-line"
+                className="a-abtn a-white-line"
               >
                 Import people
               </Link>
-              <Link to="/app/people/new" className="a-abtn a-ink">
+              <Link to="/app/people/new" className="a-abtn a-gold">
                 + Add a date
               </Link>
             </div>
@@ -294,96 +299,239 @@ function Home({ name }: { name: string }) {
     );
   }
 
+  const season = items.find(
+    (i) =>
+      i.kind === "festival" &&
+      i !== hero &&
+      i.days <= 75 &&
+      (i.publicHoliday || i.occasionSlug === "year-end-staff-gifts"),
+  );
+  const peopleRow = people
+    .map((p) => ({ p, next: items.find((i) => i.personId === p.id) }))
+    .sort((a, b) => (a.next?.date ?? "9999").localeCompare(b.next?.date ?? "9999"))
+    .slice(0, 10);
+  const round = {
+    width: 44,
+    height: 44,
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  } as const;
+
   return (
-    <div
-      className="a-top-pattern"
-      style={{ display: "flex", flexDirection: "column", paddingBottom: 20 }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", paddingBottom: 8 }}>
+      {/* Plum header, from the guide's Plum pattern and the LinkedIn banner treatment */}
+      <header
+        className="a-pat-plum"
+        style={{ color: "#FFFFFF", padding: "calc(env(safe-area-inset-top,0px) + 22px) 22px 76px" }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+          }}
+        >
+          <img
+            src="/brand/logo-on-dark.svg"
+            alt="Boxed by Dweenie"
+            style={{ height: 22, width: "auto" }}
+          />
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <Link
+              to="/app/people/new"
+              aria-label="Add a date"
+              style={{ ...round, background: C.gold, color: C.nero }}
+            >
+              <IconPlus style={{ width: 22, height: 22, strokeWidth: 2.2 }} />
+            </Link>
+            <Link
+              to="/app/calendar"
+              aria-label="Upcoming reminders"
+              style={{
+                ...round,
+                background: "rgba(255,255,255,.1)",
+                border: "1px solid rgba(255,255,255,.22)",
+                color: "#FFFFFF",
+                position: "relative",
+              }}
+            >
+              <IconBell />
+              {urgent && (
+                <span
+                  style={{
+                    position: "absolute",
+                    right: 9,
+                    top: 9,
+                    width: 9,
+                    height: 9,
+                    borderRadius: "50%",
+                    background: C.coral,
+                    border: `2px solid ${C.plum}`,
+                  }}
+                />
+              )}
+            </Link>
+            <Link
+              to="/app/account"
+              aria-label="Profile"
+              style={{
+                ...round,
+                background: C.ivory,
+                color: C.plum,
+                fontWeight: 700,
+                fontSize: 14,
+                boxShadow: `0 0 0 2px ${C.gold}`,
+              }}
+            >
+              {initials || "B"}
+            </Link>
+          </div>
+        </div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,.72)", marginTop: 26 }}>
+          {todayText}
+        </div>
+        <h1 className="a-dsp" style={{ fontSize: 34, marginTop: 4 }}>
+          {greeting()},{" "}
+          <span className="a-scr" style={{ color: C.gold, fontSize: 46 }}>
+            {first}
+          </span>
+        </h1>
+      </header>
+
       <div
         style={{
-          padding: "calc(env(safe-area-inset-top,0px) + 30px) 22px 0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
+          margin: "-58px 16px 0",
+          position: "relative",
+          zIndex: 1,
+          boxShadow: "0 24px 40px -26px rgba(41,40,40,.55)",
+          borderRadius: 24,
         }}
       >
-        {greetingBlock}
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-          <Link
-            to="/app/people/new"
-            aria-label="Add a date"
+        {hero ? <NextUp item={hero} /> : <EmptyHome />}
+      </div>
+
+      {peopleRow.length > 0 && (
+        <section style={{ padding: "24px 16px 0" }}>
+          <div
             style={{
-              width: 44,
-              height: 44,
-              borderRadius: "50%",
-              background: C.gold,
-              color: C.nero,
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              padding: "0 6px",
             }}
           >
-            <IconPlus style={{ width: 22, height: 22, strokeWidth: 2.2 }} />
-          </Link>
-          <Link
-            to="/app/calendar"
-            aria-label="Upcoming reminders"
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: "50%",
-              background: "#FFFFFF",
-              border: `1.5px solid ${C.line}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              position: "relative",
-              boxSizing: "border-box",
-            }}
-          >
-            <IconBell />
-            {urgent && (
+            <div className="a-eye">Your people</div>
+            <Link to="/app/people" style={{ fontSize: 13, fontWeight: 600 }}>
+              See all
+            </Link>
+          </div>
+          <div className="a-hscroll" style={{ gap: 14, marginTop: 12 }}>
+            {peopleRow.map(({ p, next }) => (
+              <Link
+                key={p.id}
+                to="/app/people/$personId"
+                params={{ personId: p.id }}
+                style={{
+                  flexShrink: 0,
+                  width: 68,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <Ring size={64} days={next?.days ?? 60}>
+                  {p.photo ? (
+                    <img
+                      src={p.photo}
+                      alt=""
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        ...avatarColour(p.id),
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontFamily: "'EB Garamond',Georgia,serif",
+                        fontSize: 22,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {p.name.slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
+                </Ring>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    maxWidth: 68,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {p.name.split(" ")[0]}
+                </span>
+                {next && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: next.days <= 7 ? C.oxblood : C.muted,
+                      fontWeight: next.days <= 7 ? 700 : 400,
+                      marginTop: -4,
+                    }}
+                  >
+                    {next.days === 0 ? "Today" : `${next.days}d`}
+                  </span>
+                )}
+              </Link>
+            ))}
+            <Link
+              to="/app/people/new"
+              style={{
+                flexShrink: 0,
+                width: 68,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
               <span
                 style={{
-                  position: "absolute",
-                  right: 9,
-                  top: 9,
-                  width: 9,
-                  height: 9,
+                  width: 64,
+                  height: 64,
                   borderRadius: "50%",
-                  background: C.oxblood,
-                  border: "2px solid #FFFFFF",
+                  border: `1.5px dashed ${C.muted}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: C.nero,
                 }}
-              />
-            )}
-          </Link>
-          <Link
-            to="/app/account"
-            aria-label="Profile"
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: "50%",
-              background: C.nero,
-              color: C.gold,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 700,
-              fontSize: 14,
-            }}
-          >
-            {initials || "B"}
-          </Link>
-        </div>
-      </div>
-      <div style={{ margin: "18px 16px 0" }}>{hero ? <NextUp item={hero} /> : <EmptyHome />}</div>
+              >
+                <IconPlus style={{ width: 22, height: 22 }} />
+              </span>
+              <span style={{ fontSize: 12, fontWeight: 600 }}>Add</span>
+            </Link>
+          </div>
+        </section>
+      )}
+
       {next30.length > 0 && (
-        <div style={{ margin: "16px 16px 0" }}>
+        <div style={{ margin: "22px 16px 0" }}>
           <Next30 items={next30} />
         </div>
       )}
+
       {rest.length > 0 && (
         <div style={{ padding: "22px 16px 0", display: "flex", flexDirection: "column", gap: 12 }}>
           <div
@@ -406,6 +554,13 @@ function Home({ name }: { name: string }) {
           </div>
         </div>
       )}
+
+      {season && (
+        <div style={{ padding: "22px 16px 0" }}>
+          <SeasonCard item={season} />
+        </div>
+      )}
+
       {heroPerson && hero && ideas.length > 0 && (
         <div style={{ padding: "22px 16px 0" }}>
           <Ideas person={heroPerson} hero={hero} ideas={ideas} />
@@ -414,7 +569,93 @@ function Home({ name }: { name: string }) {
       <div style={{ padding: "22px 16px 0" }}>
         <InviteCard />
       </div>
+      <SignOff />
     </div>
+  );
+}
+
+/** The next big holiday, on the guide's Oxblood pattern. */
+function SeasonCard({ item }: { item: UpcomingItem }) {
+  const shopOcc = shopOccasionFor(item.occasionSlug);
+  return (
+    <div
+      className="a-pat-oxblood"
+      style={{
+        borderRadius: 24,
+        padding: 20,
+        color: "#FFFFFF",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span className="a-eye" style={{ color: C.gold }}>
+          The season
+        </span>
+        {item.publicHoliday && (
+          <span
+            className="a-pill"
+            style={{
+              background: "rgba(255,255,255,.14)",
+              color: "#FFFFFF",
+              minHeight: 22,
+              fontSize: 11,
+            }}
+          >
+            Public holiday
+          </span>
+        )}
+      </div>
+      <div className="a-dsp" style={{ fontSize: 32, marginTop: 10, maxWidth: 240 }}>
+        {item.name}
+      </div>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,.82)", marginTop: 6 }}>
+        {longDate(item.date)}
+        {item.tbc ? " · date to be confirmed" : ""}
+        {item.orderBy && !item.tbc && item.orderBy >= todayIso()
+          ? ` · order by ${shortDate(item.orderBy)}`
+          : ""}
+      </div>
+      <img
+        src="/brand/bow-gold.svg"
+        alt=""
+        style={{
+          position: "absolute",
+          right: -14,
+          bottom: -18,
+          width: 130,
+          height: "auto",
+          opacity: 0.95,
+          filter: "drop-shadow(0 12px 16px rgba(0,0,0,.35))",
+        }}
+      />
+      <div style={{ display: "flex", gap: 8, marginTop: 16, position: "relative", maxWidth: 260 }}>
+        <Link
+          to="/app/shop"
+          search={shopOcc ? { occasion: shopOcc } : {}}
+          className="a-abtn a-gold"
+          style={{ flex: 1 }}
+        >
+          Shop the season
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/** Closing band: the tagline on Plum with the guide's colour strip. */
+function SignOff() {
+  return (
+    <footer
+      className="a-pat-plum"
+      style={{ marginTop: 28, color: "#FFFFFF", textAlign: "center", padding: "28px 22px 24px" }}
+    >
+      <img src="/brand/logo-on-dark.svg" alt="" style={{ height: 22, width: "auto" }} />
+      <div className="a-dsp" style={{ fontSize: 26, marginTop: 12 }}>
+        We exist for the love of <span style={{ color: C.gold }}>gifting.</span>
+      </div>
+      <BrandStrip style={{ marginTop: 18 }} />
+    </footer>
   );
 }
 

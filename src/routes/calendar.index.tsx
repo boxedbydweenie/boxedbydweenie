@@ -30,7 +30,7 @@ export const Route = createFileRoute("/calendar/")({
 });
 
 type Filter = "all" | OccasionCategory | "mine";
-const FILTERS: [Filter, string][] = [["all", "All"], ["celebrations", "Celebrations"], ["faith", "Faith"], ["family", "Family"], ["workplace", "Workplace"], ["mine", "My dates"]];
+const FILTERS: [Filter, string][] = [["all", "All"], ["national", "National days"], ["celebrations", "Celebrations"], ["faith", "Faith"], ["family", "Family"], ["workplace", "Workplace"], ["mine", "My dates"]];
 const MONTHS = Array.from({ length: 12 }, (_, i) => new Date(2026, i, 1).toLocaleDateString("en-GB", { month: "long" }));
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
