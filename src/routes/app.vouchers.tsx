@@ -96,10 +96,9 @@ function AppVouchers() {
       return setError(
         `Choose an amount between ${formatNaira(GIFT_CARD_MIN)} and ${formatNaira(GIFT_CARD_MAX)}.`,
       );
-    if (!name.trim() || !contact.trim())
-      return setError(
-        "Add their name and their email or phone number, so we know where to send it.",
-      );
+    if (!name.trim()) return setError("Add their name, so the voucher is made out to them.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact.trim()))
+      return setError("Add their email address, so we know where to send it.");
     if (when === "pick" && !pickDate) return setError("Choose the date it should arrive.");
     setError("");
     setBusy(true);
@@ -118,7 +117,7 @@ function AppVouchers() {
           sendOn,
         },
       });
-      void navigate({ to: "/checkout" });
+      void navigate({ to: "/app/checkout" });
     } catch {
       toast.error("We couldn't add that voucher. Please try again.");
       setBusy(false);
@@ -353,7 +352,8 @@ function AppVouchers() {
           />
           <Field
             id="v-contact"
-            label="Their email or phone"
+            label="Their email"
+            type="email"
             value={contact}
             onChange={setContact}
             placeholder="tolu@example.com"
@@ -396,7 +396,7 @@ function AppVouchers() {
                 On {first ? `${first}'s` : "their"} {nextTitle}
               </strong>
               <span style={{ display: "block", fontSize: 12, color: C.muted }}>
-                {shortDate(next.on)}, 8:00 am, by email or SMS
+                {shortDate(next.on)}, 8:00 am, by email
               </span>
             </span>
             {when === "date" && (
@@ -483,6 +483,7 @@ function Field({
   onChange,
   placeholder,
   divider,
+  type = "text",
 }: {
   id: string;
   label: string;
@@ -490,6 +491,7 @@ function Field({
   onChange: (v: string) => void;
   placeholder: string;
   divider?: boolean;
+  type?: string;
 }) {
   return (
     <div style={{ padding: "10px 0", borderTop: divider ? `1px solid ${C.line}` : 0 }}>
@@ -501,6 +503,8 @@ function Field({
       </label>
       <input
         id={id}
+        type={type}
+        autoComplete={type === "email" ? "email" : undefined}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}

@@ -106,8 +106,9 @@ export function GiftCardBuilder({ onAdded = openCart }: { onAdded?: () => void }
       return setError(
         `Choose an amount between ${formatNaira(GIFT_CARD_MIN)} and ${formatNaira(GIFT_CARD_MAX)}.`,
       );
-    if (!to.trim() || !contact.trim())
-      return setError("Add the recipient's name and email or phone.");
+    if (!to.trim()) return setError("Add the recipient's name.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact.trim()))
+      return setError("Add the recipient's email address.");
     if (when === "later" && !sendOn) return setError("Choose the date to send.");
     setError("");
     await addToCart({
@@ -200,8 +201,9 @@ export function GiftCardBuilder({ onAdded = openCart }: { onAdded?: () => void }
             onChange={(e) => setTo(e.target.value)}
           />
           <FormField
-            label="Recipient email or phone"
+            label="Recipient email"
             name="contact"
+            type="email"
             value={contact}
             onChange={(e) => setContact(e.target.value)}
           />
