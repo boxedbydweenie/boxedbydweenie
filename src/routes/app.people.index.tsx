@@ -27,16 +27,13 @@ function AppPeople() {
   );
 
   return (
-    <div
-      className="a-top-pattern"
-      style={{ padding: "calc(env(safe-area-inset-top,0px) + 28px) 16px 16px" }}
-    >
+    <div style={{ padding: "0 16px 16px" }}>
       <div
+        className="a-dark-head a-bleed a-pat-oxblood"
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-end",
-          padding: "0 6px",
         }}
       >
         <div>

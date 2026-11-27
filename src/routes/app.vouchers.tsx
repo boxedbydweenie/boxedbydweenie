@@ -128,20 +128,22 @@ function AppVouchers() {
   return (
     <div
       style={{
-        padding: "calc(env(safe-area-inset-top,0px) + 28px) 22px 16px",
+        padding: "0 22px 16px",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div className="a-eye">Gift vouchers</div>
-        <Link to="/app/account" hash="balance" style={{ fontSize: 13, fontWeight: 600 }}>
-          Check a balance
-        </Link>
+      <div className="a-dark-head a-bleed a-pat-plum" style={{ ["--bleed" as string]: "22px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div className="a-eye">Gift vouchers</div>
+          <Link to="/app/account" hash="balance" style={{ fontSize: 13, fontWeight: 600 }}>
+            Check a balance
+          </Link>
+        </div>
+        <h1 className="a-dsp" style={{ fontSize: 38, marginTop: 8 }}>
+          Let them choose <span style={{ color: C.goldText }}>their wow.</span>
+        </h1>
       </div>
-      <h1 className="a-dsp" style={{ fontSize: 38, marginTop: 8 }}>
-        Let them choose <span style={{ color: C.goldText }}>their wow.</span>
-      </h1>
 
       {/* Live card preview */}
       <div

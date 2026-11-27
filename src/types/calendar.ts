@@ -1,12 +1,22 @@
-export type OccasionCategory = "celebrations" | "faith" | "family" | "workplace";
+export type OccasionCategory = "national" | "celebrations" | "faith" | "family" | "workplace";
 
 /** How an occasion's date is worked out each year. */
 export type OccasionRule =
   | { type: "fixed"; month: number; day: number }
-  /** nth weekday of a month (weekday 0 = Sunday). offsetDays shifts the result, e.g. Black Friday. */
+  /** nth weekday of a month (weekday 0 = Sunday; nth -1 = the last one). offsetDays shifts the result, e.g. Black Friday. */
   | { type: "nth-weekday"; month: number; weekday: number; nth: number; offsetDays?: number }
-  /** Moves each year. Shown as "Date to be confirmed" unless a confirmed date exists for that year. */
-  | { type: "moveable"; estimate: { month: number; day: number }; confirmed: Record<number, string> }
+  /** Days from Easter Sunday (Western), e.g. -2 for Good Friday, -21 for Mothering Sunday. Worked out exactly each year. */
+  | { type: "easter"; offsetDays: number }
+  /**
+   * Moves each year (Islamic dates follow the moon). A confirmed date is the Federal Government declaration;
+   * an estimated date shows as "to be confirmed" until then; otherwise the rough month and day are used.
+   */
+  | {
+      type: "moveable";
+      estimate: { month: number; day: number };
+      confirmed: Record<number, string>;
+      estimated?: Record<number, string>;
+    }
   /** No single date, e.g. work anniversaries. */
   | { type: "anytime" };
 
@@ -26,6 +36,8 @@ export interface Occasion {
   orderByOffsetDays: number;
   shop: ShopLink;
   moveable: boolean;
+  /** A Federal Government of Nigeria public holiday. Always shown on the calendar. */
+  publicHoliday?: boolean;
 }
 
 /** An occasion placed on a specific date for display. */
@@ -38,7 +50,8 @@ export interface OccasionInstance {
 }
 
 /* Generic shapes shared with the future mobile app. */
-export type Relationship = "Partner" | "Parent" | "Sibling" | "Child" | "Friend" | "Colleague" | "Client" | "Other";
+export type Relationship =
+  "Partner" | "Parent" | "Sibling" | "Child" | "Friend" | "Colleague" | "Client" | "Other";
 export type PersonalDateType = "birthday" | "anniversary" | "custom";
 export type ReminderChannel = "email" | "whatsapp" | "sms";
 

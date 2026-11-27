@@ -26,19 +26,44 @@ export const addDays = (iso: string, n: number) => {
 export const formatLong = (iso: string) =>
   parse(iso).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "long" });
 
+/** Western Easter Sunday (Anonymous Gregorian algorithm). */
+export function easterSunday(year: number) {
+  const a = year % 19,
+    b = Math.floor(year / 100),
+    c = year % 100,
+    d = Math.floor(b / 4),
+    e = b % 4;
+  const f = Math.floor((b + 8) / 25),
+    g = Math.floor((b - f + 1) / 3),
+    h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4),
+    k = c % 4,
+    l = (32 + 2 * e + 2 * i - h - k) % 7,
+    m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31),
+    day = ((h + l - 7 * m + 114) % 31) + 1;
+  return `${year}-${pad(month)}-${pad(day)}`;
+}
+
 function dateFor(o: Occasion, year: number): { date: string | null; tbc: boolean } {
   const r = o.rule;
+  if (r.type === "easter") return { date: addDays(easterSunday(year), r.offsetDays), tbc: false };
   if (r.type === "fixed") return { date: `${year}-${pad(r.month)}-${pad(r.day)}`, tbc: false };
   if (r.type === "nth-weekday") {
+    if (r.nth < 0) {
+      const d = new Date(year, r.month, 0); // last day of the month
+      d.setDate(d.getDate() - ((d.getDay() - r.weekday + 7) % 7) + (r.offsetDays ?? 0));
+      return { date: isoDate(d), tbc: false };
+    }
     const d = new Date(year, r.month - 1, 1);
     d.setDate(1 + ((r.weekday - d.getDay() + 7) % 7) + (r.nth - 1) * 7 + (r.offsetDays ?? 0));
     return { date: isoDate(d), tbc: false };
   }
   if (r.type === "moveable") {
     const c = r.confirmed[year];
-    return c
-      ? { date: c, tbc: false }
-      : { date: `${year}-${pad(r.estimate.month)}-${pad(r.estimate.day)}`, tbc: true };
+    if (c) return { date: c, tbc: false };
+    const est = r.estimated?.[year];
+    return { date: est ?? `${year}-${pad(r.estimate.month)}-${pad(r.estimate.day)}`, tbc: true };
   }
   return { date: null, tbc: false };
 }

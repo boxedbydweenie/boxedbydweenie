@@ -67,18 +67,15 @@ function AppShop() {
   }, [all, q, picked, person]);
 
   return (
-    <div
-      className="a-top-pattern a-desk-pad"
-      style={{ padding: "calc(env(safe-area-inset-top,0px) + 34px) 16px 24px" }}
-    >
+    <div className="a-desk-pad" style={{ padding: "0 16px 24px" }}>
       <div className="a-wide">
         <div
+          className="a-dark-head a-bleed a-pat-nero"
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
             gap: 12,
-            padding: "0 6px",
           }}
         >
           <div style={{ minWidth: 0 }}>
@@ -106,8 +103,8 @@ function AppShop() {
               width: 46,
               height: 46,
               borderRadius: "50%",
-              background: C.nero,
-              color: C.gold,
+              background: C.gold,
+              color: C.nero,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

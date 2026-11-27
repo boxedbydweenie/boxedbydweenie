@@ -327,9 +327,9 @@ function AppCalendar() {
 
   if (wide) {
     return (
-      <div className="a-top-pattern" style={{ padding: "32px 40px" }}>
+      <div style={{ padding: "0 40px 32px" }}>
         <div className="a-wide">
-          {header}
+          <div className="a-dark-head a-bleed a-pat-green">{header}</div>
           {filters}
           <div
             style={{
@@ -373,9 +373,11 @@ function AppCalendar() {
   }
 
   return (
-    <div className="a-top-pattern" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ padding: "calc(env(safe-area-inset-top,0px) + 30px) 22px 0" }}>
-        {header}
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <div style={{ padding: "0 22px 0" }}>
+        <div className="a-dark-head a-bleed a-pat-green" style={{ ["--bleed" as string]: "22px" }}>
+          {header}
+        </div>
         {filters}
       </div>
       {view === "month" ? (
@@ -435,7 +437,22 @@ function DayCard({ e, today }: { e: DayEvent; today: string }) {
           <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>
             {past ? "Passed" : days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`}
             {!past && e.orderBy && e.orderBy >= today ? ` · order by ${shortDate(e.orderBy)}` : ""}
+            {e.tbc ? " · date to be confirmed" : ""}
           </div>
+          {e.publicHoliday && (
+            <span
+              className="a-pill"
+              style={{
+                background: C.forest,
+                color: "#FFFFFF",
+                marginTop: 8,
+                minHeight: 22,
+                fontSize: 11,
+              }}
+            >
+              Public holiday
+            </span>
+          )}
         </div>
       </div>
       {!past && (

@@ -50,6 +50,13 @@ html:has(.bbd-app),body:has(.bbd-app){background:${C.ivory};overscroll-behavior-
 .a-pat-green{background:${C.forest} url("/brand/pattern-green.svg");background-size:380px}
 .a-pat-navy{background:${C.navy} url("/brand/pattern-navy.svg") center/cover}
 .a-pat-nero{background:${C.nero} url("/brand/pattern-black.png");background-size:72px 68px}
+.a-pat-plum{background:${C.plum} url("/brand/pattern-plum.svg");background-size:430px}
+.a-pat-oxblood{background:${C.oxblood} url("/brand/pattern-oxblood.svg");background-size:154px}
+.a-dark-head{color:#FFFFFF;position:relative}
+.a-dark-head .a-eye{color:${C.gold}}
+.a-dark-head h1 span,.a-dark-head .a-dsp span{color:${C.gold}!important}
+.a-dark-head a{color:#FFFFFF}
+.a-bleed{margin:0 calc(var(--bleed,16px) * -1);padding:calc(env(safe-area-inset-top,0px) + 28px) calc(var(--bleed,16px) + 6px) 28px;border-radius:0 0 28px 28px}
 .a-pat-sage{background:${C.sage} url("/brand/bow-tile-sage.svg");background-size:72px}
 .a-top-pattern{position:relative;isolation:isolate}
 .a-top-pattern::before{content:"";position:absolute;left:0;right:0;top:0;height:260px;z-index:-1;background:url("/brand/pattern-ivory.svg") repeat;background-size:64px 62px;opacity:.55;-webkit-mask-image:linear-gradient(#000 30%,transparent);mask-image:linear-gradient(#000 30%,transparent);pointer-events:none}
@@ -64,14 +71,18 @@ html:has(.bbd-app),body:has(.bbd-app){background:${C.ivory};overscroll-behavior-
 .a-shell{display:flex;min-height:100dvh}
 .a-side{display:none}
 .a-main{flex:1;min-width:0;display:flex;flex-direction:column}
-.a-main.a-tabs-on{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+.a-main.a-tabs-on{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
 .a-screen{flex:1;display:flex;flex-direction:column;animation:a-in .22s ease both}
 @keyframes a-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.a-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#FFFFFF;border-top:1px solid ${C.line};display:flex;align-items:stretch;padding:0 max(4px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(4px,env(safe-area-inset-left,0px));height:calc(66px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
-.a-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:500;color:${C.muted};position:relative;-webkit-user-select:none;user-select:none;min-width:0}
-.a-tab[aria-current=page]{color:${C.nero};font-weight:700}
-.a-tab[aria-current=page]::before{content:"";position:absolute;top:0;left:28%;right:28%;height:3px;border-radius:0 0 3px 3px;background:${C.gold}}
-.a-badge{position:absolute;top:7px;left:calc(50% + 5px);min-width:17px;height:17px;border-radius:9px;background:${C.oxblood};color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;box-sizing:border-box;border:2px solid #FFFFFF}
+.a-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:${C.nero} url("/brand/pattern-black.png");background-size:72px 68px;border-top:1px solid rgba(231,185,59,.45);box-shadow:0 -10px 30px rgba(41,40,40,.22);display:flex;align-items:stretch;padding:0 max(4px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(4px,env(safe-area-inset-left,0px));height:calc(68px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+.bbd-app .a-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:500;letter-spacing:.02em;color:rgba(244,239,229,.62);position:relative;-webkit-user-select:none;user-select:none;min-width:0;transition:color .2s ease}
+.a-tab>*{position:relative;z-index:1}
+.bbd-app .a-tab[aria-current=page]{color:${C.gold};font-weight:700}
+.a-tab::before{content:"";position:absolute;top:9px;left:50%;width:54px;height:32px;margin-left:-27px;border-radius:999px;background:rgba(231,185,59,.16);opacity:0;transform:scale(.7);transition:opacity .2s ease,transform .2s ease}
+.a-tab[aria-current=page]::before{opacity:1;transform:none}
+.a-tab::after{content:"";position:absolute;top:0;left:50%;width:22px;height:2px;margin-left:-11px;border-radius:0 0 2px 2px;background:${C.gold};opacity:0;transition:opacity .2s ease}
+.a-tab[aria-current=page]::after{opacity:1}
+.a-badge{position:absolute;top:7px;left:calc(50% + 5px);min-width:17px;height:17px;border-radius:9px;background:${C.coral};color:${C.nero};font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;box-sizing:border-box;border:2px solid ${C.nero}}
 .a-topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;min-height:60px;padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px;background:rgba(244,239,229,.94);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid transparent}
 .a-col{width:100%;max-width:600px;margin:0 auto;box-sizing:border-box}
 .a-wide{width:100%;max-width:1180px;margin:0 auto;box-sizing:border-box}
@@ -89,6 +100,7 @@ html:has(.bbd-app),body:has(.bbd-app){background:${C.ivory};overscroll-behavior-
   .a-only-desk{display:revert!important}
   .a-grid-products{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
   .a-desk-pad{padding-left:40px!important;padding-right:40px!important}
+  .a-bleed{margin:24px 0 0;border-radius:24px;padding:28px 30px}
   .a-topbar{padding-left:40px;padding-right:40px}
 }
 @media (prefers-reduced-motion:reduce){.a-sway,.a-screen{animation:none}.a-abtn:active{transform:none}}
@@ -258,6 +270,9 @@ export interface UpcomingItem {
   occasionSlug?: string;
   initial: string;
   sorted: boolean;
+  /** Date still to be confirmed (Islamic holidays follow the moon). */
+  tbc?: boolean;
+  publicHoliday?: boolean;
 }
 
 /** People's dates and festivals in one list, soonest first. A gift is "sorted" when one is scheduled for that date. */
@@ -289,7 +304,7 @@ export function upcomingItems(
     }
   }
   for (const f of festivals) {
-    if (!f.date || f.tbc) continue;
+    if (!f.date) continue;
     items.push({
       key: `f-${f.occasion.slug}-${f.date}`,
       kind: "festival",
@@ -301,6 +316,8 @@ export function upcomingItems(
       occasionSlug: f.occasion.slug,
       initial: String(Number(f.date.slice(8, 10))),
       sorted: false,
+      tbc: f.tbc,
+      publicHoliday: Boolean(f.occasion.publicHoliday),
     });
   }
   return items
@@ -321,7 +338,10 @@ export function status(i: UpcomingItem, from = todayIso()) {
 
 /** Keep only the festivals the customer follows. No choice yet means all of them. */
 export function followed(festivals: OccasionInstance[], moments: string[]) {
-  return moments.length ? festivals.filter((f) => moments.includes(f.occasion.slug)) : festivals;
+  // Public holidays always show; other moments follow the customer's choice (none chosen = all of them).
+  return moments.length
+    ? festivals.filter((f) => f.occasion.publicHoliday || moments.includes(f.occasion.slug))
+    : festivals;
 }
 
 export function BackButton({ onClick, label = "Back" }: { onClick: () => void; label?: string }) {
@@ -772,6 +792,28 @@ export function InstallHelp({ dark }: { dark?: boolean }) {
           ))}
         </ol>
       )}
+    </div>
+  );
+}
+
+/** The colour strip from the brand guide's colour combinations: Gold, Sage, Coral, Oxblood. */
+export function BrandStrip({ style }: { style?: React.CSSProperties }) {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        display: "flex",
+        height: 5,
+        borderRadius: 3,
+        overflow: "hidden",
+        maxWidth: 220,
+        margin: "0 auto",
+        ...style,
+      }}
+    >
+      {[C.gold, C.sage, C.coral, C.oxblood].map((c) => (
+        <span key={c} style={{ flex: 1, background: c }} />
+      ))}
     </div>
   );
 }
