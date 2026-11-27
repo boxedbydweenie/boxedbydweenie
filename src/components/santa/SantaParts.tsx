@@ -41,9 +41,8 @@ export function Sparkles({ className }: { className?: string }) {
 /** Nero gift box drawn in CSS; lid can close (draw) or lift (reveal). */
 export function GiftBox({ lid, bow, className }: { lid?: "close" | "lift" | "static"; bow?: "tie" | "untie" | "static" | "none"; className?: string }) {
   return <div className={cn("relative mx-auto h-44 w-52", className)}>
-    <div className="absolute inset-x-2 bottom-0 h-32 rounded-sm border border-line-dark bg-nero-soft shadow-soft"><div className="foil absolute inset-y-0 left-1/2 w-3 -translate-x-1/2" /></div>
+    <div className="absolute inset-x-2 bottom-0 h-32 rounded-sm border border-line-dark bg-nero-soft shadow-soft"></div>
     <div className={cn("absolute inset-x-0 bottom-[7.5rem] z-10 h-8 rounded-sm border border-line-dark bg-nero", lid === "close" && "animate-lid-close", lid === "lift" && "animate-lid-lift")}>
-      <div className="foil absolute inset-y-0 left-1/2 w-3 -translate-x-1/2" />
       {bow !== "none" && <div className="absolute -top-14 left-1/2 w-28 -translate-x-1/2">
         {bow === "untie" ? <div className="relative h-16"><div className="animate-bow-untie-l absolute left-0 top-0 w-1/2 overflow-hidden"><BowTie className="h-16 w-28 !translate-x-0" /></div><div className="animate-bow-untie-r absolute right-0 top-0 w-1/2 overflow-hidden"><div className="-ml-14"><BowTie className="h-16 w-28" /></div></div></div>
           : <div className={bow === "tie" ? "ribbon-draw" : ""}><BowTie className="h-16 w-28" /></div>}

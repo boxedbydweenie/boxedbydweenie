@@ -51,7 +51,7 @@ function Welcome() {
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
-        padding: step === "ready" ? 0 : "54px 22px 28px",
+        padding: step === "ready" ? 0 : "calc(env(safe-area-inset-top,0px) + 28px) 22px 28px",
       }}
     >
       {step === "verify" && (
@@ -1076,7 +1076,7 @@ function Ready() {
         color: "#FFFFFF",
         display: "flex",
         flexDirection: "column",
-        padding: "56px 22px 30px",
+        padding: "calc(env(safe-area-inset-top,0px) + 30px) 22px 30px",
         position: "relative",
         overflow: "hidden",
       }}

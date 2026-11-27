@@ -17,7 +17,11 @@ function NewPerson() {
   return (
     <div
       className="a-top-pattern"
-      style={{ padding: "54px 22px 28px", display: "flex", flexDirection: "column" }}
+      style={{
+        padding: "calc(env(safe-area-inset-top,0px) + 28px) 22px 28px",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <BackButton

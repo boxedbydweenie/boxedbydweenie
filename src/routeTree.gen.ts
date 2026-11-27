@@ -41,7 +41,10 @@ import { Route as AdminSystemRouteImport } from './routes/admin.system'
 import { Route as AdminTeamRouteImport } from './routes/admin.team'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppAccountRouteImport } from './routes/app.account'
+import { Route as AppBagRouteImport } from './routes/app.bag'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
+import { Route as AppCheckoutRouteImport } from './routes/app.checkout'
+import { Route as AppOrdersRouteImport } from './routes/app.orders'
 import { Route as AppSigninRouteImport } from './routes/app.signin'
 import { Route as AppVouchersRouteImport } from './routes/app.vouchers'
 import { Route as AppWelcomeRouteImport } from './routes/app.welcome'
@@ -58,10 +61,13 @@ import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as AdminCampaignsIndexRouteImport } from './routes/admin.campaigns.index'
 import { Route as AdminCampaignsIdRouteImport } from './routes/admin.campaigns.$id'
 import { Route as AdminSoonSlugRouteImport } from './routes/admin.soon.$slug'
+import { Route as AppOrderIdRouteImport } from './routes/app.order.$id'
 import { Route as AppPeopleIndexRouteImport } from './routes/app.people.index'
 import { Route as AppPeoplePersonIdRouteImport } from './routes/app.people.$personId'
 import { Route as AppPeopleNewRouteImport } from './routes/app.people.new'
 import { Route as AppSendPersonIdRouteImport } from './routes/app.send.$personId'
+import { Route as AppShopIndexRouteImport } from './routes/app.shop.index'
+import { Route as AppShopSlugRouteImport } from './routes/app.shop.$slug'
 import { Route as CalendarMyDatesIndexRouteImport } from './routes/calendar.my-dates.index'
 import { Route as CalendarMyDatesPersonIdRouteImport } from './routes/calendar.my-dates.$personId'
 import { Route as CorporateQuoteIndexRouteImport } from './routes/corporate.quote.index'
@@ -230,9 +236,24 @@ const AppAccountRoute = AppAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBagRoute = AppBagRouteImport.update({
+  id: '/bag',
+  path: '/bag',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCalendarRoute = AppCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCheckoutRoute = AppCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOrdersRoute = AppOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSigninRoute = AppSigninRouteImport.update({
@@ -315,6 +336,11 @@ const AdminSoonSlugRoute = AdminSoonSlugRouteImport.update({
   path: '/soon/$slug',
   getParentRoute: () => AdminRoute,
 } as any)
+const AppOrderIdRoute = AppOrderIdRouteImport.update({
+  id: '/order/$id',
+  path: '/order/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPeopleIndexRoute = AppPeopleIndexRouteImport.update({
   id: '/people/',
   path: '/people/',
@@ -333,6 +359,16 @@ const AppPeopleNewRoute = AppPeopleNewRouteImport.update({
 const AppSendPersonIdRoute = AppSendPersonIdRouteImport.update({
   id: '/send/$personId',
   path: '/send/$personId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppShopIndexRoute = AppShopIndexRouteImport.update({
+  id: '/shop/',
+  path: '/shop/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppShopSlugRoute = AppShopSlugRouteImport.update({
+  id: '/shop/$slug',
+  path: '/shop/$slug',
   getParentRoute: () => AppRoute,
 } as any)
 const CalendarMyDatesIndexRoute = CalendarMyDatesIndexRouteImport.update({
@@ -402,7 +438,10 @@ export interface FileRoutesByFullPath {
   '/admin/system': typeof AdminSystemRoute
   '/admin/team': typeof AdminTeamRoute
   '/app/account': typeof AppAccountRoute
+  '/app/bag': typeof AppBagRoute
   '/app/calendar': typeof AppCalendarRoute
+  '/app/checkout': typeof AppCheckoutRoute
+  '/app/orders': typeof AppOrdersRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
   '/app/welcome': typeof AppWelcomeRoute
@@ -420,15 +459,18 @@ export interface FileRoutesByFullPath {
   '/shop/': typeof ShopIndexRoute
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/admin/soon/$slug': typeof AdminSoonSlugRoute
+  '/app/order/$id': typeof AppOrderIdRoute
   '/app/people/$personId': typeof AppPeoplePersonIdRoute
   '/app/people/new': typeof AppPeopleNewRoute
   '/app/send/$personId': typeof AppSendPersonIdRoute
+  '/app/shop/$slug': typeof AppShopSlugRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
   '/secret-santa/join/$code': typeof SecretSantaJoinCodeRoute
   '/admin/campaigns/': typeof AdminCampaignsIndexRoute
   '/app/people/': typeof AppPeopleIndexRoute
+  '/app/shop/': typeof AppShopIndexRoute
   '/calendar/my-dates/': typeof CalendarMyDatesIndexRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
   '/secret-santa/$id/': typeof SecretSantaIdIndexRoute
@@ -462,7 +504,10 @@ export interface FileRoutesByTo {
   '/admin/system': typeof AdminSystemRoute
   '/admin/team': typeof AdminTeamRoute
   '/app/account': typeof AppAccountRoute
+  '/app/bag': typeof AppBagRoute
   '/app/calendar': typeof AppCalendarRoute
+  '/app/checkout': typeof AppCheckoutRoute
+  '/app/orders': typeof AppOrdersRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
   '/app/welcome': typeof AppWelcomeRoute
@@ -480,15 +525,18 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopIndexRoute
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/admin/soon/$slug': typeof AdminSoonSlugRoute
+  '/app/order/$id': typeof AppOrderIdRoute
   '/app/people/$personId': typeof AppPeoplePersonIdRoute
   '/app/people/new': typeof AppPeopleNewRoute
   '/app/send/$personId': typeof AppSendPersonIdRoute
+  '/app/shop/$slug': typeof AppShopSlugRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
   '/secret-santa/join/$code': typeof SecretSantaJoinCodeRoute
   '/admin/campaigns': typeof AdminCampaignsIndexRoute
   '/app/people': typeof AppPeopleIndexRoute
+  '/app/shop': typeof AppShopIndexRoute
   '/calendar/my-dates': typeof CalendarMyDatesIndexRoute
   '/corporate/quote': typeof CorporateQuoteIndexRoute
   '/secret-santa/$id': typeof SecretSantaIdIndexRoute
@@ -525,7 +573,10 @@ export interface FileRoutesById {
   '/admin/system': typeof AdminSystemRoute
   '/admin/team': typeof AdminTeamRoute
   '/app/account': typeof AppAccountRoute
+  '/app/bag': typeof AppBagRoute
   '/app/calendar': typeof AppCalendarRoute
+  '/app/checkout': typeof AppCheckoutRoute
+  '/app/orders': typeof AppOrdersRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
   '/app/welcome': typeof AppWelcomeRoute
@@ -543,15 +594,18 @@ export interface FileRoutesById {
   '/shop/': typeof ShopIndexRoute
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/admin/soon/$slug': typeof AdminSoonSlugRoute
+  '/app/order/$id': typeof AppOrderIdRoute
   '/app/people/$personId': typeof AppPeoplePersonIdRoute
   '/app/people/new': typeof AppPeopleNewRoute
   '/app/send/$personId': typeof AppSendPersonIdRoute
+  '/app/shop/$slug': typeof AppShopSlugRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
   '/secret-santa/join/$code': typeof SecretSantaJoinCodeRoute
   '/admin/campaigns/': typeof AdminCampaignsIndexRoute
   '/app/people/': typeof AppPeopleIndexRoute
+  '/app/shop/': typeof AppShopIndexRoute
   '/calendar/my-dates/': typeof CalendarMyDatesIndexRoute
   '/corporate/quote/': typeof CorporateQuoteIndexRoute
   '/secret-santa/$id/': typeof SecretSantaIdIndexRoute
@@ -589,7 +643,10 @@ export interface FileRouteTypes {
     | '/admin/system'
     | '/admin/team'
     | '/app/account'
+    | '/app/bag'
     | '/app/calendar'
+    | '/app/checkout'
+    | '/app/orders'
     | '/app/signin'
     | '/app/vouchers'
     | '/app/welcome'
@@ -607,15 +664,18 @@ export interface FileRouteTypes {
     | '/shop/'
     | '/admin/campaigns/$id'
     | '/admin/soon/$slug'
+    | '/app/order/$id'
     | '/app/people/$personId'
     | '/app/people/new'
     | '/app/send/$personId'
+    | '/app/shop/$slug'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
     | '/secret-santa/join/$code'
     | '/admin/campaigns/'
     | '/app/people/'
+    | '/app/shop/'
     | '/calendar/my-dates/'
     | '/corporate/quote/'
     | '/secret-santa/$id/'
@@ -649,7 +709,10 @@ export interface FileRouteTypes {
     | '/admin/system'
     | '/admin/team'
     | '/app/account'
+    | '/app/bag'
     | '/app/calendar'
+    | '/app/checkout'
+    | '/app/orders'
     | '/app/signin'
     | '/app/vouchers'
     | '/app/welcome'
@@ -667,15 +730,18 @@ export interface FileRouteTypes {
     | '/shop'
     | '/admin/campaigns/$id'
     | '/admin/soon/$slug'
+    | '/app/order/$id'
     | '/app/people/$personId'
     | '/app/people/new'
     | '/app/send/$personId'
+    | '/app/shop/$slug'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
     | '/secret-santa/join/$code'
     | '/admin/campaigns'
     | '/app/people'
+    | '/app/shop'
     | '/calendar/my-dates'
     | '/corporate/quote'
     | '/secret-santa/$id'
@@ -711,7 +777,10 @@ export interface FileRouteTypes {
     | '/admin/system'
     | '/admin/team'
     | '/app/account'
+    | '/app/bag'
     | '/app/calendar'
+    | '/app/checkout'
+    | '/app/orders'
     | '/app/signin'
     | '/app/vouchers'
     | '/app/welcome'
@@ -729,15 +798,18 @@ export interface FileRouteTypes {
     | '/shop/'
     | '/admin/campaigns/$id'
     | '/admin/soon/$slug'
+    | '/app/order/$id'
     | '/app/people/$personId'
     | '/app/people/new'
     | '/app/send/$personId'
+    | '/app/shop/$slug'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
     | '/secret-santa/join/$code'
     | '/admin/campaigns/'
     | '/app/people/'
+    | '/app/shop/'
     | '/calendar/my-dates/'
     | '/corporate/quote/'
     | '/secret-santa/$id/'
@@ -1004,11 +1076,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccountRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/bag': {
+      id: '/app/bag'
+      path: '/bag'
+      fullPath: '/app/bag'
+      preLoaderRoute: typeof AppBagRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/calendar': {
       id: '/app/calendar'
       path: '/calendar'
       fullPath: '/app/calendar'
       preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/checkout': {
+      id: '/app/checkout'
+      path: '/checkout'
+      fullPath: '/app/checkout'
+      preLoaderRoute: typeof AppCheckoutRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/orders': {
+      id: '/app/orders'
+      path: '/orders'
+      fullPath: '/app/orders'
+      preLoaderRoute: typeof AppOrdersRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/signin': {
@@ -1123,6 +1216,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSoonSlugRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/app/order/$id': {
+      id: '/app/order/$id'
+      path: '/order/$id'
+      fullPath: '/app/order/$id'
+      preLoaderRoute: typeof AppOrderIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/people/': {
       id: '/app/people/'
       path: '/people'
@@ -1149,6 +1249,20 @@ declare module '@tanstack/react-router' {
       path: '/send/$personId'
       fullPath: '/app/send/$personId'
       preLoaderRoute: typeof AppSendPersonIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/shop/': {
+      id: '/app/shop/'
+      path: '/shop'
+      fullPath: '/app/shop/'
+      preLoaderRoute: typeof AppShopIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/shop/$slug': {
+      id: '/app/shop/$slug'
+      path: '/shop/$slug'
+      fullPath: '/app/shop/$slug'
+      preLoaderRoute: typeof AppShopSlugRouteImport
       parentRoute: typeof AppRoute
     }
     '/calendar/my-dates/': {
@@ -1249,28 +1363,40 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppRouteChildren {
   AppAccountRoute: typeof AppAccountRoute
+  AppBagRoute: typeof AppBagRoute
   AppCalendarRoute: typeof AppCalendarRoute
+  AppCheckoutRoute: typeof AppCheckoutRoute
+  AppOrdersRoute: typeof AppOrdersRoute
   AppSigninRoute: typeof AppSigninRoute
   AppVouchersRoute: typeof AppVouchersRoute
   AppWelcomeRoute: typeof AppWelcomeRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppOrderIdRoute: typeof AppOrderIdRoute
   AppPeoplePersonIdRoute: typeof AppPeoplePersonIdRoute
   AppPeopleNewRoute: typeof AppPeopleNewRoute
   AppSendPersonIdRoute: typeof AppSendPersonIdRoute
+  AppShopSlugRoute: typeof AppShopSlugRoute
   AppPeopleIndexRoute: typeof AppPeopleIndexRoute
+  AppShopIndexRoute: typeof AppShopIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAccountRoute: AppAccountRoute,
+  AppBagRoute: AppBagRoute,
   AppCalendarRoute: AppCalendarRoute,
+  AppCheckoutRoute: AppCheckoutRoute,
+  AppOrdersRoute: AppOrdersRoute,
   AppSigninRoute: AppSigninRoute,
   AppVouchersRoute: AppVouchersRoute,
   AppWelcomeRoute: AppWelcomeRoute,
   AppIndexRoute: AppIndexRoute,
+  AppOrderIdRoute: AppOrderIdRoute,
   AppPeoplePersonIdRoute: AppPeoplePersonIdRoute,
   AppPeopleNewRoute: AppPeopleNewRoute,
   AppSendPersonIdRoute: AppSendPersonIdRoute,
+  AppShopSlugRoute: AppShopSlugRoute,
   AppPeopleIndexRoute: AppPeopleIndexRoute,
+  AppShopIndexRoute: AppShopIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

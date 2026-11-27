@@ -77,7 +77,10 @@ function AppPerson() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      <div className="a-pat-sage" style={{ padding: "54px 22px 78px" }}>
+      <div
+        className="a-pat-sage"
+        style={{ padding: "calc(env(safe-area-inset-top,0px) + 28px) 22px 78px" }}
+      >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <button
             type="button"
@@ -313,11 +316,7 @@ function AppPerson() {
       </div>
 
       <div style={{ padding: "22px 22px 8px", display: "flex", flexDirection: "column", gap: 10 }}>
-        <Link
-          to="/app/send/$personId"
-          params={{ personId: person.id }}
-          className="a-abtn a-lg a-ink"
-        >
+        <Link to="/app/shop" search={{ for: person.id }} className="a-abtn a-lg a-ink">
           Choose a gift{milestone ? ` for the ${milestone}` : ""}
         </Link>
         <Link to="/app/vouchers" search={{ for: person.id }} className="a-abtn a-lg a-line">

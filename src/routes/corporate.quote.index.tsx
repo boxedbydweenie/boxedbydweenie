@@ -200,7 +200,6 @@ function QuoteBuilder() {
             </div>
             <div className="relative" aria-label="Logo preview on a box lid">
               <PlaceholderTile tone="dark" label={logoUrl ? "" : "Your logo here"} className="aspect-[4/3] w-full" />
-              <div className="pointer-events-none absolute inset-x-0 top-1/2 h-4 -translate-y-1/2 foil opacity-80" />
               {logoUrl && <div className="absolute inset-0 flex items-center justify-center"><div className="rounded-sm bg-paper/95 p-3 shadow-soft"><img src={logoUrl} alt="Your logo on the box lid" className="max-h-16 max-w-32 object-contain" /></div></div>}
             </div>
           </div>

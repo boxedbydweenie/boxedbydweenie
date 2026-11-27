@@ -126,7 +126,13 @@ function AppVouchers() {
   };
 
   return (
-    <div style={{ padding: "54px 22px 16px", display: "flex", flexDirection: "column" }}>
+    <div
+      style={{
+        padding: "calc(env(safe-area-inset-top,0px) + 28px) 22px 16px",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div className="a-eye">Gift vouchers</div>
         <Link to="/app/account" hash="balance" style={{ fontSize: 13, fontWeight: 600 }}>
@@ -154,16 +160,6 @@ function AppVouchers() {
           transition: "background .4s ease",
         }}
       >
-        <span
-          className="a-rv"
-          aria-hidden="true"
-          style={{ position: "absolute", right: 78, top: 0, bottom: 0, width: 18 }}
-        />
-        <span
-          className="a-rh"
-          aria-hidden="true"
-          style={{ position: "absolute", left: 0, right: 0, top: 136, height: 18 }}
-        />
         <img
           src="/brand/bow-gold.svg"
           alt=""

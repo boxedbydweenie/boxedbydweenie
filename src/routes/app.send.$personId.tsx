@@ -113,7 +113,7 @@ function SendGift() {
   return (
     <div
       style={{
-        padding: "54px 22px 28px",
+        padding: "calc(env(safe-area-inset-top,0px) + 28px) 22px 28px",
         display: "flex",
         flexDirection: "column",
         minHeight: "100dvh",
@@ -207,9 +207,13 @@ function SendGift() {
       ) : (
         <p style={{ marginTop: 18, fontSize: 14, color: C.muted }}>
           No boxes match this person's budget yet.{" "}
-          <a href="/shop" style={{ fontWeight: 600, textDecoration: "underline" }}>
+          <Link
+            to="/app/shop"
+            search={{ for: personId }}
+            style={{ fontWeight: 600, textDecoration: "underline" }}
+          >
             Browse the shop
-          </a>
+          </Link>
           .
         </p>
       )}
@@ -256,8 +260,9 @@ function SendGift() {
               <span style={{ fontSize: 12, fontWeight: 600 }}>{formatNaira(p.price)}</span>
             </button>
           ))}
-          <a
-            href="/shop"
+          <Link
+            to="/app/shop"
+            search={{ for: personId }}
             style={{
               flexShrink: 0,
               width: 120,
@@ -273,7 +278,7 @@ function SendGift() {
             }}
           >
             See the whole shop
-          </a>
+          </Link>
         </div>
       )}
 
@@ -294,11 +299,6 @@ function SendGift() {
             overflow: "hidden",
           }}
         >
-          <span
-            className="a-rh"
-            aria-hidden="true"
-            style={{ position: "absolute", left: 0, right: 0, top: 0, height: 8 }}
-          />
           <label htmlFor="gm" style={{ position: "absolute", left: -9999 }}>
             Card message
           </label>

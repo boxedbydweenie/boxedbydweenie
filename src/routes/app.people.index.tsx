@@ -27,7 +27,10 @@ function AppPeople() {
   );
 
   return (
-    <div className="a-top-pattern" style={{ padding: "54px 16px 16px" }}>
+    <div
+      className="a-top-pattern"
+      style={{ padding: "calc(env(safe-area-inset-top,0px) + 28px) 16px 16px" }}
+    >
       <div
         style={{
           display: "flex",

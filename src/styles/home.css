@@ -36,11 +36,6 @@
 .bbd-home .hero .proof{display:flex;gap:28px;margin-top:40px;font-size:.86rem;color:var(--ink-soft)}
 .bbd-home .hero .proof strong{display:block;font-family:var(--display);font-size:2rem;font-weight:500;color:var(--ink);line-height:1}
 .bbd-home .hero-copy{position:relative;z-index:2}
-.bbd-home .rib{position:absolute;z-index:-1;background:linear-gradient(90deg,#D4A42F 0%,#EBC459 30%,#F0CD67 50%,#EBC459 70%,#D4A42F 100%)}
-.bbd-home .rib-v{top:0;bottom:0;left:var(--knot-x,74%);width:58px;transform:translateX(-50%) scaleY(0);transform-origin:top;animation:ribV 1.1s .2s cubic-bezier(.6,.1,.2,1) forwards}
-.bbd-home .rib-h{left:52%;right:0;top:var(--knot-y,46%);height:58px;transform:translateY(-50%) scaleX(0);transform-origin:right;animation:ribH 1.1s .5s cubic-bezier(.6,.1,.2,1) forwards;background:linear-gradient(180deg,#D4A42F 0%,#EBC459 30%,#F0CD67 50%,#EBC459 70%,#D4A42F 100%);border-radius:29px 0 0 29px}
-@keyframes ribV{to{transform:translateX(-50%) scaleY(1)}}
-@keyframes ribH{to{transform:translateY(-50%) scaleX(1)}}
 .bbd-home .bow-stage{position:relative;height:100%;min-height:460px}
 .bbd-home .bowmark{--tr:translate(-50.7%,-29.6%);position:absolute;z-index:0;left:var(--knot-x,74%);top:var(--knot-y,46%);width:min(560px,44vw);transform:var(--tr);overflow:visible;filter:drop-shadow(0 24px 30px rgba(110,80,10,.28))}
 .bbd-home .bowmark g[class^="b-"]{transform-box:fill-box}
@@ -142,9 +137,7 @@
 .bbd-home .giftbox{position:absolute;left:50%;bottom:4%;width:min(420px,78%);aspect-ratio:1.25/1;transform:translateX(-50%)}
 .bbd-home .giftbox .base{position:absolute;inset:18% 0 0 0;background:var(--ink) url("/home/pattern-black.png");background-size:72px 68px;border-radius:6px;box-shadow:0 50px 60px -40px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.06)}
 .bbd-home .giftbox .base::before{content:"";position:absolute;inset:0 0 auto;height:14%;background:var(--ivory);border-radius:6px 6px 0 0;opacity:.95}
-.bbd-home .giftbox .base::after{content:"";position:absolute;left:44%;width:12%;top:0;bottom:0;background:linear-gradient(90deg,#D4A42F,#F0CD67 50%,#D4A42F)}
 .bbd-home .giftbox .lid{position:absolute;left:-4%;right:-4%;top:6%;height:20%;background:#1E1D1D url("/home/pattern-black.png");background-size:72px 68px;border-radius:6px;transform-origin:10% 100%;transform:translate(calc(var(--p,0) * -150px * var(--lk,1)),calc(var(--p,0) * -230px * var(--k,1))) rotate(calc(var(--p,0) * -24deg));box-shadow:0 18px 30px -18px rgba(0,0,0,.9);z-index:3}
-.bbd-home .giftbox .lid::after{content:"";position:absolute;left:44%;width:12%;top:0;bottom:0;background:linear-gradient(90deg,#D4A42F,#F0CD67 50%,#D4A42F)}
 .bbd-home .giftbox .lid img{position:absolute;left:50%;top:-62%;width:46%;transform:translateX(-50%)}
 .bbd-home .giftbox .item{position:absolute;left:50%;bottom:30%;width:40%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;box-shadow:0 30px 40px -24px rgba(0,0,0,.8);z-index:2;opacity:calc(var(--p,0) * 2.4 - .3);transform:translateX(calc(-50% + var(--dx) * var(--k,1) * var(--p,0))) translateY(calc(var(--dy) * var(--k,1) * var(--p,0))) rotate(calc(var(--r) * var(--p,0)))}
 .bbd-home .giftbox .item img{width:100%;height:100%;object-fit:cover}
@@ -239,8 +232,6 @@
 .bbd-home .hero{--knot-x:50%;--knot-y:auto}
 .bbd-home .bow-stage{min-height:360px}
 .bbd-home .bowmark{--tr:translate(-50.7%,0);left:50%;top:auto;bottom:28px;width:min(340px,82vw)}
-.bbd-home .rib-v{left:50%;top:auto;height:380px;bottom:0}
-.bbd-home .rib-h{display:none}
 .bbd-home .unbox{height:300vh}
 .bbd-home .unbox .pin{top:calc(env(safe-area-inset-top,0px) + 64px);height:calc(100svh - 64px);min-height:0;grid-template-columns:1fr;grid-template-rows:auto 1fr auto;gap:10px;padding-block:22px 26px;align-items:stretch}
 .bbd-home .unbox h2{font-size:2rem}
@@ -257,8 +248,6 @@
 @media (prefers-reduced-motion:reduce){.bbd-home *, .bbd-home *::before, .bbd-home *::after{animation:none!important;transition:none!important}
 .bbd-home .unbox .steps li{display:grid}
 .bbd-home .ub-dots{display:none!important}
-.bbd-home .rib-v{transform:translateX(-50%)}
-.bbd-home .rib-h{transform:translateY(-50%)}
 .bbd-home .bow-load{opacity:1}
 .bbd-home .rv.pre{opacity:1;transform:none}
 .bbd-home .unbox{height:auto}

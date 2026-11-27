@@ -76,7 +76,7 @@ function AppSignIn() {
         boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
-        padding: "54px 22px 28px",
+        padding: "calc(env(safe-area-inset-top,0px) + 28px) 22px 28px",
       }}
     >
       {mode === "up" ? (

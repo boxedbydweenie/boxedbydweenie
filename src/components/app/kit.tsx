@@ -1,4 +1,4 @@
-import type { ReactNode, SVGProps } from "react";
+import { useEffect, useState, type ReactNode, type SVGProps } from "react";
 import type { OccasionInstance, Person, ScheduledGift } from "@/types/calendar";
 import { addDays, daysUntil, nextOccurrence, todayIso } from "@/services/calendar";
 import { createStore } from "@/lib/store";
@@ -30,14 +30,16 @@ export const defaultLeadStore = createStore<number>("bbd-default-lead", 14);
 export const PERSON_ORDER_LEAD_DAYS = 4;
 
 export const APP_CSS = `
-.bbd-app{font-family:'Parkinsans','Segoe UI',system-ui,sans-serif;color:${C.nero};background:${C.ivory}}
+html:has(.bbd-app),body:has(.bbd-app){background:${C.ivory};overscroll-behavior-y:none}
+.bbd-app{font-family:'Parkinsans','Segoe UI',system-ui,sans-serif;color:${C.nero};background:${C.ivory};min-height:100dvh;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
 .bbd-app a{color:inherit;text-decoration:none}
-.bbd-app a:focus-visible,.bbd-app button:focus-visible{outline:2px solid ${C.nero};outline-offset:3px}
+.bbd-app a:focus-visible,.bbd-app button:focus-visible,.bbd-app [tabindex]:focus-visible{outline:2px solid ${C.nero};outline-offset:3px}
+.bbd-app input:not(.a-big),.bbd-app textarea:not(.a-big),.bbd-app select{font-size:16px!important}
 .a-dsp{font-family:'EB Garamond',Georgia,'Times New Roman',serif;font-weight:500;letter-spacing:-.01em;line-height:1.05;text-wrap:balance;margin:0}
 .a-scr{font-family:'Pinyon Script','Snell Roundhand','Apple Chancery',cursive;font-weight:400;letter-spacing:0;line-height:.9}
 .a-eye{font-size:12px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:${C.goldText}}
-.a-abtn{display:flex;align-items:center;justify-content:center;gap:.6em;min-height:48px;padding:0 1.2em;border-radius:8px;font:600 14px 'Parkinsans','Segoe UI',system-ui,sans-serif;border:1.5px solid transparent;box-sizing:border-box;cursor:pointer;transition:transform .25s ease;white-space:nowrap}
-.a-abtn:hover{transform:translateY(-2px)}
+.a-abtn{display:flex;align-items:center;justify-content:center;gap:.6em;min-height:48px;padding:0 1.2em;border-radius:8px;font:600 14px 'Parkinsans','Segoe UI',system-ui,sans-serif;border:1.5px solid transparent;box-sizing:border-box;cursor:pointer;transition:transform .2s ease,opacity .2s ease;white-space:nowrap;-webkit-user-select:none;user-select:none}
+.a-abtn:active{transform:scale(.98)}
 .a-abtn.a-lg{min-height:52px;font-size:15px;padding:0 1.6em}
 .a-abtn.a-gold{background:${C.gold};color:${C.nero}}
 .a-abtn.a-ink{background:${C.nero};color:#FFFFFF}
@@ -49,18 +51,57 @@ export const APP_CSS = `
 .a-pat-navy{background:${C.navy} url("/brand/pattern-navy.svg") center/cover}
 .a-pat-nero{background:${C.nero} url("/brand/pattern-black.png");background-size:72px 68px}
 .a-pat-sage{background:${C.sage} url("/brand/bow-tile-sage.svg");background-size:72px}
-.a-rv{background:linear-gradient(90deg,#D4A42F 0%,#EBC459 30%,#F0CD67 50%,#EBC459 70%,#D4A42F 100%)}
-.a-rh{background:linear-gradient(180deg,#D4A42F 0%,#EBC459 30%,#F0CD67 50%,#EBC459 70%,#D4A42F 100%)}
 .a-top-pattern{position:relative;isolation:isolate}
-.a-top-pattern::before{content:"";position:absolute;left:0;right:0;top:0;height:260px;z-index:-1;background:url("/brand/pattern-ivory.svg") repeat;background-size:64px 62px;opacity:.55;-webkit-mask-image:linear-gradient(#000 30%,transparent);mask-image:linear-gradient(#000 30%,transparent)}
+.a-top-pattern::before{content:"";position:absolute;left:0;right:0;top:0;height:260px;z-index:-1;background:url("/brand/pattern-ivory.svg") repeat;background-size:64px 62px;opacity:.55;-webkit-mask-image:linear-gradient(#000 30%,transparent);mask-image:linear-gradient(#000 30%,transparent);pointer-events:none}
 .bbd-row:first-child{border-top-width:0!important}
 .a-hscroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px}
 .a-hscroll::-webkit-scrollbar{display:none}
 .a-hscroll>*{scroll-snap-align:start}
 @keyframes bbd-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
 .a-sway{animation:bbd-sway 5s ease-in-out infinite;transform-origin:50% 40%}
-@media (prefers-reduced-motion:reduce){.a-sway{animation:none}.a-abtn:hover{transform:none}}
+
+/* Shell: phone = content + solid full-width tab bar; laptop = green sidebar + wide content */
+.a-shell{display:flex;min-height:100dvh}
+.a-side{display:none}
+.a-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.a-main.a-tabs-on{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+.a-screen{flex:1;display:flex;flex-direction:column;animation:a-in .22s ease both}
+@keyframes a-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.a-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#FFFFFF;border-top:1px solid ${C.line};display:flex;align-items:stretch;padding:0 max(4px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(4px,env(safe-area-inset-left,0px));height:calc(66px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+.a-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:500;color:${C.muted};position:relative;-webkit-user-select:none;user-select:none;min-width:0}
+.a-tab[aria-current=page]{color:${C.nero};font-weight:700}
+.a-tab[aria-current=page]::before{content:"";position:absolute;top:0;left:28%;right:28%;height:3px;border-radius:0 0 3px 3px;background:${C.gold}}
+.a-badge{position:absolute;top:7px;left:calc(50% + 5px);min-width:17px;height:17px;border-radius:9px;background:${C.oxblood};color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;box-sizing:border-box;border:2px solid #FFFFFF}
+.a-topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;min-height:60px;padding:calc(env(safe-area-inset-top,0px) + 8px) 16px 8px;background:rgba(244,239,229,.94);-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid transparent}
+.a-col{width:100%;max-width:600px;margin:0 auto;box-sizing:border-box}
+.a-wide{width:100%;max-width:1180px;margin:0 auto;box-sizing:border-box}
+.a-grid-products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.a-snav{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;font-size:15px;color:rgba(255,255,255,.82);position:relative}
+.a-snav:hover{background:rgba(255,255,255,.07);color:#FFFFFF}
+.a-snav[aria-current=page]{background:rgba(255,255,255,.12);color:#FFFFFF;font-weight:600}
+.a-only-desk{display:none!important}
+@media (min-width:640px){.a-grid-products{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:1024px){
+  .a-side{display:flex;flex-direction:column;position:sticky;top:0;height:100dvh;width:264px;flex-shrink:0;box-sizing:border-box;padding:28px 18px 22px;color:#FFFFFF;gap:2px;overflow-y:auto}
+  .a-tabbar{display:none}
+  .a-main.a-tabs-on{padding-bottom:0}
+  .a-only-phone{display:none!important}
+  .a-only-desk{display:revert!important}
+  .a-grid-products{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+  .a-desk-pad{padding-left:40px!important;padding-right:40px!important}
+  .a-topbar{padding-left:40px;padding-right:40px}
+}
+@media (prefers-reduced-motion:reduce){.a-sway,.a-screen{animation:none}.a-abtn:active{transform:none}}
 `;
+
+/** Phones and small tablets: show the app at 75% scale, like a native app. Laptops stay at 100%. */
+export const APP_SCALE = 0.75;
+export const viewportFor = (screenWidth: number) =>
+  screenWidth < 820
+    ? `width=${Math.round(screenWidth / APP_SCALE)}, initial-scale=${APP_SCALE}, viewport-fit=cover`
+    : "width=device-width, initial-scale=1, viewport-fit=cover";
+/** Runs in <head> before first paint so the scale never jumps. */
+export const VIEWPORT_SCRIPT = `(function(){try{var w=Math.min(screen.width,screen.height)<820?screen.width:9999;var m=document.querySelector('meta[name=viewport]');if(m&&w<820){m.setAttribute('content','width='+Math.round(w/${0.75})+', initial-scale=${0.75}, viewport-fit=cover')}}catch(e){}})();`;
 
 export function AppStyles() {
   return <style dangerouslySetInnerHTML={{ __html: APP_CSS }} />;
@@ -110,6 +151,30 @@ export const IconBell = (p: IconProps) => (
 export const IconBack = (p: IconProps) => (
   <Svg {...p}>
     <path d="m15 5-7 7 7 7" />
+  </Svg>
+);
+export const IconBag = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 8h14l-1 12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z" />
+    <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+  </Svg>
+);
+export const IconShop = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 9h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+    <path d="M3 9l2-5h14l2 5M9 13a3 3 0 0 0 6 0" />
+  </Svg>
+);
+export const IconSearch = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m16 16 4.5 4.5" />
+  </Svg>
+);
+export const IconBox = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 8 12 3l9 5v8l-9 5-9-5z" />
+    <path d="m3 8 9 5 9-5M12 13v8" />
   </Svg>
 );
 export const IconCheck = (p: IconProps) => (
@@ -493,4 +558,77 @@ export async function promptInstall() {
   await deferredInstall.prompt();
   deferredInstall = null;
   return true;
+}
+
+/** Sticky header for inner screens: back, title, optional action. Blurs content scrolling beneath it, like a native app. */
+export function TopBar({
+  title,
+  onBack,
+  right,
+  hideBackOnDesk,
+}: {
+  title?: ReactNode;
+  onBack?: () => void;
+  right?: ReactNode;
+  hideBackOnDesk?: boolean;
+}) {
+  return (
+    <div className="a-topbar">
+      {onBack && (
+        <span
+          className={hideBackOnDesk ? "a-only-phone" : undefined}
+          style={{ display: "contents" }}
+        >
+          <BackButton onClick={onBack} />
+        </span>
+      )}
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          fontWeight: 700,
+          fontSize: 16,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {title}
+      </div>
+      {right}
+    </div>
+  );
+}
+
+/** Go back within the app, or to a sensible screen when the app was opened directly on this page. */
+export function goBack(history: { back: () => void }, fallback: () => void) {
+  if (
+    typeof window !== "undefined" &&
+    window.history.length > 1 &&
+    document.referrer.includes(window.location.host)
+  )
+    history.back();
+  else if (
+    typeof window !== "undefined" &&
+    window.history.state &&
+    (window.history.state as { __TSR_index?: number }).__TSR_index
+  )
+    history.back();
+  else fallback();
+}
+
+/** Marks an order started in the app, so the website's payment return page sends the customer back into the app. */
+export const APP_PAY_KEY = "bbd-app-pay";
+
+/** True on laptop-size screens (1024px and wider), where the app shows the sidebar layout. */
+export function useWide() {
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const on = () => setWide(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  return wide;
 }
