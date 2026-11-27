@@ -435,7 +435,7 @@ function Home({ name }: { name: string }) {
       {/* Plum header, from the guide's Plum pattern and the LinkedIn banner treatment */}
       <header
         className="a-pat-plum"
-        style={{ color: "#FFFFFF", padding: "calc(env(safe-area-inset-top,0px) + 22px) 22px 76px" }}
+        style={{ color: "#FFFFFF", padding: "calc(env(safe-area-inset-top,0px) + 20px) 22px 30px" }}
       >
         <div
           style={{
@@ -474,10 +474,7 @@ function Home({ name }: { name: string }) {
             </Link>
           </div>
         </div>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,.72)", marginTop: 26 }}>
-          {todayText}
-        </div>
-        <h1 className="a-dsp" style={{ fontSize: 34, marginTop: 4 }}>
+        <h1 className="a-dsp" style={{ fontSize: 34, marginTop: 22 }}>
           {greeting()},{" "}
           <span className="a-scr" style={{ color: C.gold, fontSize: 46 }}>
             {first}
@@ -485,16 +482,8 @@ function Home({ name }: { name: string }) {
         </h1>
       </header>
 
-      <div
-        style={{
-          margin: "-58px 16px 0",
-          position: "relative",
-          zIndex: 1,
-          boxShadow: "0 24px 40px -26px rgba(41,40,40,.55)",
-          borderRadius: 24,
-        }}
-      >
-        {hero ? <NextUp item={hero} /> : <EmptyHome />}
+      <div style={{ margin: "20px 16px 0" }}>
+        {hero ? <NextUp item={hero} light /> : <EmptyHome />}
       </div>
 
       {coming.length > 0 && (
@@ -599,8 +588,8 @@ function ComingList({ items }: { items: UpcomingItem[] }) {
                 width: 48,
                 height: 52,
                 borderRadius: 14,
-                background: urgent ? C.oxblood : i.publicHoliday ? C.forest : C.nero,
-                color: "#FFFFFF",
+                background: urgent ? C.gold : C.plum,
+                color: urgent ? C.nero : "#FFFFFF",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -608,7 +597,10 @@ function ComingList({ items }: { items: UpcomingItem[] }) {
                 flexShrink: 0,
               }}
             >
-              <span className="a-dsp" style={{ fontSize: 22, lineHeight: 1, color: C.gold }}>
+              <span
+                className="a-dsp"
+                style={{ fontSize: 22, lineHeight: 1, color: urgent ? C.nero : C.gold }}
+              >
                 {Number(i.date.slice(8, 10))}
               </span>
               <span style={{ fontSize: 10.5, letterSpacing: ".12em", marginTop: 3 }}>
@@ -627,7 +619,13 @@ function ComingList({ items }: { items: UpcomingItem[] }) {
               >
                 {isPerson ? `${i.name}` : i.name}
               </strong>
-              <span style={{ fontSize: 12.5, color: urgent ? C.oxblood : C.muted }}>
+              <span
+                style={{
+                  fontSize: 12.5,
+                  color: urgent ? C.goldText : C.muted,
+                  fontWeight: urgent ? 700 : 400,
+                }}
+              >
                 {urgent ? "Order today" : detail}
               </span>
             </span>
@@ -678,7 +676,7 @@ function SeasonCard({ item }: { item: UpcomingItem }) {
   const shopOcc = shopOccasionFor(item.occasionSlug);
   return (
     <div
-      className="a-pat-oxblood"
+      className="a-pat-plum"
       style={{
         borderRadius: 24,
         padding: 20,
@@ -955,16 +953,25 @@ function Next30({ items, rows }: { items: UpcomingItem[]; rows?: boolean }) {
   );
 }
 
-function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
+function NextUp({
+  item,
+  compact,
+  light,
+}: {
+  item: UpcomingItem;
+  compact?: boolean;
+  light?: boolean;
+}) {
   const s = status(item);
   const isPerson = item.kind === "person";
   const possessive = isPerson ? `${item.name.split(" ")[0]}'s` : item.name;
   const shopOcc = shopOccasionFor(item.occasionSlug);
   return (
     <div
-      className="a-pat-green"
+      className={light ? "" : "a-pat-green"}
       style={{
-        color: "#FFFFFF",
+        ...(light ? { background: "#FFFFFF", border: `1.5px solid ${C.line}` } : {}),
+        color: light ? C.plum : "#FFFFFF",
         borderRadius: 24,
         padding: 22,
         position: "relative",
@@ -980,10 +987,12 @@ function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
           top: 40,
           width: compact ? 104 : 122,
           height: "auto",
-          filter: "drop-shadow(0 12px 16px rgba(0,0,0,.35))",
+          filter: light
+            ? "drop-shadow(0 8px 10px rgba(57,36,63,.25))"
+            : "drop-shadow(0 12px 16px rgba(0,0,0,.35))",
         }}
       />
-      <div className="a-eye" style={{ color: C.gold, position: "relative" }}>
+      <div className="a-eye" style={{ color: light ? C.goldText : C.gold, position: "relative" }}>
         Next up
       </div>
       <div
@@ -996,7 +1005,7 @@ function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
             className="a-scr"
             style={{
               display: "block",
-              color: C.gold,
+              color: light ? C.goldText : C.gold,
               fontSize: item.title.length > 14 ? 32 : compact ? 40 : 46,
               marginTop: 2,
             }}
@@ -1022,7 +1031,13 @@ function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
             >
               {item.days}
             </span>
-            <span style={{ fontSize: 13, lineHeight: 1.35, color: "rgba(255,255,255,.82)" }}>
+            <span
+              style={{
+                fontSize: 13,
+                lineHeight: 1.35,
+                color: light ? C.muted : "rgba(255,255,255,.82)",
+              }}
+            >
               days to go
               <br />
               {longDate(item.date)}
@@ -1050,7 +1065,7 @@ function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
           </span>
         )}
         {item.orderBy && !item.sorted && s.label !== "Order today" && (
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,.86)" }}>
+          <span style={{ fontSize: 13, color: light ? C.muted : "rgba(255,255,255,.86)" }}>
             Order by {shortDate(item.orderBy)}
           </span>
         )}
@@ -1081,8 +1096,13 @@ function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
         <Link
           to="/app/vouchers"
           search={item.personId ? { for: item.personId } : {}}
-          className="a-abtn a-white-line"
-          style={{ flex: 1 }}
+          className={light ? "a-abtn" : "a-abtn a-white-line"}
+          style={{
+            flex: 1,
+            ...(light
+              ? { border: `1.5px solid ${C.plum}`, color: C.plum, background: "transparent" }
+              : {}),
+          }}
         >
           Send a voucher
         </Link>
@@ -1215,14 +1235,16 @@ function InviteCard() {
   return (
     <Link
       to="/app/invite"
-      className="a-pat-nero"
+
       style={{
         display: "flex",
         alignItems: "center",
         gap: 14,
         borderRadius: 20,
         padding: 16,
-        color: "#FFFFFF",
+        background: "#FFFFFF",
+        border: `1.5px solid ${C.line}`,
+        color: C.plum,
       }}
     >
       <img src="/brand/bow-gold.svg" alt="" style={{ width: 48, height: "auto", flexShrink: 0 }} />
@@ -1230,9 +1252,7 @@ function InviteCard() {
         <strong className="a-dsp" style={{ display: "block", fontSize: 21 }}>
           Know someone who always forgets?
         </strong>
-        <span style={{ fontSize: 13, color: "rgba(255,255,255,.8)" }}>
-          Invite them to the Gift Calendar.
-        </span>
+        <span style={{ fontSize: 13, color: C.muted }}>Invite them to the Gift Calendar.</span>
       </span>
       <span className="a-pill" style={{ background: C.gold }}>
         Invite
