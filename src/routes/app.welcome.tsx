@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
 import { OCCASIONS } from "@/data/occasions";
@@ -1231,6 +1231,20 @@ function Ready() {
       >
         Go to my calendar
       </button>
+      <Link
+        to="/app/invite"
+        style={{
+          textAlign: "center",
+          fontSize: 14,
+          fontWeight: 600,
+          marginTop: 14,
+          color: "#FFFFFF",
+          textDecoration: "underline",
+          position: "relative",
+        }}
+      >
+        Invite a friend to try it
+      </Link>
     </div>
   );
 }

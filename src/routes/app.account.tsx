@@ -299,6 +299,12 @@ function AppAccount() {
         Your calendar
       </div>
       <div style={grp}>
+        <Row as={Link} to="/app/invite">
+          <span style={{ flex: 1, fontWeight: 600 }}>Invite friends</span>
+          <span className="a-pill" style={{ background: C.gold }}>
+            Share
+          </span>
+        </Row>
         <Row as={Link} to="/app/welcome" search={{ step: "moments", from: "account" }}>
           <span style={{ flex: 1 }}>Moments you follow</span>
           <span style={val}>{moments.length || "All"}</span>

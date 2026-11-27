@@ -632,3 +632,146 @@ export function useWide() {
   }, []);
   return wide;
 }
+
+/* ---------- Invites ---------- */
+export const SITE = "https://boxedbydweenie.com";
+
+/** The personal invite link: opens the app with "<name> invited you" on the splash. */
+export function inviteLink(firstName: string) {
+  const origin = typeof window !== "undefined" ? window.location.origin : SITE;
+  return `${origin}/app${firstName ? `?from=${encodeURIComponent(firstName)}` : ""}`;
+}
+
+export const defaultInviteMessage = (link: string) =>
+  `Look what I found! The Boxed by Dweenie Gift Calendar remembers every birthday and anniversary for you, reminds you in good time, and helps you send a beautiful gift. It's free and installs on your phone like an app. Try it: ${link}`;
+
+type Platform = "ios" | "android" | "desktop" | "installed";
+export function usePlatform(): Platform {
+  const [p, setP] = useState<Platform>("desktop");
+  useEffect(() => {
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    const ua = navigator.userAgent;
+    setP(
+      standalone
+        ? "installed"
+        : /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
+          ? "ios"
+          : /Android/i.test(ua)
+            ? "android"
+            : "desktop",
+    );
+  }, []);
+  return p;
+}
+
+/** How to put the app on your home screen, for the phone in your hand. */
+export function InstallHelp({ dark }: { dark?: boolean }) {
+  const platform = usePlatform();
+  const [can, setCan] = useState(false);
+  useEffect(() => {
+    setCan(canInstall());
+    const t = setInterval(() => setCan(canInstall()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  if (platform === "installed") return null;
+  const fg = dark ? "#FFFFFF" : C.nero;
+  const sub = dark ? "rgba(255,255,255,.78)" : C.muted;
+  const steps =
+    platform === "ios"
+      ? [
+          "Tap the Share button at the bottom of Safari",
+          "Scroll and tap “Add to Home Screen”",
+          "Tap “Add”. The Gift Calendar is now on your phone",
+        ]
+      : platform === "android"
+        ? [
+            "Tap the menu (⋮) at the top of Chrome",
+            "Tap “Install app” or “Add to Home screen”",
+            "Open the Gift Calendar from your home screen",
+          ]
+        : [
+            "Open this link on your phone",
+            "Add it to your home screen",
+            "Or keep using it right here in your browser",
+          ];
+  return (
+    <div
+      style={{
+        background: dark ? "rgba(255,255,255,.08)" : "#FFFFFF",
+        border: dark ? "1px solid rgba(255,255,255,.18)" : `1.5px solid ${C.line}`,
+        borderRadius: 20,
+        padding: 16,
+        color: fg,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 12,
+            background: C.nero,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <img src="/brand/bow-gold.svg" alt="" style={{ width: 30, height: "auto" }} />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <strong style={{ display: "block", fontSize: 15 }}>Get the app on your phone</strong>
+          <span style={{ fontSize: 12, color: sub }}>Free. No app store needed.</span>
+        </div>
+        {can && (
+          <button
+            type="button"
+            className="a-abtn a-gold"
+            style={{ minHeight: 40, padding: "0 16px" }}
+            onClick={() => void promptInstall().then(() => setCan(false))}
+          >
+            Install
+          </button>
+        )}
+      </div>
+      {!can && (
+        <ol style={{ margin: "14px 0 0", padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
+          {steps.map((s, i) => (
+            <li
+              key={s}
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems: "flex-start",
+                fontSize: 13,
+                lineHeight: 1.45,
+                color: sub,
+              }}
+            >
+              <span
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: "50%",
+                  background: C.gold,
+                  color: C.nero,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  flexShrink: 0,
+                }}
+              >
+                {i + 1}
+              </span>
+              <span style={{ paddingTop: 2 }}>{s}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}

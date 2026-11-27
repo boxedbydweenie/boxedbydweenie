@@ -36,6 +36,19 @@ export const Route = createFileRoute("/app")({
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "Gift Calendar" },
+      { property: "og:title", content: "The Gift Calendar by Boxed by Dweenie" },
+      {
+        property: "og:description",
+        content:
+          "Every date that matters, remembered. Free, and it installs on your phone like an app.",
+      },
+      { property: "og:image", content: "https://boxedbydweenie.com/app/share.jpg" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:url", content: "https://boxedbydweenie.com/app" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: "https://boxedbydweenie.com/app/share.jpg" },
     ],
     links: [
       { rel: "manifest", href: "/app/manifest.webmanifest" },
@@ -49,7 +62,8 @@ export const Route = createFileRoute("/app")({
 /** Screens anyone can see. Everything else needs a BBD account. */
 const OPEN = /^\/app(\/signin|\/shop(\/.*)?|\/bag|\/checkout|\/order\/.*)?$/;
 /** Screens laid out as one centred column on laptops. */
-const NARROW = /^\/app\/(people|send|vouchers|account|welcome|signin|bag|checkout|orders|order)/;
+const NARROW =
+  /^\/app\/(people|send|vouchers|account|welcome|signin|bag|checkout|orders|order|invite)/;
 /** Focused, full-screen steps: no tab bar. */
 const FOCUSED = /^\/app\/(signin|welcome|send|checkout)/;
 
@@ -172,6 +186,7 @@ function Sidebar({
     ...TABS,
     { to: "/app/orders", label: "Orders", Icon: IconBox },
     { to: "/app/bag", label: "Bag", Icon: IconBag },
+    { to: "/app/invite", label: "Invite friends", Icon: IconPeople },
   ] as const;
   return (
     <aside className="a-side a-pat-green" aria-label="Gift Calendar">
