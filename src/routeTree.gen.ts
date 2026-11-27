@@ -44,6 +44,7 @@ import { Route as AppAccountRouteImport } from './routes/app.account'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
 import { Route as AppSigninRouteImport } from './routes/app.signin'
 import { Route as AppVouchersRouteImport } from './routes/app.vouchers'
+import { Route as AppWelcomeRouteImport } from './routes/app.welcome'
 import { Route as CalendarIndexRouteImport } from './routes/calendar.index'
 import { Route as CalendarOccasionRouteImport } from './routes/calendar.$occasion'
 import { Route as CorporateIndexRouteImport } from './routes/corporate.index'
@@ -59,6 +60,8 @@ import { Route as AdminCampaignsIdRouteImport } from './routes/admin.campaigns.$
 import { Route as AdminSoonSlugRouteImport } from './routes/admin.soon.$slug'
 import { Route as AppPeopleIndexRouteImport } from './routes/app.people.index'
 import { Route as AppPeoplePersonIdRouteImport } from './routes/app.people.$personId'
+import { Route as AppPeopleNewRouteImport } from './routes/app.people.new'
+import { Route as AppSendPersonIdRouteImport } from './routes/app.send.$personId'
 import { Route as CalendarMyDatesIndexRouteImport } from './routes/calendar.my-dates.index'
 import { Route as CalendarMyDatesPersonIdRouteImport } from './routes/calendar.my-dates.$personId'
 import { Route as CorporateQuoteIndexRouteImport } from './routes/corporate.quote.index'
@@ -242,6 +245,11 @@ const AppVouchersRoute = AppVouchersRouteImport.update({
   path: '/vouchers',
   getParentRoute: () => AppRoute,
 } as any)
+const AppWelcomeRoute = AppWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => AppRoute,
+} as any)
 const CalendarIndexRoute = CalendarIndexRouteImport.update({
   id: '/calendar/',
   path: '/calendar/',
@@ -317,6 +325,16 @@ const AppPeoplePersonIdRoute = AppPeoplePersonIdRouteImport.update({
   path: '/people/$personId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPeopleNewRoute = AppPeopleNewRouteImport.update({
+  id: '/people/new',
+  path: '/people/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSendPersonIdRoute = AppSendPersonIdRouteImport.update({
+  id: '/send/$personId',
+  path: '/send/$personId',
+  getParentRoute: () => AppRoute,
+} as any)
 const CalendarMyDatesIndexRoute = CalendarMyDatesIndexRouteImport.update({
   id: '/calendar/my-dates/',
   path: '/calendar/my-dates/',
@@ -387,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/app/calendar': typeof AppCalendarRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
+  '/app/welcome': typeof AppWelcomeRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
@@ -402,6 +421,8 @@ export interface FileRoutesByFullPath {
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/admin/soon/$slug': typeof AdminSoonSlugRoute
   '/app/people/$personId': typeof AppPeoplePersonIdRoute
+  '/app/people/new': typeof AppPeopleNewRoute
+  '/app/send/$personId': typeof AppSendPersonIdRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
@@ -444,6 +465,7 @@ export interface FileRoutesByTo {
   '/app/calendar': typeof AppCalendarRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
+  '/app/welcome': typeof AppWelcomeRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
@@ -459,6 +481,8 @@ export interface FileRoutesByTo {
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/admin/soon/$slug': typeof AdminSoonSlugRoute
   '/app/people/$personId': typeof AppPeoplePersonIdRoute
+  '/app/people/new': typeof AppPeopleNewRoute
+  '/app/send/$personId': typeof AppSendPersonIdRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
@@ -504,6 +528,7 @@ export interface FileRoutesById {
   '/app/calendar': typeof AppCalendarRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
+  '/app/welcome': typeof AppWelcomeRoute
   '/calendar/$occasion': typeof CalendarOccasionRoute
   '/lookbook/$edition': typeof LookbookEditionRoute
   '/order/$id': typeof OrderIdRoute
@@ -519,6 +544,8 @@ export interface FileRoutesById {
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/admin/soon/$slug': typeof AdminSoonSlugRoute
   '/app/people/$personId': typeof AppPeoplePersonIdRoute
+  '/app/people/new': typeof AppPeopleNewRoute
+  '/app/send/$personId': typeof AppSendPersonIdRoute
   '/calendar/my-dates/$personId': typeof CalendarMyDatesPersonIdRoute
   '/corporate/quote/$ref': typeof CorporateQuoteRefRoute
   '/secret-santa/$id/manage': typeof SecretSantaIdManageRoute
@@ -565,6 +592,7 @@ export interface FileRouteTypes {
     | '/app/calendar'
     | '/app/signin'
     | '/app/vouchers'
+    | '/app/welcome'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
@@ -580,6 +608,8 @@ export interface FileRouteTypes {
     | '/admin/campaigns/$id'
     | '/admin/soon/$slug'
     | '/app/people/$personId'
+    | '/app/people/new'
+    | '/app/send/$personId'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
@@ -622,6 +652,7 @@ export interface FileRouteTypes {
     | '/app/calendar'
     | '/app/signin'
     | '/app/vouchers'
+    | '/app/welcome'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
@@ -637,6 +668,8 @@ export interface FileRouteTypes {
     | '/admin/campaigns/$id'
     | '/admin/soon/$slug'
     | '/app/people/$personId'
+    | '/app/people/new'
+    | '/app/send/$personId'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
@@ -681,6 +714,7 @@ export interface FileRouteTypes {
     | '/app/calendar'
     | '/app/signin'
     | '/app/vouchers'
+    | '/app/welcome'
     | '/calendar/$occasion'
     | '/lookbook/$edition'
     | '/order/$id'
@@ -696,6 +730,8 @@ export interface FileRouteTypes {
     | '/admin/campaigns/$id'
     | '/admin/soon/$slug'
     | '/app/people/$personId'
+    | '/app/people/new'
+    | '/app/send/$personId'
     | '/calendar/my-dates/$personId'
     | '/corporate/quote/$ref'
     | '/secret-santa/$id/manage'
@@ -989,6 +1025,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppVouchersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/welcome': {
+      id: '/app/welcome'
+      path: '/welcome'
+      fullPath: '/app/welcome'
+      preLoaderRoute: typeof AppWelcomeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/calendar/': {
       id: '/calendar/'
       path: '/calendar'
@@ -1094,6 +1137,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPeoplePersonIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/people/new': {
+      id: '/app/people/new'
+      path: '/people/new'
+      fullPath: '/app/people/new'
+      preLoaderRoute: typeof AppPeopleNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/send/$personId': {
+      id: '/app/send/$personId'
+      path: '/send/$personId'
+      fullPath: '/app/send/$personId'
+      preLoaderRoute: typeof AppSendPersonIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/calendar/my-dates/': {
       id: '/calendar/my-dates/'
       path: '/calendar/my-dates'
@@ -1195,8 +1252,11 @@ interface AppRouteChildren {
   AppCalendarRoute: typeof AppCalendarRoute
   AppSigninRoute: typeof AppSigninRoute
   AppVouchersRoute: typeof AppVouchersRoute
+  AppWelcomeRoute: typeof AppWelcomeRoute
   AppIndexRoute: typeof AppIndexRoute
   AppPeoplePersonIdRoute: typeof AppPeoplePersonIdRoute
+  AppPeopleNewRoute: typeof AppPeopleNewRoute
+  AppSendPersonIdRoute: typeof AppSendPersonIdRoute
   AppPeopleIndexRoute: typeof AppPeopleIndexRoute
 }
 
@@ -1205,8 +1265,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppCalendarRoute: AppCalendarRoute,
   AppSigninRoute: AppSigninRoute,
   AppVouchersRoute: AppVouchersRoute,
+  AppWelcomeRoute: AppWelcomeRoute,
   AppIndexRoute: AppIndexRoute,
   AppPeoplePersonIdRoute: AppPeoplePersonIdRoute,
+  AppPeopleNewRoute: AppPeopleNewRoute,
+  AppSendPersonIdRoute: AppSendPersonIdRoute,
   AppPeopleIndexRoute: AppPeopleIndexRoute,
 }
 

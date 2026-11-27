@@ -43,7 +43,7 @@ export interface ShopFilters {
 }
 
 export interface GiftCardDetails {
-  design: "white-ribbon" | "black-leaf" | "ivory-bow";
+  design: "white-ribbon" | "black-leaf" | "ivory-bow" | "plum-bow" | "oxblood-bow";
   recipientName: string;
   recipientContact: string;
   message: string;

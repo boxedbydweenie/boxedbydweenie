@@ -1,113 +1,329 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Trash2 } from "lucide-react";
-import { usePeople } from "@/hooks/use-calendar";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { usePeople, useScheduledGifts } from "@/hooks/use-calendar";
+import { addDays, daysUntil, giftsFor, nextOccurrence, todayIso } from "@/services/calendar";
+import { getProductById } from "@/services/products";
 import {
-  daysUntil,
-  formatLong,
-  giftIdeas,
-  initials,
-  nextOccurrence,
-  removePerson,
-} from "@/services/calendar";
-import { formatNaira } from "@/lib/format";
+  C,
+  CalTile,
+  IconBack,
+  Ring,
+  isMilestone,
+  longDate,
+  occasionTitle,
+  shortDate,
+  PERSON_ORDER_LEAD_DAYS,
+} from "@/components/app/kit";
 
 export const Route = createFileRoute("/app/people/$personId")({
   component: AppPerson,
 });
 
+const REL: Record<string, string> = {
+  Parent: "parent",
+  Partner: "partner",
+  Sibling: "sibling",
+  Child: "child",
+  Friend: "friend",
+  Colleague: "colleague",
+  Client: "client",
+  Other: "",
+};
+
 function AppPerson() {
   const { personId } = Route.useParams();
   const person = usePeople().find((p) => p.id === personId);
-  const navigate = useNavigate();
+  const scheduled = useScheduledGifts();
+  const router = useRouter();
+  const today = todayIso();
 
   if (!person) {
     return (
-      <section className="px-5 pt-10 text-center">
-        <h1 className="font-display text-3xl">Person not found</h1>
-        <Link to="/app/people" className="mt-6 inline-block text-sm font-semibold underline">
+      <section style={{ padding: "64px 22px 0", textAlign: "center" }}>
+        <h1 className="a-dsp" style={{ fontSize: 32 }}>
+          Person not found
+        </h1>
+        <p style={{ fontSize: 14, color: C.muted, marginTop: 10 }}>They may have been removed.</p>
+        <Link to="/app/people" className="a-abtn a-ink" style={{ marginTop: 22 }}>
           Back to people
         </Link>
       </section>
     );
   }
 
+  const first = person.name.split(" ")[0] ?? person.name;
   const dates = person.dates
-    .map((d) => ({ d, on: nextOccurrence(d) }))
+    .map((d) => {
+      const on = nextOccurrence(d, today);
+      return {
+        d,
+        on,
+        days: daysUntil(on, today),
+        title: occasionTitle(d.label, d.type, d.year, on),
+      };
+    })
     .sort((a, b) => a.on.localeCompare(b.on));
-  const ideas = giftIdeas(person, 4);
+  const next = dates[0];
+  const milestone = next && isMilestone(next.title) ? next.title.split(" ")[0] : null;
+  const gifts = giftsFor(person.id, scheduled);
+  const sortedFor = (on: string) =>
+    scheduled.some(
+      (g) => g.personId === person.id && g.deliveryDate <= on && g.deliveryDate >= today,
+    );
+  const likes = person.notes.likes
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const rel = REL[person.relationship] ?? "";
 
   return (
-    <section className="px-5 pt-8">
-      <div className="flex items-center justify-between">
-        <Link
-          to="/app/people"
-          className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" /> People
-        </Link>
-        <button
-          type="button"
-          aria-label={`Remove ${person.name}`}
-          onClick={async () => {
-            await removePerson(person.id);
-            void navigate({ to: "/app/people" });
-          }}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-border"
-        >
-          <Trash2 className="h-4 w-4" aria-hidden="true" />
-        </button>
-      </div>
-
-      <div className="mt-4 flex items-center gap-4">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#292828] font-display text-2xl text-[#E7B93B]">
-          {initials(person.name)}
-        </span>
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8E6A10]">
-            {person.relationship}
-          </p>
-          <h1 className="truncate font-display text-4xl">{person.name}</h1>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      <div className="a-pat-sage" style={{ padding: "54px 22px 78px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <button
+            type="button"
+            onClick={() =>
+              window.history.length > 1
+                ? router.history.back()
+                : void router.navigate({ to: "/app/people" })
+            }
+            aria-label="Back"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              background: "#FFFFFF",
+              border: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: C.nero,
+            }}
+          >
+            <IconBack style={{ width: 20, height: 20 }} />
+          </button>
+          <Link
+            to="/app/people/new"
+            search={{ edit: person.id }}
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              padding: "12px 16px",
+              borderRadius: 999,
+              background: "#FFFFFF",
+            }}
+          >
+            Edit
+          </Link>
         </div>
       </div>
 
-      <ul className="mt-6 divide-y divide-border rounded-2xl border border-border bg-card">
-        {dates.map(({ d, on }) => (
-          <li key={d.id} className="flex items-center justify-between gap-3 px-4 py-3">
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">{d.label}</p>
-              <p className="text-xs text-muted-foreground">{formatLong(on)}</p>
-            </div>
-            <span className="shrink-0 text-xs font-semibold">{daysUntil(on)} days</span>
-          </li>
-        ))}
-      </ul>
-
-      {ideas.length > 0 && (
-        <div className="mt-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8E6A10]">
-            Gift ideas for {person.name.split(" ")[0]}
-          </p>
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            {ideas.map((p) => (
-              <a
-                key={p.id}
-                href={`/shop/${p.slug}`}
-                className="rounded-2xl border border-border bg-card p-3"
-              >
-                <p className="font-display text-lg leading-tight">{p.name}</p>
-                <p className="mt-1 text-sm font-semibold">{formatNaira(p.price)}</p>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <Link
-        to="/app/vouchers"
-        className="mt-8 flex h-12 items-center justify-center rounded-lg bg-[#E7B93B] text-sm font-semibold text-[#292828]"
+      <div
+        style={{
+          margin: "-58px 16px 0",
+          background: "#FFFFFF",
+          borderRadius: 24,
+          padding: "0 18px 18px",
+          position: "relative",
+          boxShadow: "0 18px 40px -30px rgba(41,40,40,.6)",
+        }}
       >
-        Send a voucher instead
-      </Link>
-    </section>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div style={{ marginTop: -48, background: "#FFFFFF", borderRadius: "50%" }}>
+            <Ring size={104} days={next?.days ?? 60}>
+              {person.photo ? (
+                <img
+                  src={person.photo}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <span
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    background: C.nero,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: "'EB Garamond',Georgia,serif",
+                    fontWeight: 500,
+                    fontSize: 40,
+                    color: C.gold,
+                  }}
+                >
+                  {first.slice(0, 1).toUpperCase()}
+                </span>
+              )}
+            </Ring>
+          </div>
+          {milestone && (
+            <span className="a-pill" style={{ marginBottom: 8, background: C.gold }}>
+              Milestone · {milestone}
+            </span>
+          )}
+        </div>
+        <h1 className="a-dsp" style={{ fontSize: 38, marginTop: 12 }}>
+          {person.name}
+        </h1>
+        {next && (
+          <div style={{ fontSize: 14, color: C.muted, marginTop: 6 }}>
+            {rel ? `Your ${rel} · ` : ""}
+            {next.d.label.toLowerCase()} {next.days === 0 ? "is " : "in "}
+            <strong style={{ color: C.nero }}>
+              {next.days === 0 ? "today" : next.days === 1 ? "tomorrow" : `${next.days} days`}
+            </strong>
+          </div>
+        )}
+        {(likes.length > 0 || person.notes.noAlcohol) && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+            {likes.map((l) => (
+              <span key={l} className="a-pill" style={{ background: C.coral, minHeight: 28 }}>
+                {l}
+              </span>
+            ))}
+            {person.notes.noAlcohol && (
+              <span
+                className="a-pill"
+                style={{ background: C.ivory, border: `1.5px solid ${C.line}`, minHeight: 28 }}
+              >
+                No alcohol
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          margin: "16px 16px 0",
+          background: "#FFFFFF",
+          borderRadius: 20,
+          border: `1.5px solid ${C.line}`,
+          padding: "6px 18px 4px",
+        }}
+      >
+        {dates.map(({ d, on, days, title }, n) => {
+          const sorted = sortedFor(on);
+          const orderBy = addDays(on, -PERSON_ORDER_LEAD_DAYS);
+          return (
+            <div
+              key={d.id}
+              style={{
+                display: "flex",
+                gap: 14,
+                alignItems: "center",
+                padding: "14px 0",
+                borderTop: n ? `1px solid ${C.line}` : 0,
+              }}
+            >
+              <CalTile iso={on} tone={n === 0 ? C.oxblood : C.forest} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <strong style={{ fontSize: 15 }}>
+                  {title.charAt(0).toUpperCase() + title.slice(1)}
+                </strong>
+                <div style={{ fontSize: 12, color: C.muted }}>
+                  {days <= 1 ? (days === 0 ? "Today" : "Tomorrow") : `${longDate(on)}`}
+                  {!sorted && orderBy >= today ? ` · order by ${shortDate(orderBy)}` : ""}
+                </div>
+              </div>
+              {sorted ? (
+                <span className="a-pill" style={{ background: C.sage }}>
+                  Sorted
+                </span>
+              ) : n === 0 ? (
+                <span className="a-pill" style={{ background: C.oxblood, color: "#FFFFFF" }}>
+                  No gift yet
+                </span>
+              ) : (
+                <span
+                  className="a-pill"
+                  style={{ background: C.ivory, border: `1.5px solid ${C.line}` }}
+                >
+                  {days} days
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ padding: "20px 22px 0", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="a-eye">Gifts for {first}</div>
+        {gifts.length === 0 ? (
+          <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>
+            No gifts yet. Your first one will appear here.
+          </p>
+        ) : (
+          gifts.map((g) => {
+            const p = getProductById(g.productId);
+            const sent = g.deliveryDate < today;
+            return (
+              <div
+                key={g.id}
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  alignItems: "center",
+                  background: "#FFFFFF",
+                  borderRadius: 18,
+                  border: `1.5px solid ${C.line}`,
+                  padding: 10,
+                }}
+              >
+                {p?.images[0] ? (
+                  <img
+                    src={p.images[0]}
+                    alt={p.name}
+                    style={{
+                      width: 60,
+                      height: 72,
+                      borderRadius: 12,
+                      objectFit: "cover",
+                      flexShrink: 0,
+                    }}
+                  />
+                ) : (
+                  <span
+                    style={{
+                      width: 60,
+                      height: 72,
+                      borderRadius: 12,
+                      background: C.ivory,
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <strong className="a-dsp" style={{ fontSize: 19 }}>
+                    {p?.name ?? "Gift"}
+                  </strong>
+                  <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
+                    {g.occasionLabel} ·{" "}
+                    {sent ? "delivered" : `arrives ${shortDate(g.deliveryDate)}`}
+                  </div>
+                </div>
+                <span className="a-pill" style={{ background: sent ? C.sage : C.gold }}>
+                  {sent ? "Sent" : "Scheduled"}
+                </span>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div style={{ padding: "22px 22px 8px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <Link
+          to="/app/send/$personId"
+          params={{ personId: person.id }}
+          className="a-abtn a-lg a-ink"
+        >
+          Choose a gift{milestone ? ` for the ${milestone}` : ""}
+        </Link>
+        <Link to="/app/vouchers" search={{ for: person.id }} className="a-abtn a-lg a-line">
+          Send a voucher instead
+        </Link>
+      </div>
+    </div>
   );
 }
