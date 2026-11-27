@@ -78,7 +78,14 @@ function AppAccount() {
   };
 
   return (
-    <div style={{ padding: "54px 16px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
+    <div
+      style={{
+        padding: "calc(env(safe-area-inset-top,0px) + 28px) 16px 16px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+      }}
+    >
       <div
         style={{
           display: "flex",
@@ -151,11 +158,6 @@ function AppAccount() {
             overflow: "hidden",
           }}
         >
-          <span
-            className="a-rv"
-            aria-hidden="true"
-            style={{ position: "absolute", right: 18, top: 0, bottom: 0, width: 8 }}
-          />
           <label
             htmlFor="bal"
             style={{ fontSize: 12, color: "rgba(255,255,255,.8)", position: "relative" }}
@@ -322,7 +324,7 @@ function AppAccount() {
         Orders and delivery
       </div>
       <div style={grp}>
-        <Row as="a" href="/account">
+        <Row as={Link} to="/app/orders">
           <span style={{ flex: 1 }}>Orders</span>
           <span style={val}>
             {onTheWay

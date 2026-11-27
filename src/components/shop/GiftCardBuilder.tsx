@@ -45,8 +45,6 @@ function CardPreview({
       {design === "ivory-bow" && <div className="pattern-bow absolute inset-0 opacity-[0.08]" />}
       {design === "white-ribbon" && (
         <>
-          <div className="foil absolute inset-y-0 right-14 w-3" />
-          <div className="foil absolute inset-x-0 top-1/2 h-3 -translate-y-1/2" />
         </>
       )}
       <div className="relative flex h-full flex-col justify-between">
