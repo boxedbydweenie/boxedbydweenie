@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { z } from "zod";
 import { useUser } from "@/hooks/use-shop";
 import { usePeople, useScheduledGifts } from "@/hooks/use-calendar";
 import { getUpcomingOccasions, giftIdeas, todayIso } from "@/services/calendar";
@@ -9,6 +10,7 @@ import type { OccasionInstance, Person } from "@/types/calendar";
 import type { ShopProduct } from "@/types/shop";
 import {
   C,
+  InstallHelp,
   IconBell,
   IconPlus,
   avatarColour,
@@ -26,17 +28,19 @@ import { MonthGrid, useCalendarEvents } from "@/components/app/MonthCalendar";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/")({
+  validateSearch: z.object({ from: z.string().max(40).optional().catch(undefined) }),
   component: AppHome,
 });
 
 /** Visitors see the splash; signed-in customers see Home. */
 function AppHome() {
   const user = useUser();
-  return user ? <Home name={user.name} /> : <Splash />;
+  const { from } = Route.useSearch();
+  return user ? <Home name={user.name} /> : <Splash from={from} />;
 }
 
 /* ---------- 1.1 Splash ---------- */
-function Splash() {
+function Splash({ from }: { from?: string | undefined }) {
   return (
     <section
       className="a-pat-green"
@@ -48,7 +52,7 @@ function Splash() {
         flexDirection: "column",
         alignItems: "center",
         padding:
-          "calc(env(safe-area-inset-top,0px) + 48px) 24px calc(env(safe-area-inset-bottom,0px) + 32px)",
+          "calc(env(safe-area-inset-top,0px) + 40px) 24px calc(env(safe-area-inset-bottom,0px) + 28px)",
       }}
     >
       <div
@@ -59,19 +63,58 @@ function Splash() {
           alt="Boxed by Dweenie"
           style={{ height: 26, width: "auto", alignSelf: "flex-start" }}
         />
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 44 }}>
+        {from && (
+          <div
+            style={{
+              marginTop: 22,
+              alignSelf: "flex-start",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              background: "rgba(255,255,255,.1)",
+              border: "1px solid rgba(255,255,255,.2)",
+              borderRadius: 999,
+              padding: "6px 14px 6px 6px",
+              fontSize: 14,
+            }}
+          >
+            <span
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                background: C.gold,
+                color: C.nero,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 700,
+                fontSize: 13,
+              }}
+            >
+              {from.slice(0, 1).toUpperCase()}
+            </span>
+            <span>
+              <strong>{from}</strong> invited you
+            </span>
+          </div>
+        )}
+        <div style={{ display: "flex", justifyContent: "center", marginTop: from ? 26 : 44 }}>
           <img
             className="a-sway"
             src="/brand/bow-gold.svg"
             alt=""
             style={{
-              width: 170,
+              width: from ? 140 : 170,
               height: "auto",
               filter: "drop-shadow(0 18px 24px rgba(0,0,0,.35))",
             }}
           />
         </div>
-        <h1 className="a-dsp" style={{ fontSize: 50, marginTop: 40, textAlign: "center" }}>
+        <h1
+          className="a-dsp"
+          style={{ fontSize: 50, marginTop: from ? 28 : 40, textAlign: "center" }}
+        >
           Every date that matters, <span style={{ color: C.gold }}>remembered.</span>
         </h1>
         <p
@@ -83,9 +126,16 @@ function Splash() {
             margin: "16px 0 0",
           }}
         >
-          Birthdays, anniversaries and every festive season, with a box on its way before the day.
+          {from
+            ? `${from} uses the Gift Calendar to remember birthdays and anniversaries, and send a beautiful gift in time. It's free.`
+            : "Birthdays, anniversaries and every festive season, with a box on its way before the day."}
         </p>
-        <div style={{ flex: 1, minHeight: 32 }} />
+        {from && (
+          <div style={{ marginTop: 22 }}>
+            <InstallHelp dark />
+          </div>
+        )}
+        <div style={{ flex: 1, minHeight: 28 }} />
         <Link to="/app/signin" search={{ mode: "up" }} className="a-abtn a-lg a-gold">
           Create my calendar
         </Link>
@@ -233,6 +283,7 @@ function Home({ name }: { name: string }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {hero ? <NextUp item={hero} compact /> : <EmptyHome />}
               <Next30 items={next30} rows />
+              <InviteCard />
             </div>
           </div>
           {heroPerson && ideas.length > 0 && (
@@ -360,6 +411,9 @@ function Home({ name }: { name: string }) {
           <Ideas person={heroPerson} hero={hero} ideas={ideas} />
         </div>
       )}
+      <div style={{ padding: "22px 16px 0" }}>
+        <InviteCard />
+      </div>
     </div>
   );
 }
@@ -814,5 +868,35 @@ function EmptyHome() {
         Add your first person
       </Link>
     </div>
+  );
+}
+
+function InviteCard() {
+  return (
+    <Link
+      to="/app/invite"
+      className="a-pat-nero"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        borderRadius: 20,
+        padding: 16,
+        color: "#FFFFFF",
+      }}
+    >
+      <img src="/brand/bow-gold.svg" alt="" style={{ width: 48, height: "auto", flexShrink: 0 }} />
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <strong className="a-dsp" style={{ display: "block", fontSize: 21 }}>
+          Know someone who always forgets?
+        </strong>
+        <span style={{ fontSize: 13, color: "rgba(255,255,255,.8)" }}>
+          Invite them to the Gift Calendar.
+        </span>
+      </span>
+      <span className="a-pill" style={{ background: C.gold }}>
+        Invite
+      </span>
+    </Link>
   );
 }

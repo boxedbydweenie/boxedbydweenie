@@ -44,6 +44,7 @@ import { Route as AppAccountRouteImport } from './routes/app.account'
 import { Route as AppBagRouteImport } from './routes/app.bag'
 import { Route as AppCalendarRouteImport } from './routes/app.calendar'
 import { Route as AppCheckoutRouteImport } from './routes/app.checkout'
+import { Route as AppInviteRouteImport } from './routes/app.invite'
 import { Route as AppOrdersRouteImport } from './routes/app.orders'
 import { Route as AppSigninRouteImport } from './routes/app.signin'
 import { Route as AppVouchersRouteImport } from './routes/app.vouchers'
@@ -251,6 +252,11 @@ const AppCheckoutRoute = AppCheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInviteRoute = AppInviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOrdersRoute = AppOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -441,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/app/bag': typeof AppBagRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/checkout': typeof AppCheckoutRoute
+  '/app/invite': typeof AppInviteRoute
   '/app/orders': typeof AppOrdersRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
@@ -507,6 +514,7 @@ export interface FileRoutesByTo {
   '/app/bag': typeof AppBagRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/checkout': typeof AppCheckoutRoute
+  '/app/invite': typeof AppInviteRoute
   '/app/orders': typeof AppOrdersRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
@@ -576,6 +584,7 @@ export interface FileRoutesById {
   '/app/bag': typeof AppBagRoute
   '/app/calendar': typeof AppCalendarRoute
   '/app/checkout': typeof AppCheckoutRoute
+  '/app/invite': typeof AppInviteRoute
   '/app/orders': typeof AppOrdersRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
@@ -646,6 +655,7 @@ export interface FileRouteTypes {
     | '/app/bag'
     | '/app/calendar'
     | '/app/checkout'
+    | '/app/invite'
     | '/app/orders'
     | '/app/signin'
     | '/app/vouchers'
@@ -712,6 +722,7 @@ export interface FileRouteTypes {
     | '/app/bag'
     | '/app/calendar'
     | '/app/checkout'
+    | '/app/invite'
     | '/app/orders'
     | '/app/signin'
     | '/app/vouchers'
@@ -780,6 +791,7 @@ export interface FileRouteTypes {
     | '/app/bag'
     | '/app/calendar'
     | '/app/checkout'
+    | '/app/invite'
     | '/app/orders'
     | '/app/signin'
     | '/app/vouchers'
@@ -1097,6 +1109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCheckoutRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/invite': {
+      id: '/app/invite'
+      path: '/invite'
+      fullPath: '/app/invite'
+      preLoaderRoute: typeof AppInviteRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/orders': {
       id: '/app/orders'
       path: '/orders'
@@ -1366,6 +1385,7 @@ interface AppRouteChildren {
   AppBagRoute: typeof AppBagRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppCheckoutRoute: typeof AppCheckoutRoute
+  AppInviteRoute: typeof AppInviteRoute
   AppOrdersRoute: typeof AppOrdersRoute
   AppSigninRoute: typeof AppSigninRoute
   AppVouchersRoute: typeof AppVouchersRoute
@@ -1385,6 +1405,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBagRoute: AppBagRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppCheckoutRoute: AppCheckoutRoute,
+  AppInviteRoute: AppInviteRoute,
   AppOrdersRoute: AppOrdersRoute,
   AppSigninRoute: AppSigninRoute,
   AppVouchersRoute: AppVouchersRoute,
