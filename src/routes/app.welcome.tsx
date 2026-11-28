@@ -67,9 +67,6 @@ function Welcome() {
       {step === "person" && (
         <>
           <StepHeader step={3} onBack={() => go("moments")} />
-          <h1 className="a-dsp" style={{ fontSize: 38, marginTop: 24 }}>
-            Who should we <span style={{ color: C.goldText }}>never let you forget?</span>
-          </h1>
           <PersonForm onSaved={() => go("import")} />
           <button type="button" onClick={() => go("import")} style={skip}>
             Skip for now

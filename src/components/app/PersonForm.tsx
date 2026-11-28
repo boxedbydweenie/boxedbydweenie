@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { addPerson, nextOccurrence, todayIso, updatePerson } from "@/services/calendar";
 import type { Person, PersonalDateType, Relationship } from "@/types/calendar";
 import { C, chip, defaultLeadStore, isMilestone, longDate, occasionTitle } from "./kit";
+import type { CSSProperties, ReactNode } from "react";
 
 /** 1.5 Add a person and date. Also used to edit someone already saved. */
 
@@ -20,14 +21,30 @@ const KINDS: [string, PersonalDateType, string][] = [
   ["Birthday", "birthday", "Birthday"],
   ["Wedding anniversary", "anniversary", "Wedding anniversary"],
   ["Work anniversary", "custom", "Work anniversary"],
-  ["Other", "custom", ""],
+  ["Something else", "custom", ""],
 ];
 const LEADS: [number, string, string][] = [
-  [3, "3 days", "Best for vouchers and same-week Lagos delivery."],
-  [7, "1 week", "Enough time for most boxes in Lagos and Abuja."],
-  [14, "2 weeks", "Recommended. Time to choose, personalise and deliver."],
-  [30, "1 month", "Ideal for branded or custom boxes."],
+  [30, "1 month before", "Best for branded or custom boxes"],
+  [14, "2 weeks before", "Recommended: time to choose and deliver"],
+  [7, "1 week before", "Enough for most boxes in Lagos and Abuja"],
+  [3, "3 days before", "Vouchers and same-week Lagos delivery"],
+  [0, "On the day", "A nudge to call or send a message"],
 ];
+const LOVES = [
+  "Flowers",
+  "Chocolate",
+  "Wine",
+  "Tea & coffee",
+  "Skincare",
+  "Perfume",
+  "Books",
+  "Fashion",
+  "Tech",
+  "Home",
+  "Food hampers",
+  "Spa & wellness",
+];
+const STEPS = 6;
 const MONTHS = Array.from({ length: 12 }, (_, i) =>
   new Date(2026, i, 1).toLocaleDateString("en-GB", { month: "long" }),
 );
@@ -86,7 +103,15 @@ export function PersonForm({
       year: d.year ?? null,
     };
   });
-  const [lead, setLead] = useState(editing?.reminder.daysBefore[0] ?? defaultLead);
+  const [leads, setLeads] = useState<number[]>(
+    editing?.reminder.daysBefore.length ? editing.reminder.daysBefore : [defaultLead],
+  );
+  const [step, setStep] = useState(0);
+  const [yearText, setYearText] = useState(
+    editing?.dates[0]?.year ? String(editing.dates[0].year) : "",
+  );
+  const [monthPicked, setMonthPicked] = useState(Boolean(editing));
+  const [dayPicked, setDayPicked] = useState(Boolean(editing));
   const [likes, setLikes] = useState<string[]>(() =>
     (editing?.notes.likes ?? "")
       .split(",")
@@ -94,7 +119,6 @@ export function PersonForm({
       .filter(Boolean),
   );
   const [likeInput, setLikeInput] = useState("");
-  const [addingLike, setAddingLike] = useState(false);
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -104,7 +128,6 @@ export function PersonForm({
   const on = nextOccurrence({ day: draft.day, month: draft.month }, today);
   const title = occasionTitle(label || "Date", kind[1], draft.year ?? undefined, on);
   const milestone = draft.year && isMilestone(title) ? title.split(" ")[0] : null;
-  const leadNote = LEADS.find(([d]) => d === lead)?.[2] ?? "";
 
   const currentDate = (): Omit<Person["dates"][number], "personId"> | null =>
     label
@@ -126,6 +149,7 @@ export function PersonForm({
     }
     setSaved((s) => [...s, { ...d, personId: editing?.id ?? "" }]);
     setDraft(blank());
+    setYearText("");
     toast.success(`${label} saved. Add the next date.`);
   };
 
@@ -158,7 +182,6 @@ export function PersonForm({
     const v = likeInput.trim();
     if (v && !likes.includes(v)) setLikes((l) => [...l, v]);
     setLikeInput("");
-    setAddingLike(false);
   };
 
   const save = async () => {
@@ -186,7 +209,7 @@ export function PersonForm({
       budget: editing?.notes.budget ?? 0,
     };
     const reminder = {
-      daysBefore: [lead],
+      daysBefore: [...leads].sort((a, b) => b - a),
       channels: editing?.reminder.channels ?? (["email"] as const).slice(),
     };
     try {
@@ -219,495 +242,526 @@ export function PersonForm({
     }
   };
 
-  return (
+  const toggleLove = (v: string) =>
+    setLikes((l) => (l.includes(v) ? l.filter((x) => x !== v) : [...l, v]));
+  const toggleLead = (d: number) =>
+    setLeads((l) => (l.includes(d) ? (l.length > 1 ? l.filter((x) => x !== d) : l) : [...l, d]));
+
+  /** Can the person move on from this step? */
+  const ready = [
+    Boolean(name.trim()),
+    Boolean(rel),
+    Boolean(label),
+    monthPicked && dayPicked,
+    leads.length > 0,
+    true,
+  ][step];
+  const next = () => {
+    if (!ready) {
+      toast.error(
+        [
+          "Add their name.",
+          `Choose who ${first} is to you.`,
+          "Name the occasion.",
+          "Pick the month and the day.",
+          "Pick at least one reminder.",
+          "",
+        ][step] ?? "",
+      );
+      return;
+    }
+    if (step < STEPS - 1) setStep(step + 1);
+    else void save();
+  };
+  const another = () => {
+    addAnother();
+    setMonthPicked(false);
+    setDayPicked(false);
+    setStep(2);
+  };
+
+  const titles: ReactNode[] = [
     <>
-      <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 20 }}>
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          aria-label="Add a photo (optional)"
-          style={{
-            width: 76,
-            height: 76,
-            borderRadius: "50%",
-            background: C.sage,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-            flexShrink: 0,
-            border: 0,
-            cursor: "pointer",
-            padding: 0,
-            color: C.nero,
-          }}
-        >
-          {photo ? (
-            <img
-              src={photo}
-              alt=""
-              style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
-            />
-          ) : (
-            <span
-              style={{ fontFamily: "'EB Garamond',Georgia,serif", fontWeight: 500, fontSize: 34 }}
-            >
-              {name.trim().slice(0, 1).toUpperCase() || "+"}
-            </span>
-          )}
+      Who should we <span style={{ color: C.goldText }}>never let you forget?</span>
+    </>,
+    <>
+      Who is <span style={{ color: C.goldText }}>{first}</span> to you?
+    </>,
+    <>
+      What are we <span style={{ color: C.goldText }}>remembering?</span>
+    </>,
+    <>
+      When is {first}&rsquo;s{" "}
+      <span style={{ color: C.goldText }}>{(label || "day").toLowerCase()}?</span>
+    </>,
+    <>
+      When should we <span style={{ color: C.goldText }}>remind you?</span>
+    </>,
+    <>
+      What does {first} <span style={{ color: C.goldText }}>love?</span>
+    </>,
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, marginTop: 18 }}>
+      {/* progress */}
+      <div style={{ display: "flex", gap: 6 }} aria-label={`Step ${step + 1} of ${STEPS}`}>
+        {Array.from({ length: STEPS }, (_, i) => (
           <span
+            key={i}
             style={{
-              position: "absolute",
-              right: -2,
-              bottom: -2,
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background: C.nero,
-              color: C.gold,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: `3px solid ${C.ivory}`,
+              flex: 1,
+              height: 4,
+              borderRadius: 2,
+              background: i <= step ? C.plum : C.line,
+              transition: "background .25s",
             }}
-          >
-            <svg
-              className="a-ico"
-              style={{ width: 15, height: 15 }}
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
-              <circle cx="12" cy="13" r="3.5" />
-            </svg>
-          </span>
-        </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={(e) => e.target.files?.[0] && pickPhoto(e.target.files[0])}
-        />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <label
-            htmlFor="ap-name"
-            style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6 }}
-          >
-            Their name
-          </label>
-          <input
-            id="ap-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Mama"
-            autoComplete="off"
-            style={input}
           />
-        </div>
+        ))}
       </div>
+      <div style={{ fontSize: 12.5, color: C.muted, marginTop: 10 }}>
+        Step {step + 1} of {STEPS}
+        {step === STEPS - 1 ? " · optional" : ""}
+      </div>
+      <h2 className="a-dsp" style={{ fontSize: 34, marginTop: 8, lineHeight: 1.08 }}>
+        {titles[step]}
+      </h2>
 
-      <Section title="They are your">
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {RELS.map(([l]) => (
+      <div key={step} className="a-screen" style={{ marginTop: 22, flex: 1 }}>
+        {step === 0 && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
             <button
-              key={l}
               type="button"
-              aria-pressed={rel === l}
-              onClick={() => setRel(l)}
-              style={chip(rel === l)}
+              onClick={() => fileRef.current?.click()}
+              aria-label="Add a photo (optional)"
+              style={{
+                width: 96,
+                height: 96,
+                borderRadius: "50%",
+                background: photo ? "transparent" : "#E9E1EA",
+                color: C.plum,
+                border: 0,
+                padding: 0,
+                cursor: "pointer",
+                position: "relative",
+              }}
             >
-              {l}
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="The occasion">
-        <div
-          role="group"
-          aria-label="Occasion"
-          style={{ display: "flex", gap: 4, background: C.line, borderRadius: 16, padding: 4 }}
-        >
-          {KINDS.map(([l], i) => {
-            const onK = draft.kind === i;
-            return (
-              <button
-                key={l}
-                type="button"
-                aria-pressed={onK}
-                onClick={() => setDraft((d) => ({ ...d, kind: i }))}
+              {photo ? (
+                <img
+                  src={photo}
+                  alt=""
+                  style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                />
+              ) : (
+                <span style={{ fontFamily: "'EB Garamond',Georgia,serif", fontSize: 40 }}>
+                  {name.trim().slice(0, 1).toUpperCase() || "+"}
+                </span>
+              )}
+              <span
                 style={{
-                  flex: 1,
-                  minHeight: 46,
-                  border: 0,
-                  borderRadius: 12,
-                  background: onK ? "#FFFFFF" : "transparent",
-                  boxShadow: onK ? "0 2px 8px rgba(41,40,40,.12)" : "none",
-                  color: C.nero,
-                  font: `${onK ? 700 : 500} 13px 'Parkinsans',system-ui,sans-serif`,
-                  cursor: "pointer",
-                  padding: "6px 4px",
-                  lineHeight: 1.2,
+                  position: "absolute",
+                  left: "50%",
+                  bottom: -10,
+                  transform: "translateX(-50%)",
+                  background: C.plum,
+                  color: "#FFFFFF",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  borderRadius: 999,
+                  padding: "3px 10px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {photo ? "Change" : "Add photo"}
+              </span>
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => e.target.files?.[0] && pickPhoto(e.target.files[0])}
+            />
+            <input
+              id="ap-name"
+              aria-label="Their name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && next()}
+              placeholder="Their name, e.g. Mama"
+              autoComplete="off"
+              autoFocus={!editing}
+              style={{ ...input, height: 58, fontSize: 18, textAlign: "center", marginTop: 6 }}
+            />
+          </div>
+        )}
+
+        {step === 1 && (
+          <div style={grid2}>
+            {RELS.map(([l]) => (
+              <BigOption
+                key={l}
+                on={rel === l}
+                onClick={() => {
+                  setRel(l);
+                  setTimeout(() => setStep(2), 180);
                 }}
               >
                 {l}
-              </button>
-            );
-          })}
-        </div>
-        {draft.kind === 3 && (
-          <input
-            aria-label="Name the occasion"
-            value={draft.label}
-            onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
-            placeholder="e.g. Graduation, Naming ceremony"
-            style={{ ...input, marginTop: 4 }}
-          />
-        )}
-      </Section>
-
-      <div
-        style={{
-          marginTop: 18,
-          background: "#FFFFFF",
-          borderRadius: 20,
-          border: `1.5px solid ${C.line}`,
-          padding: "16px 14px",
-          position: "relative",
-        }}
-      >
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            left: 12,
-            right: 12,
-            top: 62,
-            height: 46,
-            borderRadius: 12,
-            background: C.ivory,
-          }}
-        />
-        <div style={{ display: "flex", position: "relative" }}>
-          <Wheel
-            label="Day"
-            values={Array.from(
-              { length: daysIn(draft.month, draft.year ?? undefined) },
-              (_, i) => i + 1,
-            )}
-            value={draft.day}
-            onChange={(day) => setDraft((d) => ({ ...d, day }))}
-          />
-          <Wheel
-            wide
-            label="Month"
-            values={MONTHS.map((_, i) => i + 1)}
-            value={draft.month}
-            format={(m) => MONTHS[m - 1]!}
-            onChange={(month) =>
-              setDraft((d) => ({
-                ...d,
-                month,
-                day: Math.min(d.day, daysIn(month, d.year ?? undefined)),
-              }))
-            }
-          />
-          <Wheel
-            label="Year"
-            values={[0, ...Array.from({ length: 101 }, (_, i) => Number(today.slice(0, 4)) - i)]}
-            value={draft.year ?? 0}
-            format={(y) => (y ? String(y) : "—")}
-            onChange={(y) => setDraft((d) => ({ ...d, year: y || null }))}
-          />
-        </div>
-        {milestone && (
-          <div
-            style={{
-              marginTop: 14,
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              border: `1.5px solid ${C.gold}`,
-              borderRadius: 14,
-              padding: "12px 14px",
-              position: "relative",
-            }}
-          >
-            <span
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                background: C.gold,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontFamily: "'EB Garamond',Georgia,serif",
-                fontSize: 18,
-                fontWeight: 500,
-                flexShrink: 0,
-              }}
-            >
-              {parseInt(milestone, 10)}
-            </span>
-            <span style={{ fontSize: 13, lineHeight: 1.45 }}>
-              {kind[1] === "birthday"
-                ? `${first} turns ${parseInt(milestone, 10)} on ${longDate(on)}. A milestone worth marking.`
-                : `${parseInt(milestone, 10)} years on ${longDate(on)}. A milestone worth marking.`}
-            </span>
+              </BigOption>
+            ))}
           </div>
         )}
-        <div
-          style={{
-            marginTop: 10,
-            fontSize: 12,
-            color: C.muted,
-            textAlign: "center",
-            position: "relative",
-          }}
-        >
-          The year is optional. It helps us spot milestones.
-        </div>
-      </div>
 
-      {saved.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-          {saved.map((d) => (
-            <span key={d.id} className="a-pill" style={{ background: C.sage, gap: 6 }}>
-              {d.label} · {d.day} {MONTHS[d.month - 1]!.slice(0, 3)}
-              <button
-                type="button"
-                aria-label={`Remove ${d.label}`}
-                onClick={() => setSaved((s) => s.filter((x) => x.id !== d.id))}
-                style={{
-                  border: 0,
-                  background: "none",
-                  cursor: "pointer",
-                  fontSize: 14,
-                  padding: 0,
-                  color: C.nero,
+        {step === 2 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {KINDS.map(([l], i) => (
+              <BigOption
+                key={l}
+                on={draft.kind === i}
+                onClick={() => {
+                  setDraft((d) => ({ ...d, kind: i }));
+                  if (i !== 3) setTimeout(() => setStep(3), 180);
                 }}
               >
-                ×
+                {l}
+              </BigOption>
+            ))}
+            {draft.kind === 3 && (
+              <input
+                aria-label="Name the occasion"
+                value={draft.label}
+                onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
+                onKeyDown={(e) => e.key === "Enter" && next()}
+                placeholder="e.g. Graduation, Naming ceremony"
+                autoFocus
+                style={{ ...input, marginTop: 4 }}
+              />
+            )}
+          </div>
+        )}
+
+        {step === 3 && (
+          <div>
+            <div style={label12}>Month</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
+              {MONTHS.map((m, i) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => {
+                    const mm = i + 1;
+                    setDraft((d) => ({
+                      ...d,
+                      month: mm,
+                      day: Math.min(d.day, daysIn(mm, d.year ?? undefined)),
+                    }));
+                    setMonthPicked(true);
+                  }}
+                  style={tile(monthPicked && draft.month === i + 1)}
+                >
+                  {m.slice(0, 3)}
+                </button>
+              ))}
+            </div>
+            {monthPicked && (
+              <>
+                <div style={{ ...label12, marginTop: 18 }}>Day</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 }}>
+                  {Array.from({ length: daysIn(draft.month, draft.year ?? undefined) }, (_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setDraft((d) => ({ ...d, day: i + 1 }));
+                        setDayPicked(true);
+                      }}
+                      style={{
+                        ...tile(dayPicked && draft.day === i + 1),
+                        height: 42,
+                        fontSize: 15,
+                      }}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ ...label12, marginTop: 18 }}>Year born or married (optional)</div>
+                <input
+                  inputMode="numeric"
+                  aria-label="Year (optional)"
+                  value={yearText}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                    const y = Number(v);
+                    setDraft((d) => ({
+                      ...d,
+                      year: v.length === 4 && y > 1900 && y <= Number(today.slice(0, 4)) ? y : null,
+                    }));
+                    setYearText(v);
+                  }}
+                  placeholder="e.g. 1966"
+                  style={{ ...input, width: 140 }}
+                />
+                <p style={{ fontSize: 13, color: C.muted, margin: "8px 0 0" }}>
+                  Helps us spot milestones like a 60th.
+                </p>
+              </>
+            )}
+            {monthPicked && dayPicked && (
+              <div
+                style={{
+                  marginTop: 18,
+                  background: "#FFFFFF",
+                  border: `1.5px solid ${C.line}`,
+                  borderRadius: 16,
+                  padding: "12px 14px",
+                  fontSize: 14,
+                }}
+              >
+                Next one: <strong>{longDate(on)}</strong>
+                {milestone ? (
+                  <span style={{ color: C.goldText, fontWeight: 700 }}> · {title}</span>
+                ) : null}
+              </div>
+            )}
+          </div>
+        )}
+
+        {step === 4 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <p style={{ fontSize: 14, color: C.muted, margin: "0 0 4px" }}>
+              Pick as many as you like. We&rsquo;ll email you each time.
+            </p>
+            {LEADS.map(([d, l, note]) => {
+              const onL = leads.includes(d);
+              return (
+                <button
+                  key={d}
+                  type="button"
+                  role="checkbox"
+                  aria-checked={onL}
+                  onClick={() => toggleLead(d)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    textAlign: "left",
+                    padding: "14px 16px",
+                    borderRadius: 16,
+                    background: "#FFFFFF",
+                    border: `1.5px solid ${onL ? C.plum : C.line}`,
+                    cursor: "pointer",
+                  }}
+                >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 7,
+                      flexShrink: 0,
+                      border: `1.5px solid ${onL ? C.plum : C.muted}`,
+                      background: onL ? C.plum : "transparent",
+                      color: "#FFFFFF",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 15,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {onL ? "✓" : ""}
+                  </span>
+                  <span>
+                    <strong style={{ display: "block", fontSize: 15, color: C.nero }}>{l}</strong>
+                    <span style={{ fontSize: 12.5, color: C.muted }}>{note}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {step === 5 && (
+          <div>
+            <p style={{ fontSize: 14, color: C.muted, margin: "0 0 14px" }}>
+              Tap a few. We use them to suggest boxes {first}&rsquo;ll love.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {[...LOVES, ...likes.filter((l) => !LOVES.includes(l))].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  aria-pressed={likes.includes(v)}
+                  onClick={() => toggleLove(v)}
+                  style={chip(likes.includes(v))}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+              <input
+                aria-label="Add something else they love"
+                value={likeInput}
+                onChange={(e) => setLikeInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addLike()}
+                placeholder="Something else…"
+                style={{ ...input, flex: 1 }}
+              />
+              <button type="button" onClick={addLike} style={{ ...chip(false), minHeight: 52 }}>
+                Add
               </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      <Section title="Remind me">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {LEADS.map(([d, l]) => (
+            </div>
             <button
-              key={d}
               type="button"
-              aria-pressed={lead === d}
-              onClick={() => setLead(d)}
-              style={chip(lead === d)}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
-        <div style={{ fontSize: 12, color: C.muted }}>{leadNote}</div>
-      </Section>
-
-      <Section title={`What ${name.trim() ? first : "they"} love${name.trim() ? "s" : ""}`}>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-          {likes.map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => setLikes((x) => x.filter((y) => y !== l))}
-              aria-label={`Remove ${l}`}
-              className="a-pill"
+              onClick={another}
               style={{
-                background: C.coral,
-                minHeight: 32,
-                fontSize: 13,
+                marginTop: 22,
+                background: "none",
                 border: 0,
+                padding: 0,
+                fontWeight: 600,
+                fontSize: 14,
+                color: C.plum,
+                textDecoration: "underline",
                 cursor: "pointer",
               }}
             >
-              {l} ×
+              + Add another date for {first}
             </button>
-          ))}
-          {addingLike ? (
-            <input
-              autoFocus
-              aria-label="Something they love"
-              value={likeInput}
-              onChange={(e) => setLikeInput(e.target.value)}
-              onBlur={addLike}
-              onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === "Enter" || e.key === ",") {
-                  e.preventDefault();
-                  addLike();
-                  setAddingLike(true);
-                }
-              }}
-              placeholder="Tea, lace, gold…"
-              style={{
-                height: 32,
-                borderRadius: 999,
-                border: `1.5px solid ${C.nero}`,
-                padding: "0 12px",
-                font: "500 13px 'Parkinsans',sans-serif",
-                width: 150,
-                outline: "none",
-              }}
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => setAddingLike(true)}
-              className="a-pill"
-              style={{
-                border: `1.5px dashed ${C.muted}`,
-                background: "transparent",
-                minHeight: 32,
-                fontSize: 13,
-                cursor: "pointer",
-              }}
-            >
-              + Add
-            </button>
-          )}
-        </div>
-        <div style={{ fontSize: 12, color: C.muted }}>
-          We use this to suggest boxes {name.trim() ? first : "they"}&rsquo;ll love.
-        </div>
-      </Section>
+            {saved.length > 0 && (
+              <p style={{ fontSize: 13, color: C.muted, margin: "8px 0 0" }}>
+                {saved.length + 1} dates saved for {first}.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
 
-      <div style={{ flex: 1, minHeight: 20 }} />
-      <button
-        type="button"
-        onClick={addAnother}
+      {/* sticky actions */}
+      <div
         style={{
-          textAlign: "center",
-          fontSize: 14,
-          fontWeight: 600,
-          margin: "22px 0 14px",
-          background: "none",
-          border: 0,
-          cursor: "pointer",
-          color: C.nero,
+          position: "sticky",
+          bottom: 0,
+          marginTop: 24,
+          padding: "14px 0 calc(env(safe-area-inset-bottom,0px) + 10px)",
+          background: `linear-gradient(rgba(244,239,229,0), ${C.ivory} 26%)`,
+          display: "flex",
+          gap: 10,
+          zIndex: 5,
         }}
       >
-        + Add another date for {name.trim() ? first : "them"}
-      </button>
-      <button
-        type="button"
-        className="a-abtn a-lg a-ink"
-        disabled={busy}
-        onClick={save}
-        style={{ opacity: busy ? 0.6 : 1 }}
-      >
-        {editing ? "Save changes" : `Save ${name.trim() ? first : "person"}`}
-      </button>
-    </>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 10 }}>
-      <div className="a-eye">{title}</div>
-      {children}
+        {step > 0 && (
+          <button
+            type="button"
+            onClick={() => setStep(step - 1)}
+            className="a-abtn a-lg"
+            style={{
+              flex: "0 0 auto",
+              padding: "0 20px",
+              background: "#FFFFFF",
+              border: `1.5px solid ${C.line}`,
+            }}
+          >
+            Back
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={next}
+          disabled={busy}
+          className="a-abtn a-lg"
+          style={{
+            flex: 1,
+            background: ready ? C.plum : "#CFC6D1",
+            color: "#FFFFFF",
+            border: 0,
+          }}
+        >
+          {busy
+            ? "Saving…"
+            : step === STEPS - 1
+              ? `Save ${first}`
+              : step === STEPS - 2
+                ? "Next"
+                : "Continue"}
+        </button>
+      </div>
+      {editing && step < STEPS - 1 && (
+        <button
+          type="button"
+          onClick={() => void save()}
+          style={{
+            background: "none",
+            border: 0,
+            fontSize: 14,
+            fontWeight: 600,
+            color: C.plum,
+            textDecoration: "underline",
+            marginTop: 4,
+            cursor: "pointer",
+          }}
+        >
+          Save changes now
+        </button>
+      )}
     </div>
   );
 }
 
-/** A three-row date wheel: tap the row above or below (or use the arrow keys) to change the value. */
-function Wheel({
-  label,
-  values,
-  value,
-  onChange,
-  format = String,
-  wide,
+function BigOption({
+  on,
+  onClick,
+  children,
 }: {
-  label: string;
-  values: number[];
-  value: number;
-  onChange: (v: number) => void;
-  format?: (v: number) => string;
-  wide?: boolean;
+  on: boolean;
+  onClick: () => void;
+  children: ReactNode;
 }) {
-  const i = Math.max(0, values.indexOf(value));
-  const prev = values[i - 1],
-    next = values[i + 1];
-  const step = (d: number) => {
-    const v = values[i + d];
-    if (v !== undefined) onChange(v);
-  };
   return (
-    <div
-      role="spinbutton"
-      tabIndex={0}
-      aria-label={label}
-      aria-valuenow={value}
-      aria-valuetext={format(value)}
-      onKeyDown={(e) => {
-        if (e.key === "ArrowUp") {
-          e.preventDefault();
-          step(-1);
-        }
-        if (e.key === "ArrowDown") {
-          e.preventDefault();
-          step(1);
-        }
-      }}
-      onWheel={(e) => step(e.deltaY > 0 ? 1 : -1)}
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={onClick}
       style={{
-        flex: wide ? 1.7 : 1,
-        minWidth: 0,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 8,
-        fontVariantNumeric: "tabular-nums",
-        outlineOffset: 2,
-        borderRadius: 12,
+        minHeight: 56,
+        padding: "0 18px",
+        borderRadius: 16,
+        textAlign: "left",
+        background: on ? C.plum : "#FFFFFF",
+        color: on ? "#FFFFFF" : C.nero,
+        border: `1.5px solid ${on ? C.plum : C.line}`,
+        font: "600 16px 'Parkinsans','Segoe UI',system-ui,sans-serif",
+        cursor: "pointer",
       }}
     >
-      <span style={{ fontSize: 11, letterSpacing: ".2em", color: C.goldText, fontWeight: 600 }}>
-        {label.toUpperCase()}
-      </span>
-      <button type="button" tabIndex={-1} onClick={() => step(-1)} style={wheelBtn}>
-        {prev !== undefined ? format(prev) : " "}
-      </button>
-      <strong
-        style={{
-          fontFamily: "'EB Garamond',Georgia,serif",
-          fontSize: 26,
-          fontWeight: 500,
-          lineHeight: 1,
-          minHeight: 28,
-          whiteSpace: "nowrap",
-        }}
-      >
-        {format(value)}
-      </strong>
-      <button type="button" tabIndex={-1} onClick={() => step(1)} style={wheelBtn}>
-        {next !== undefined ? format(next) : " "}
-      </button>
-    </div>
+      {children}
+    </button>
   );
 }
 
-const wheelBtn = {
-  fontSize: 15,
-  color: C.muted,
-  background: "none",
-  border: 0,
+const grid2: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 };
+const label12: CSSProperties = {
+  fontSize: 12,
+  letterSpacing: ".16em",
+  fontWeight: 700,
+  color: C.goldText,
+  textTransform: "uppercase",
+  marginBottom: 8,
+};
+const tile = (on: boolean): CSSProperties => ({
+  height: 48,
+  borderRadius: 12,
+  border: `1.5px solid ${on ? C.plum : C.line}`,
+  background: on ? C.plum : "#FFFFFF",
+  color: on ? "#FFFFFF" : C.nero,
+  font: "600 15px 'Parkinsans','Segoe UI',system-ui,sans-serif",
   cursor: "pointer",
-  minHeight: 22,
   padding: 0,
-  font: "400 15px 'Parkinsans',sans-serif",
-  whiteSpace: "nowrap",
-} as const;
+});
+
 const input = {
   width: "100%",
   boxSizing: "border-box",

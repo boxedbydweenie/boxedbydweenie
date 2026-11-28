@@ -18,9 +18,11 @@ function NewPerson() {
     <div
       className="a-top-pattern"
       style={{
-        padding: "calc(env(safe-area-inset-top,0px) + 28px) 22px 28px",
+        padding: "calc(env(safe-area-inset-top,0px) + 28px) 22px 8px",
         display: "flex",
         flexDirection: "column",
+        minHeight: "100dvh",
+        boxSizing: "border-box",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -36,17 +38,11 @@ function NewPerson() {
         />
         <span style={{ width: 44 }} />
       </div>
-      <h1 className="a-dsp" style={{ fontSize: 38, marginTop: 24 }}>
-        {editing ? (
-          <>
-            Edit <span style={{ color: C.goldText }}>{editing.name.split(" ")[0]}.</span>
-          </>
-        ) : (
-          <>
-            Who should we <span style={{ color: C.goldText }}>never let you forget?</span>
-          </>
-        )}
-      </h1>
+      {editing && (
+        <h1 className="a-dsp" style={{ fontSize: 30, marginTop: 20 }}>
+          Edit <span style={{ color: C.goldText }}>{editing.name.split(" ")[0]}</span>
+        </h1>
+      )}
       <PersonForm
         key={editing?.id ?? "new"}
         editing={editing}

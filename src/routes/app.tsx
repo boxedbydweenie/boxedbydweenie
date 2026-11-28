@@ -66,7 +66,7 @@ const OPEN = /^\/app(\/signin|\/shop(\/.*)?|\/bag|\/checkout|\/order\/.*)?$/;
 const NARROW =
   /^\/app\/(people|send|vouchers|account|welcome|signin|bag|checkout|orders|order|invite)/;
 /** Focused, full-screen steps: no tab bar. */
-const FOCUSED = /^\/app\/(signin|welcome|send|checkout)/;
+const FOCUSED = /^\/app\/(signin|welcome|send|checkout|people\/new)/;
 
 function AppLayout() {
   const path = useLocation({ select: (l) => l.pathname.replace(/\/$/, "") || "/" });
