@@ -53,7 +53,9 @@ function AppSignIn() {
     try {
       if (mode === "up") {
         await signUp({
-          name: v("name"),
+          name: `${v("name")} ${v("lastName")}`.trim(),
+          firstName: v("name"),
+          lastName: v("lastName"),
           email: v("email"),
           phone: "",
           password: pw,
@@ -137,7 +139,16 @@ function AppSignIn() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 22 }}>
         {mode === "up" && (
-          <Field id="su-name" name="name" label="First name" autoComplete="given-name" required />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <Field id="su-name" name="name" label="First name" autoComplete="given-name" required />
+            <Field
+              id="su-last"
+              name="lastName"
+              label="Last name"
+              autoComplete="family-name"
+              required
+            />
+          </div>
         )}
         <Field
           id="su-email"

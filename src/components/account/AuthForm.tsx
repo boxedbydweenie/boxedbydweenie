@@ -13,14 +13,14 @@ export function AuthForm({ cta = "Continue", intro }: { cta?: string; intro?: st
     setErr(""); setBusy(true);
     try {
       if (mode === "in") await signIn(v("email"), String(f.get("password") ?? ""));
-      else await signUp({ name: v("name"), email: v("email"), phone: v("phone"), password: String(f.get("password") ?? ""), marketing: f.get("marketing") === "on" });
+      else await signUp({ name: `${v("name")} ${v("lastName")}`.trim(), firstName: v("name"), lastName: v("lastName"), email: v("email"), phone: v("phone"), password: String(f.get("password") ?? ""), marketing: f.get("marketing") === "on" });
     } catch (x) { setErr(x instanceof Error ? x.message : "Something went wrong. Please try again."); setBusy(false); }
   };
   return <div className="mx-auto max-w-md rounded-2xl border border-nero/10 bg-white p-8 shadow-[0_30px_60px_-40px_rgba(41,40,40,.5)]">
     <div className="grid grid-cols-2 rounded-full bg-[#F4EFE5] p-1 text-sm font-semibold">{([["in", "Sign in"], ["up", "Create account"]] as const).map(([m, l]) => <button key={m} type="button" onClick={() => { setMode(m); setErr(""); }} className={cn("min-h-10 rounded-full transition", mode === m ? "bg-nero text-white" : "text-nero/60")}>{l}</button>)}</div>
     <p className="mt-5 text-sm text-muted-foreground">{intro ?? (mode === "in" ? "Sign in to see your orders, saved recipients, wishlist and dates on any device." : "Create a free account to keep your orders, recipients and important dates safe.")}</p>
     <form key={mode} className="mt-5 grid gap-4" onSubmit={submit}>
-      {mode === "up" && <FormField label="Your name" name="name" autoComplete="name" required />}
+      {mode === "up" && <div className="grid grid-cols-2 gap-3"><FormField label="First name" name="name" autoComplete="given-name" required /><FormField label="Last name" name="lastName" autoComplete="family-name" required /></div>}
       <FormField label="Email" name="email" type="email" autoComplete="email" required />
       {mode === "up" && <FormField label="Phone (optional)" name="phone" type="tel" autoComplete="tel" />}
       <FormField label={mode === "up" ? "Password (8+ characters)" : "Password"} name="password" type="password" autoComplete={mode === "up" ? "new-password" : "current-password"} minLength={8} required />
