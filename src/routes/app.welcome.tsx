@@ -89,10 +89,13 @@ function Welcome() {
 }
 
 /* ---------- 1.3 Confirm email ---------- */
+/** Must match "Email OTP Length" in Supabase (Authentication → Sign In / Providers → Email). */
+const CODE_LEN = 8;
+
 function Verify({ onBack, onDone }: { onBack: () => void; onDone: () => void }) {
   const user = useUser();
   const email = user?.email ?? "";
-  const [digits, setDigits] = useState<string[]>(Array(6).fill(""));
+  const [digits, setDigits] = useState<string[]>(Array(CODE_LEN).fill(""));
   const [wait, setWait] = useState(0);
   const [sendFailed, setSendFailed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -133,7 +136,7 @@ function Verify({ onBack, onDone }: { onBack: () => void; onDone: () => void }) 
 
   const code = digits.join("");
   const verify = async () => {
-    if (code.length !== 6) return setErr("Enter all six digits.");
+    if (code.length !== CODE_LEN) return setErr(`Enter all ${CODE_LEN} digits.`);
     setBusy(true);
     setErr("");
     const { error } = await customerClient().auth.verifyOtp({ email, token: code, type: "email" });
@@ -152,13 +155,13 @@ function Verify({ onBack, onDone }: { onBack: () => void; onDone: () => void }) 
     const clean = v.replace(/\D/g, "");
     if (clean.length > 1) {
       // Pasted the whole code.
-      const next = clean.slice(0, 6).split("");
-      setDigits([...next, ...Array(6 - next.length).fill("")]);
-      refs.current[Math.min(5, next.length)]?.focus();
+      const next = clean.slice(0, CODE_LEN).split("");
+      setDigits([...next, ...Array(CODE_LEN - next.length).fill("")]);
+      refs.current[Math.min(CODE_LEN - 1, next.length)]?.focus();
       return;
     }
     setDigits((d) => d.map((x, n) => (n === i ? clean : x)));
-    if (clean && i < 5) refs.current[i + 1]?.focus();
+    if (clean && i < CODE_LEN - 1) refs.current[i + 1]?.focus();
   };
 
   return (
@@ -218,13 +221,13 @@ function Verify({ onBack, onDone }: { onBack: () => void; onDone: () => void }) 
         Check your <span style={{ color: C.goldText }}>inbox.</span>
       </h1>
       <p style={{ fontSize: 15, lineHeight: 1.6, color: C.muted, margin: "10px 0 0" }}>
-        We sent a 6-digit code to <strong style={{ color: C.nero }}>{email}</strong>. It keeps your
+        We sent your {CODE_LEN}-digit code to <strong style={{ color: C.nero }}>{email}</strong>. It keeps your
         calendar and reminders safe.
       </p>
       <div
         role="group"
-        aria-label="Six digit code"
-        style={{ display: "flex", gap: 8, marginTop: 28 }}
+        aria-label={`${CODE_LEN} digit code`}
+        style={{ display: "flex", gap: 6, marginTop: 28 }}
       >
         {digits.map((d, i) => (
           <input
@@ -236,7 +239,7 @@ function Verify({ onBack, onDone }: { onBack: () => void; onDone: () => void }) 
             inputMode="numeric"
             autoComplete={i === 0 ? "one-time-code" : "off"}
             aria-label={`Digit ${i + 1}`}
-            maxLength={6}
+            maxLength={CODE_LEN}
             onChange={(e) => type(i, e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Backspace" && !d && i > 0) refs.current[i - 1]?.focus();
@@ -245,14 +248,14 @@ function Verify({ onBack, onDone }: { onBack: () => void; onDone: () => void }) 
             style={{
               flex: 1,
               minWidth: 0,
-              height: 60,
+              height: 54,
               borderRadius: 14,
               background: "#FFFFFF",
               border: `${d ? 1.5 : 2}px solid ${d ? C.line : C.nero}`,
               textAlign: "center",
               fontFamily: "'EB Garamond',Georgia,serif",
               fontWeight: 500,
-              fontSize: 30,
+              fontSize: 26,
               color: C.nero,
               outline: "none",
             }}
