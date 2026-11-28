@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMoments, usePeople, useScheduledGifts } from "@/hooks/use-calendar";
+import { useCustomMoments, useMoments, usePeople, useScheduledGifts } from "@/hooks/use-calendar";
 import { daysUntil, getUpcomingOccasions, todayIso } from "@/services/calendar";
 import { useEffect } from "react";
 import type { OccasionInstance } from "@/types/calendar";
@@ -50,9 +50,10 @@ function AppCalendar() {
   const [picked, setPicked] = useState<string | null>(null);
   const [festivals, setFestivals] = useState<OccasionInstance[]>([]);
   const byDate = useCalendarEvents(cursor.y);
+  const custom = useCustomMoments();
   useEffect(() => {
     void getUpcomingOccasions(40).then(setFestivals);
-  }, []);
+  }, [custom]);
 
   const keep = keepFor(filter);
   const eventsOn = (iso: string) => (byDate.get(iso) ?? []).filter(keep);

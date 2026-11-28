@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { useUser } from "@/hooks/use-shop";
-import { usePeople, useScheduledGifts } from "@/hooks/use-calendar";
+import { useCustomMoments, usePeople, useScheduledGifts } from "@/hooks/use-calendar";
 import { getUpcomingOccasions, giftIdeas, todayIso } from "@/services/calendar";
 import { OCCASIONS } from "@/data/occasions";
 import { formatNaira } from "@/lib/format";
@@ -219,9 +219,10 @@ function Home({ name }: { name: string }) {
     m: Number(today.slice(5, 7)),
   }));
   const byDate = useCalendarEvents(cursor.y);
+  const custom = useCustomMoments();
   useEffect(() => {
     void getUpcomingOccasions(12).then(setFestivals);
-  }, []);
+  }, [custom]);
 
   const first = name.trim().split(/\s+/)[0] ?? "";
   const todayText = new Date().toLocaleDateString("en-GB", {

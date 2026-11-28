@@ -2,6 +2,7 @@ import { OCCASIONS } from "@/data/occasions";
 import { PRODUCTS } from "@/data/products";
 import { createStore } from "@/lib/store";
 import type {
+  CustomMoment,
   Occasion,
   OccasionInstance,
   Person,
@@ -79,15 +80,17 @@ const instance = (o: Occasion, year: number): OccasionInstance => {
 };
 
 /** Every occasion placed in the given year. */
-export const getOccasionsForYear = (year: number) => delay(OCCASIONS.map((o) => instance(o, year)));
+export const getOccasionsForYear = (year: number) =>
+  delay(allOccasions().map((o) => instance(o, year)));
 
 /** The next occurrence of each dated occasion, soonest first. */
 export function upcomingOccasionsSync(from = todayIso()): OccasionInstance[] {
   const y = Number(from.slice(0, 4));
-  return OCCASIONS.map((o) => {
-    const a = instance(o, y);
-    return a.date && a.date < from ? instance(o, y + 1) : a;
-  })
+  return allOccasions()
+    .map((o) => {
+      const a = instance(o, y);
+      return a.date && a.date < from ? instance(o, y + 1) : a;
+    })
     .filter((i) => i.date)
     .sort((a, b) => a.date!.localeCompare(b.date!));
 }
@@ -96,7 +99,7 @@ export const getUpcomingOccasions = (limit?: number) =>
 /** Soonest occasion with a confirmed date. */
 export const getNextUp = () => delay(upcomingOccasionsSync().find((i) => !i.tbc) ?? null);
 export const getOccasion = (slug: string) => {
-  const o = OCCASIONS.find((x) => x.slug === slug);
+  const o = allOccasions().find((x) => x.slug === slug);
   if (!o) return delay(null);
   return delay(
     o.rule.type === "anytime"
@@ -145,6 +148,34 @@ export function downloadIcs(title: string, date: string, description = "") {
   a.download = `${title.replace(/\W+/g, "-").toLowerCase()}.ics`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/* ---------- Your own occasions ---------- */
+/** Occasions a customer added for themselves. Private to their account; never shared with others. */
+export const customMomentsStore = createStore<CustomMoment[]>("bbd-custom-moments", []);
+
+const asOccasion = (m: CustomMoment): Occasion => ({
+  slug: `mine-${m.id}`,
+  name: m.name,
+  rule: { type: "fixed", month: m.month, day: m.day },
+  category: "celebrations",
+  line: "Your own occasion.",
+  note: "",
+  orderByOffsetDays: 4,
+  shop: {},
+  moveable: false,
+});
+/** The built-in occasions plus the customer's own. */
+export function allOccasions(): Occasion[] {
+  return [...OCCASIONS, ...customMomentsStore.get().map(asOccasion)];
+}
+export function addCustomMoment(m: Omit<CustomMoment, "id">) {
+  const moment = { ...m, id: Math.random().toString(36).slice(2, 9) };
+  customMomentsStore.set([...customMomentsStore.get(), moment]);
+  return moment;
+}
+export function removeCustomMoment(id: string) {
+  customMomentsStore.set(customMomentsStore.get().filter((m) => m.id !== id));
 }
 
 /* ---------- My dates ---------- */

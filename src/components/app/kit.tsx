@@ -221,20 +221,52 @@ const ordinal = (n: number) => {
   return `${n}${s[(v - 20) % 10] ?? s[v] ?? s[0]}`;
 };
 
-/** "60th birthday" when the year is known; otherwise the label ("birthday", "work anniversary", or a proper name such as "Mothering Sunday"). */
+/** "60th birthday" or "5th wedding anniversary" when the year is known; otherwise the label ("birthday", "work anniversary", or a proper name such as "Mothering Sunday"). */
 export function occasionTitle(
   label: string,
   type: string,
   year: number | undefined,
   onIso: string,
 ) {
-  if (year && (type === "birthday" || type === "anniversary")) {
+  const l = label.trim();
+  const isAnniv = type === "anniversary" || /anniversary$/i.test(l);
+  if (year && (type === "birthday" || isAnniv)) {
     const n = Number(onIso.slice(0, 4)) - year;
-    if (n > 0) return `${ordinal(n)} ${type}`;
+    if (n > 0) {
+      const noun =
+        type === "birthday"
+          ? "birthday"
+          : /anniversary$/i.test(l) && !/^anniversary$/i.test(l)
+            ? l.charAt(0).toLowerCase() + l.slice(1)
+            : "anniversary";
+      return `${ordinal(n)} ${noun}`;
+    }
   }
-  return /^(birthday|anniversary|wedding anniversary|work anniversary)$/i.test(label.trim())
-    ? label.toLowerCase()
-    : label;
+  return /^(birthday|anniversary|wedding anniversary|work anniversary)$/i.test(l)
+    ? l.toLowerCase()
+    : l;
+}
+
+/** The words for the day itself: "Happy birthday", "Happy 5th anniversary", "Happy Christmas Day". */
+export function celebrationLine(title: string) {
+  const t = title.trim();
+  if (!t) return "Happy day";
+  return `Happy ${/^[A-Z]/.test(t) && !/^\d/.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1)}`;
+}
+
+/** Reminder lead times a customer can pick, in days. */
+export const LEAD_CHOICES: [number, string][] = [
+  [1, "1 day"],
+  [3, "3 days"],
+  [7, "1 week"],
+  [14, "2 weeks"],
+  [30, "1 month"],
+];
+export function leadLabel(d: number) {
+  const known = LEAD_CHOICES.find(([n]) => n === d);
+  if (known) return known[1];
+  if (d % 7 === 0) return `${d / 7} weeks`;
+  return `${d} days`;
 }
 
 /** Milestones worth celebrating louder: 18, 21, and every 10th, plus silver and gold anniversaries. */
@@ -344,7 +376,12 @@ export function status(i: UpcomingItem, from = todayIso()) {
 export function followed(festivals: OccasionInstance[], moments: string[]) {
   // Public holidays always show; other moments follow the customer's choice (none chosen = all of them).
   return moments.length
-    ? festivals.filter((f) => f.occasion.publicHoliday || moments.includes(f.occasion.slug))
+    ? festivals.filter(
+        (f) =>
+          f.occasion.publicHoliday ||
+          f.occasion.slug.startsWith("mine-") ||
+          moments.includes(f.occasion.slug),
+      )
     : festivals;
 }
 
@@ -853,4 +890,100 @@ export function enterApp() {
     /* private mode: stays in memory */
   }
   enterSubs.forEach((f) => f());
+}
+
+/**
+ * A date field that opens the phone's own date picker (iOS wheel sheet, Android calendar).
+ * Value is ISO yyyy-mm-dd or "" when nothing is picked yet.
+ */
+export function NativeDate({
+  value,
+  onChange,
+  label,
+  placeholder = "Tap to pick a date",
+  max,
+  showYear = true,
+}: {
+  value: string;
+  onChange: (iso: string) => void;
+  label: string;
+  placeholder?: string;
+  max?: string;
+  showYear?: boolean;
+}) {
+  const shown = value
+    ? new Date(`${value}T00:00:00`).toLocaleDateString("en-GB", {
+        weekday: "short",
+        day: "numeric",
+        month: "long",
+        ...(showYear ? { year: "numeric" } : {}),
+      })
+    : placeholder;
+  return (
+    <label
+      style={{
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        minHeight: 54,
+        border: `1.5px solid ${value ? C.gold : C.line}`,
+        borderRadius: 14,
+        background: "#FFFFFF",
+        padding: "0 14px",
+        cursor: "pointer",
+      }}
+    >
+      <svg
+        className="a-ico"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        style={{ width: 20, height: 20, flexShrink: 0, stroke: C.goldText }}
+      >
+        <rect x="3.5" y="5" width="17" height="15" rx="3" />
+        <path d="M3.5 10h17M8 3v4M16 3v4" />
+      </svg>
+      <span
+        style={{
+          flex: 1,
+          font: `${value ? 600 : 500} 16px 'Parkinsans','Segoe UI',system-ui,sans-serif`,
+          color: value ? C.nero : C.muted,
+        }}
+      >
+        {shown}
+      </span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: C.goldText }}>
+        {value ? "Change" : "Pick"}
+      </span>
+      <input
+        type="date"
+        aria-label={label}
+        value={value}
+        {...(max ? { max } : {})}
+        onChange={(e) => onChange(e.target.value)}
+        onClick={(e) => {
+          const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+          try {
+            el.showPicker?.();
+          } catch {
+            /* iOS opens its own picker on tap */
+          }
+        }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          opacity: 0,
+          border: 0,
+          margin: 0,
+          padding: 0,
+          cursor: "pointer",
+          fontSize: 16,
+          WebkitAppearance: "none",
+          appearance: "none",
+        }}
+      />
+    </label>
+  );
 }
