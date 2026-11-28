@@ -110,10 +110,14 @@ html:has(.bbd-app),body:has(.bbd-app){background:${C.ivory};overscroll-behavior-
 export const APP_SCALE = 0.75;
 export const viewportFor = (screenWidth: number) =>
   screenWidth < 820
-    ? `width=${Math.round(screenWidth / APP_SCALE)}, initial-scale=${APP_SCALE}, viewport-fit=cover`
+    ? `width=${Math.round(screenWidth / APP_SCALE)}, initial-scale=${APP_SCALE}, maximum-scale=${APP_SCALE}, viewport-fit=cover`
     : "width=device-width, initial-scale=1, viewport-fit=cover";
-/** Runs in <head> before first paint so the scale never jumps. */
-export const VIEWPORT_SCRIPT = `(function(){try{var w=Math.min(screen.width,screen.height)<820?screen.width:9999;var m=document.querySelector('meta[name=viewport]');if(m&&w<820){m.setAttribute('content','width='+Math.round(w/${0.75})+', initial-scale=${0.75}, viewport-fit=cover')}}catch(e){}})();`;
+/**
+ * maximum-scale stops iPhone Safari zooming in when someone taps a text box: at 75% scale the
+ * text is drawn smaller than 16px, which makes iOS zoom in and stay zoomed. Pinch-zoom still works on iOS.
+ * Runs in <head> before first paint so the scale never jumps.
+ */
+export const VIEWPORT_SCRIPT = `(function(){try{var w=Math.min(screen.width,screen.height)<820?screen.width:9999;var m=document.querySelector('meta[name=viewport]');if(m&&w<820){m.setAttribute('content','width='+Math.round(w/${0.75})+', initial-scale=${0.75}, maximum-scale=${0.75}, viewport-fit=cover')}}catch(e){}})();`;
 
 export function AppStyles() {
   return <style dangerouslySetInnerHTML={{ __html: APP_CSS }} />;
