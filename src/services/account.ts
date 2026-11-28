@@ -11,10 +11,15 @@ const toUser = (u: { email?: string | undefined; user_metadata?: Record<string, 
   name: String(u.user_metadata?.["name"] ?? u.email?.split("@")[0] ?? "Guest"), email: u.email ?? "", phone: String(u.user_metadata?.["phone"] ?? ""),
 });
 
-/** Create a real customer account, then sign in. */
-export async function signUp(input: { name: string; email: string; phone: string; password: string; marketing?: boolean }) {
-  await callAccount({ action: "signup", ...input });
+/** Create a real customer account, then sign in. First and last name are also kept separately (for email marketing). */
+export async function signUp(input: { name: string; email: string; phone: string; password: string; marketing?: boolean; firstName?: string; lastName?: string }) {
+  const { firstName, lastName, ...rest } = input;
+  await callAccount({ action: "signup", ...rest });
   await signIn(input.email, input.password);
+  if (firstName || lastName) {
+    // Best effort: the account already exists, so a failure here must not block sign-up.
+    await customerClient().auth.updateUser({ data: { first_name: firstName ?? "", last_name: lastName ?? "" } }).catch(() => {});
+  }
 }
 export async function signIn(email: string, password: string) {
   const { data, error } = await customerClient().auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
