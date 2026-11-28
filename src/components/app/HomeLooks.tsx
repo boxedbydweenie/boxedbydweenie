@@ -66,9 +66,8 @@ function ItemLink({
         {children}
       </Link>
     );
-  const occ = shopOcc(i.occasionSlug);
   return (
-    <Link to="/app/shop" search={occ ? { occasion: occ } : {}} style={style}>
+    <Link to="/app/occasion/$slug" params={{ slug: i.occasionSlug ?? "" }} style={style}>
       {children}
     </Link>
   );
@@ -123,16 +122,31 @@ export function LookCountdown({ name, items, people }: LookProps) {
   return (
     <div
       style={{
-        padding: "calc(env(safe-area-inset-top,0px) + 18px) 22px 32px",
+        padding: "0 22px 32px",
         background:
           "radial-gradient(90% 420px at 50% 250px, rgba(231,185,59,.28) 0%, rgba(231,185,59,0) 70%), radial-gradient(70% 300px at 50% 0%, rgba(57,36,63,.10) 0%, rgba(57,36,63,0) 70%)",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
+          margin: "0 -22px",
+          padding: "calc(env(safe-area-inset-top,0px) + 12px) 22px 12px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          background: "rgba(244,239,229,.9)",
+          backdropFilter: "saturate(1.4) blur(12px)",
+          WebkitBackdropFilter: "saturate(1.4) blur(12px)",
+          borderBottom: "1px solid rgba(226,217,200,.7)",
+        }}
+      >
         <img
           src="/brand/logo-primary.svg"
           alt="Boxed by Dweenie"
-          style={{ height: 22, width: "auto" }}
+          style={{ height: 38, width: "auto" }}
         />
         <div style={{ display: "flex", gap: 8 }}>
           <Link
@@ -172,9 +186,9 @@ export function LookCountdown({ name, items, people }: LookProps) {
         </div>
       </div>
 
-      <p style={{ margin: "26px 0 0", fontSize: 15, color: C.muted, textAlign: "center" }}>
+      <p style={{ margin: "18px 0 0", fontSize: 15, color: C.muted, textAlign: "center" }}>
         {greeting()},{" "}
-        <span className="a-scr" style={{ color: C.goldText, fontSize: 30, verticalAlign: "-4px" }}>
+        <span className="a-name" style={{ color: C.goldText, fontSize: 26, verticalAlign: "-2px" }}>
           {first(name)}
         </span>
       </p>
@@ -198,8 +212,8 @@ export function LookCountdown({ name, items, people }: LookProps) {
               >
                 {hero.days === 0 ? (
                   <span
-                    className="a-scr"
-                    style={{ fontSize: 64, lineHeight: 1, color: C.gold, marginTop: 6 }}
+                    className="a-name"
+                    style={{ fontSize: 54, lineHeight: 1, color: C.gold, marginTop: 6 }}
                   >
                     Today
                   </span>

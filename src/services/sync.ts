@@ -2,6 +2,7 @@ import { customerClient } from "@/lib/supabase";
 import { recipientsStore, toUser, userStore, wishlistStore } from "@/services/account";
 import { customMomentsStore, momentsStore, peopleStore, scheduledStore } from "@/services/calendar";
 import { mergeOrder, ordersStore, type ServerOrder } from "@/services/orders";
+import { importSharedDates } from "@/services/sharedDates";
 
 type Syncable = {
   get: () => unknown;
@@ -17,6 +18,12 @@ const KEYS: [string, Syncable, unknown][] = [
   ["custom_moments", customMomentsStore as unknown as Syncable, []],
 ];
 let started = false;
+let refresher: (() => Promise<void>) | null = null;
+
+/** Fetch the signed-in customer's latest data again (pull to refresh). Does nothing for guests. */
+export async function refreshAccountData() {
+  await refresher?.();
+}
 
 /**
  * Keeps a signed-in customer's saved recipients, wishlist, dates and orders in the database,
@@ -94,6 +101,12 @@ export function startAccountSync() {
         customer: o.customer,
       } as ServerOrder);
     }
+    // Dates people added through the customer's "Add your dates" link.
+    await importSharedDates().catch(() => 0);
+  };
+
+  refresher = async () => {
+    if (uid) await pull(uid);
   };
 
   sb.auth.onAuthStateChange((event, session) => {

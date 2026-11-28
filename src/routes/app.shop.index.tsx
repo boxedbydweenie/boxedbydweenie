@@ -196,7 +196,7 @@ function AppShop() {
             {Array.from({ length: 6 }, (_, i) => (
               <div
                 key={i}
-                style={{ aspectRatio: "4/5", borderRadius: 20, background: C.line, opacity: 0.5 }}
+                style={{ aspectRatio: "4/5", borderRadius: 22, background: C.line, opacity: 0.5 }}
               />
             ))}
           </div>
@@ -265,15 +265,26 @@ function ProductCard({ p, forId }: { p: ShopProduct; forId?: string | undefined 
       to="/app/shop/$slug"
       params={{ slug: p.slug }}
       search={forId ? { for: forId } : {}}
-      style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+        minWidth: 0,
+        background: "#FFFFFF",
+        border: `1px solid ${C.line}`,
+        borderRadius: 22,
+        padding: 8,
+      }}
     >
       <div
         style={{
           position: "relative",
-          aspectRatio: "4/5",
-          borderRadius: 20,
+          aspectRatio: "1/1",
+          borderRadius: 16,
           overflow: "hidden",
           background: "#FFFFFF",
+          padding: 10,
+          boxSizing: "border-box",
         }}
       >
         {p.images[0] && (
@@ -281,13 +292,27 @@ function ProductCard({ p, forId }: { p: ShopProduct; forId?: string | undefined 
             src={p.images[0]}
             alt={p.name}
             loading="lazy"
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "contain",
+              display: "block",
+              borderRadius: 10,
+            }}
           />
         )}
         {p.badges[0] && (
           <span
             className="a-pill"
-            style={{ position: "absolute", top: 10, left: 10, background: C.gold }}
+            style={{
+              position: "absolute",
+              top: 6,
+              left: 6,
+              background: C.gold,
+              fontSize: 11,
+              minHeight: 24,
+              padding: "0 9px",
+            }}
           >
             {p.badges[0]}
           </span>
@@ -307,10 +332,18 @@ function ProductCard({ p, forId }: { p: ShopProduct; forId?: string | undefined 
           </span>
         )}
       </div>
-      <strong className="a-dsp" style={{ fontSize: 19, marginTop: 2 }}>
+      <strong className="a-dsp" style={{ fontSize: 17, marginTop: 6, padding: "0 4px" }}>
         {p.name}
       </strong>
-      <span style={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+      <span
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          fontVariantNumeric: "tabular-nums",
+          padding: "0 4px 4px",
+          color: C.muted,
+        }}
+      >
         {formatNaira(p.price)}
       </span>
     </Link>

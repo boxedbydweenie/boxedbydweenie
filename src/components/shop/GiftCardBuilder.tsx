@@ -90,7 +90,7 @@ function CardPreview({
 }
 
 export function GiftCardBuilder({ onAdded = openCart }: { onAdded?: () => void }) {
-  const [amount, setAmount] = useState(25000);
+  const [amount, setAmount] = useState(50000);
   const [custom, setCustom] = useState("");
   const [design, setDesign] = useState<GiftCardDetails["design"]>("black-leaf");
   const [to, setTo] = useState("");

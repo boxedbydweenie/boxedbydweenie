@@ -193,12 +193,12 @@ function AppVouchers() {
         </div>
         {first && (
           <div
-            className="a-scr"
+            className="a-name"
             style={{
               position: "absolute",
               left: 24,
               top: 116,
-              fontSize: 28,
+              fontSize: 22,
               color: d.dark ? C.gold : C.goldText,
             }}
           >

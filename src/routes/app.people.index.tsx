@@ -56,6 +56,49 @@ function AppPeople() {
           Import a list
         </Link>
       </div>
+      <Link
+        to="/app/share"
+        style={{
+          margin: "12px 6px 0",
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          background: C.plum,
+          color: "#FFFFFF",
+          borderRadius: 20,
+          padding: "14px 16px",
+          border: "1px solid rgba(231,185,59,.35)",
+        }}
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            background: C.gold,
+            color: C.nero,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <svg viewBox="0 0 24 24" className="a-ico" style={{ width: 22, height: 22 }}>
+            <path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1" />
+            <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" />
+          </svg>
+        </span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <strong style={{ display: "block", fontSize: 15 }}>Ask for their dates</strong>
+          <span style={{ fontSize: 13, color: "rgba(255,255,255,.78)", lineHeight: 1.4 }}>
+            Send one link. Family, friends and colleagues add their own birthdays and anniversaries.
+          </span>
+        </span>
+        <span aria-hidden="true" style={{ color: C.gold, fontSize: 22 }}>
+          ›
+        </span>
+      </Link>
 
       {people.length === 0 ? (
         <div

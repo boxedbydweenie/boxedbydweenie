@@ -130,7 +130,7 @@ function SendGift() {
         />
         <div className="a-dsp" style={{ fontSize: 24 }}>
           A gift for{" "}
-          <span className="a-scr" style={{ color: C.goldText, fontSize: 32 }}>
+          <span className="a-name" style={{ color: C.goldText, fontSize: 26 }}>
             {first}
           </span>
         </div>
