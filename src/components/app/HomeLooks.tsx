@@ -18,7 +18,6 @@ import {
 /**
  * Two alternative Home designs, for choosing between.
  * A, "Countdown": ivory, editorial, one big number and a quiet timeline.
- * B, "Evening agenda": dark, a two-week strip and an agenda grouped by when.
  */
 
 interface LookProps {
@@ -28,7 +27,6 @@ interface LookProps {
 }
 
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const DOW = ["S", "M", "T", "W", "T", "F", "S"];
 const shopOcc = (slug?: string) =>
   slug ? OCCASIONS.find((o) => o.slug === slug)?.shop.occasion : undefined;
 const first = (n: string) => n.trim().split(/\s+/)[0] ?? "";
@@ -105,6 +103,11 @@ function GiftButtons({ i, dark }: { i: UpcomingItem; dark?: boolean }) {
   );
 }
 
+/** Brand box colours: people in plum, public holidays in forest, other occasions in oxblood. */
+const tone = (i: UpcomingItem) =>
+  i.kind === "person" ? C.plum : i.publicHoliday ? C.forest : C.oxblood;
+const AVATAR = [C.plum, C.forest, C.oxblood, C.navy, C.gold];
+
 /* ================= A. Countdown ================= */
 export function LookCountdown({ name, items, people }: LookProps) {
   const hero = items.find((i) => i.kind === "person") ?? items[0];
@@ -114,7 +117,13 @@ export function LookCountdown({ name, items, people }: LookProps) {
     .sort((a, b) => (a.next?.date ?? "9999").localeCompare(b.next?.date ?? "9999"))
     .slice(0, 8);
   return (
-    <div style={{ padding: "calc(env(safe-area-inset-top,0px) + 18px) 22px 32px" }}>
+    <div
+      style={{
+        padding: "calc(env(safe-area-inset-top,0px) + 18px) 22px 32px",
+        background:
+          "radial-gradient(90% 420px at 50% 250px, rgba(231,185,59,.28) 0%, rgba(231,185,59,0) 70%), radial-gradient(70% 300px at 50% 0%, rgba(57,36,63,.10) 0%, rgba(57,36,63,0) 70%)",
+      }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <img
           src="/brand/logo-primary.svg"
@@ -129,14 +138,14 @@ export function LookCountdown({ name, items, people }: LookProps) {
               width: 42,
               height: 42,
               borderRadius: "50%",
-              border: `1.5px solid ${C.line}`,
+              background: C.gold,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: C.plum,
+              color: C.nero,
             }}
           >
-            <IconPlus style={{ width: 20, height: 20 }} />
+            <IconPlus style={{ width: 20, height: 20, strokeWidth: 2.2 }} />
           </Link>
           <Link
             to="/app/account"
@@ -160,7 +169,10 @@ export function LookCountdown({ name, items, people }: LookProps) {
       </div>
 
       <p style={{ margin: "26px 0 0", fontSize: 15, color: C.muted, textAlign: "center" }}>
-        {greeting()}, {first(name)}
+        {greeting()},{" "}
+        <span className="a-scr" style={{ color: C.goldText, fontSize: 30, verticalAlign: "-4px" }}>
+          {first(name)}
+        </span>
       </p>
 
       {hero ? (
@@ -175,12 +187,14 @@ export function LookCountdown({ name, items, people }: LookProps) {
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  background: "#FFFFFF",
+                  background: C.plum,
+                  borderRadius: "50%",
+                  boxShadow: "0 0 0 5px #FFFFFF",
                 }}
               >
                 <span
                   className="a-dsp"
-                  style={{ fontSize: hero.days > 99 ? 72 : 96, lineHeight: 0.9, color: C.plum }}
+                  style={{ fontSize: hero.days > 99 ? 72 : 96, lineHeight: 0.9, color: C.gold }}
                 >
                   {hero.days}
                 </span>
@@ -188,7 +202,7 @@ export function LookCountdown({ name, items, people }: LookProps) {
                   style={{
                     fontSize: 12,
                     letterSpacing: ".24em",
-                    color: C.goldText,
+                    color: C.ivory,
                     marginTop: 8,
                     fontWeight: 600,
                   }}
@@ -244,7 +258,7 @@ export function LookCountdown({ name, items, people }: LookProps) {
                 i={i}
                 style={{
                   display: "flex",
-                  alignItems: "baseline",
+                  alignItems: "flex-start",
                   gap: 14,
                   padding: "12px 0",
                   position: "relative",
@@ -255,22 +269,28 @@ export function LookCountdown({ name, items, people }: LookProps) {
                   style={{
                     position: "absolute",
                     left: -25,
-                    top: 18,
+                    top: 19,
                     width: 11,
                     height: 11,
                     borderRadius: "50%",
-                    background: i.days <= 7 ? C.gold : "#FFFFFF",
-                    border: `1.5px solid ${i.days <= 7 ? C.gold : C.muted}`,
+                    background: tone(i),
+                    boxShadow: `0 0 0 3px ${C.ivory}`,
                   }}
                 />
                 <span
                   style={{
-                    width: 52,
                     flexShrink: 0,
-                    fontSize: 12,
-                    letterSpacing: ".14em",
-                    color: C.goldText,
+                    fontSize: 11,
+                    letterSpacing: ".12em",
+                    color: "#FFFFFF",
+                    background: tone(i),
+                    borderRadius: 999,
+                    padding: "4px 9px",
                     fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    width: 74,
+                    boxSizing: "border-box",
+                    textAlign: "center",
                   }}
                 >
                   {Number(i.date.slice(8, 10))} {MON[Number(i.date.slice(5, 7)) - 1]!.toUpperCase()}
@@ -307,7 +327,7 @@ export function LookCountdown({ name, items, people }: LookProps) {
               marginTop: 16,
             }}
           >
-            {peopleRow.map(({ p }) => (
+            {peopleRow.map(({ p }, n) => (
               <Link
                 key={p.id}
                 to="/app/people/$personId"
@@ -317,8 +337,8 @@ export function LookCountdown({ name, items, people }: LookProps) {
                   width: 48,
                   height: 48,
                   borderRadius: "50%",
-                  background: "#E9E1EA",
-                  color: C.plum,
+                  background: AVATAR[n % AVATAR.length],
+                  color: AVATAR[n % AVATAR.length] === C.gold ? C.nero : "#FFFFFF",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -357,236 +377,6 @@ export function LookCountdown({ name, items, people }: LookProps) {
           </div>
         </section>
       )}
-    </div>
-  );
-}
-
-/* ================= B. Evening agenda ================= */
-const INK = "#1D191E";
-const SOFT = "rgba(244,239,229,.62)";
-const HAIR = "rgba(244,239,229,.1)";
-
-export function LookAgenda({ name, items }: LookProps) {
-  const today = todayIso();
-  const hero = items.find((i) => i.kind === "person") ?? items[0];
-  const rest = items.filter((i) => i !== hero).slice(0, 8);
-  const groups: [string, UpcomingItem[]][] = [
-    ["This week", rest.filter((i) => i.days <= 7)],
-    ["This month", rest.filter((i) => i.days > 7 && i.days <= 31)],
-    ["Later", rest.filter((i) => i.days > 31)],
-  ];
-  const dates = new Set(items.map((i) => i.date));
-  const strip = Array.from({ length: 14 }, (_, n) => {
-    const d = new Date(`${today}T12:00:00`);
-    d.setDate(d.getDate() + n);
-    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    return { iso, dow: DOW[d.getDay()]!, day: d.getDate(), has: dates.has(iso), today: n === 0 };
-  });
-  const todayText = new Date().toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-
-  return (
-    <div
-      style={{
-        background: INK,
-        color: C.ivory,
-        minHeight: "100dvh",
-        flex: 1,
-        overflowX: "hidden",
-        boxSizing: "border-box",
-        padding: "calc(env(safe-area-inset-top,0px) + 20px) 0 32px",
-      }}
-    >
-      <div
-        style={{
-          padding: "0 22px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}
-      >
-        <div>
-          <div style={{ fontSize: 12, letterSpacing: ".2em", color: C.gold, fontWeight: 600 }}>
-            {todayText.toUpperCase()}
-          </div>
-          <h1 className="a-dsp" style={{ fontSize: 32, marginTop: 8, color: "#FFFFFF" }}>
-            {greeting()}, {first(name)}
-          </h1>
-        </div>
-        <Link
-          to="/app/people/new"
-          aria-label="Add a date"
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: "50%",
-            background: C.gold,
-            color: C.nero,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <IconPlus style={{ width: 22, height: 22, strokeWidth: 2.2 }} />
-        </Link>
-      </div>
-
-      {/* Two-week strip */}
-      <div className="a-hscroll" style={{ gap: 8, margin: 0, padding: "22px 22px 0" }}>
-        {strip.map((d) => (
-          <Link
-            key={d.iso}
-            to="/app/calendar"
-            style={{
-              flexShrink: 0,
-              width: 44,
-              padding: "10px 0 8px",
-              borderRadius: 14,
-              background: d.today ? C.gold : "rgba(244,239,229,.06)",
-              color: d.today ? C.nero : C.ivory,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
-            <span style={{ fontSize: 11, opacity: d.today ? 0.8 : 0.55 }}>{d.dow}</span>
-            <span className="a-dsp" style={{ fontSize: 20, lineHeight: 1 }}>
-              {d.day}
-            </span>
-            <span
-              style={{
-                width: 5,
-                height: 5,
-                borderRadius: "50%",
-                background: d.has ? (d.today ? C.nero : C.gold) : "transparent",
-              }}
-            />
-          </Link>
-        ))}
-      </div>
-
-      {hero ? (
-        <section
-          style={{
-            margin: "24px 16px 0",
-            background: C.plum,
-            borderRadius: 24,
-            padding: 20,
-          }}
-        >
-          <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
-            <div style={{ textAlign: "center", flexShrink: 0, width: 72 }}>
-              <div className="a-dsp" style={{ fontSize: 58, lineHeight: 0.9, color: C.gold }}>
-                {hero.days}
-              </div>
-              <div style={{ fontSize: 11, letterSpacing: ".18em", color: SOFT, marginTop: 6 }}>
-                {hero.days === 1 ? "DAY" : "DAYS"}
-              </div>
-            </div>
-            <div style={{ minWidth: 0, borderLeft: `1px solid ${HAIR}`, paddingLeft: 18 }}>
-              <div style={{ fontSize: 11, letterSpacing: ".2em", color: C.gold, fontWeight: 600 }}>
-                NEXT UP
-              </div>
-              <div
-                className="a-dsp"
-                style={{ fontSize: 26, color: "#FFFFFF", marginTop: 4, lineHeight: 1.1 }}
-              >
-                {titleOf(hero)}
-              </div>
-              <div style={{ fontSize: 13, color: SOFT, marginTop: 4 }}>{longDate(hero.date)}</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-            <GiftButtons i={hero} dark />
-          </div>
-        </section>
-      ) : (
-        <div style={{ padding: "24px 22px 0" }}>
-          <EmptyNote dark />
-        </div>
-      )}
-
-      {groups.map(([label, list]) =>
-        list.length ? (
-          <section key={label} style={{ padding: "28px 22px 0" }}>
-            <div style={{ fontSize: 12, letterSpacing: ".2em", color: SOFT, fontWeight: 600 }}>
-              {label.toUpperCase()}
-            </div>
-            <div style={{ marginTop: 6 }}>
-              {list.map((i, n) => (
-                <ItemLink
-                  key={i.key}
-                  i={i}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 14,
-                    padding: "14px 0",
-                    borderTop: n ? `1px solid ${HAIR}` : 0,
-                    color: C.ivory,
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: "50%",
-                      background: "rgba(244,239,229,.08)",
-                      color: C.gold,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontFamily: "'EB Garamond',Georgia,serif",
-                      fontSize: 18,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {i.initial}
-                  </span>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span
-                      style={{
-                        display: "block",
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: "#FFFFFF",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {titleOf(i)}
-                    </span>
-                    <span style={{ fontSize: 12.5, color: SOFT }}>{detailOf(i)}</span>
-                  </span>
-                  <span style={{ textAlign: "right", flexShrink: 0 }}>
-                    <span
-                      className="a-dsp"
-                      style={{ display: "block", fontSize: 22, color: C.gold, lineHeight: 1 }}
-                    >
-                      {Number(i.date.slice(8, 10))}
-                    </span>
-                    <span style={{ fontSize: 10.5, letterSpacing: ".14em", color: SOFT }}>
-                      {MON[Number(i.date.slice(5, 7)) - 1]!.toUpperCase()}
-                    </span>
-                  </span>
-                </ItemLink>
-              ))}
-            </div>
-          </section>
-        ) : null,
-      )}
-
-      <div style={{ textAlign: "center", padding: "26px 22px 0" }}>
-        <Link to="/app/calendar" style={{ fontSize: 14, fontWeight: 600, color: C.gold }}>
-          Open the full calendar
-        </Link>
-      </div>
     </div>
   );
 }

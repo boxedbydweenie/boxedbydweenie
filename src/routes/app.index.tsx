@@ -9,13 +9,8 @@ import { formatNaira } from "@/lib/format";
 import type { OccasionInstance, Person } from "@/types/calendar";
 import type { ShopProduct } from "@/types/shop";
 import {
-  BrandStrip,
   C,
   InstallHelp,
-  Ring,
-  IconBack,
-  IconBell,
-  IconPlus,
   avatarColour,
   dayMonth,
   greeting,
@@ -29,14 +24,13 @@ import {
   whenText,
   type UpcomingItem,
 } from "@/components/app/kit";
-import { LookAgenda, LookCountdown } from "@/components/app/HomeLooks";
+import { LookCountdown } from "@/components/app/HomeLooks";
 import { MonthGrid, useCalendarEvents } from "@/components/app/MonthCalendar";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/")({
   validateSearch: z.object({
     from: z.string().max(40).optional().catch(undefined),
-    look: z.enum(["a", "b"]).optional().catch(undefined),
   }),
   component: AppHome,
 });
@@ -45,10 +39,10 @@ export const Route = createFileRoute("/app/")({
 function AppHome() {
   const user = useUser();
   const entered = useEntered();
-  const { from, look } = Route.useSearch();
+  const { from } = Route.useSearch();
   if (!user) return <Splash from={from} />;
   if (!entered) return <Splash name={user.name} />;
-  return <Home name={user.name} look={look} />;
+  return <Home name={user.name} />;
 }
 
 /* ---------- 1.1 Splash ---------- */
@@ -213,7 +207,7 @@ const shopOccasionFor = (slug?: string) =>
   slug ? OCCASIONS.find((o) => o.slug === slug)?.shop.occasion : undefined;
 
 /* ---------- 2.1 Home ---------- */
-function Home({ name, look }: { name: string; look?: "a" | "b" | undefined }) {
+function Home({ name }: { name: string }) {
   const wide = useWide();
   const people = usePeople();
   const scheduled = useScheduledGifts();
@@ -230,24 +224,16 @@ function Home({ name, look }: { name: string; look?: "a" | "b" | undefined }) {
   }, []);
 
   const first = name.trim().split(/\s+/)[0] ?? "";
-  const initials = name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase())
-    .join("");
-  const items = upcomingItems(people, scheduled, festivals);
-  const hero = items.find((i) => i.kind === "person") ?? items[0];
-  const next30 = items.filter((i) => i.days <= 30);
-  const rest = items.filter((i) => i !== hero).slice(0, 6);
-  const heroPerson = hero?.personId ? people.find((p) => p.id === hero.personId) : undefined;
-  const ideas = heroPerson ? giftIdeas(heroPerson, 4) : [];
   const todayText = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
-  const urgent = next30.some((i) => status(i).label === "Order today");
+  const items = upcomingItems(people, scheduled, festivals);
+  const hero = items.find((i) => i.kind === "person") ?? items[0];
+  const next30 = items.filter((i) => i.days <= 30);
+  const heroPerson = hero?.personId ? people.find((p) => p.id === hero.personId) : undefined;
+  const ideas = heroPerson ? giftIdeas(heroPerson, 4) : [];
 
   const greetingBlock = (
     <div style={{ minWidth: 0 }}>
@@ -335,450 +321,7 @@ function Home({ name, look }: { name: string; look?: "a" | "b" | undefined }) {
     );
   }
 
-  if (look === "a") return <LookCountdown name={name} items={items} people={people} />;
-  if (look === "b") return <LookAgenda name={name} items={items} people={people} />;
-  const season = items.find(
-    (i) => i.kind === "festival" && i !== hero && i.days <= 75 && i.publicHoliday,
-  );
-  const coming = items.filter((i) => i !== hero && i !== season).slice(0, 3);
-  const peopleRow = people
-    .map((p) => ({ p, next: items.find((i) => i.personId === p.id) }))
-    .sort((a, b) => (a.next?.date ?? "9999").localeCompare(b.next?.date ?? "9999"))
-    .slice(0, 10);
-  const round = {
-    width: 44,
-    height: 44,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  } as const;
-
-  const PEOPLE_ROW = (
-    <section style={{ padding: "30px 16px 0" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          padding: "0 6px",
-        }}
-      >
-        <div className="a-eye">Your people</div>
-        <Link to="/app/people" style={{ fontSize: 13, fontWeight: 600 }}>
-          See all
-        </Link>
-      </div>
-      <div className="a-hscroll" style={{ gap: 14, marginTop: 12 }}>
-        {peopleRow.map(({ p, next }) => (
-          <Link
-            key={p.id}
-            to="/app/people/$personId"
-            params={{ personId: p.id }}
-            style={{
-              flexShrink: 0,
-              width: 68,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <Ring size={64} days={next?.days ?? 60}>
-              {p.photo ? (
-                <img
-                  src={p.photo}
-                  alt=""
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <span
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    background: "#E9E1EA",
-                    color: C.plum,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontFamily: "'EB Garamond',Georgia,serif",
-                    fontSize: 22,
-                    fontWeight: 500,
-                  }}
-                >
-                  {p.name.slice(0, 1).toUpperCase()}
-                </span>
-              )}
-            </Ring>
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                maxWidth: 68,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {p.name.split(" ")[0]}
-            </span>
-            {next && (
-              <span
-                style={{
-                  fontSize: 11,
-                  color: next.days <= 7 ? C.plum : C.muted,
-                  fontWeight: next.days <= 7 ? 700 : 400,
-                  marginTop: -4,
-                }}
-              >
-                {next.days === 0 ? "Today" : `${next.days}d`}
-              </span>
-            )}
-          </Link>
-        ))}
-        <Link
-          to="/app/people/new"
-          style={{
-            flexShrink: 0,
-            width: 68,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <span
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: "50%",
-              border: `1.5px dashed ${C.muted}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: C.nero,
-            }}
-          >
-            <IconPlus style={{ width: 22, height: 22 }} />
-          </span>
-          <span style={{ fontSize: 12, fontWeight: 600 }}>Add</span>
-        </Link>
-      </div>
-    </section>
-  );
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", paddingBottom: 8 }}>
-      {/* Plum header, from the guide's Plum pattern and the LinkedIn banner treatment */}
-      <header
-        style={{
-          background: C.plum,
-          color: "#FFFFFF",
-          padding: "calc(env(safe-area-inset-top,0px) + 20px) 22px 30px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 10,
-          }}
-        >
-          <img
-            src="/brand/logo-on-dark.svg"
-            alt="Boxed by Dweenie"
-            style={{ height: 22, width: "auto" }}
-          />
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <Link
-              to="/app/people/new"
-              aria-label="Add a date"
-              style={{ ...round, background: C.gold, color: C.nero }}
-            >
-              <IconPlus style={{ width: 22, height: 22, strokeWidth: 2.2 }} />
-            </Link>
-            <Link
-              to="/app/account"
-              aria-label="Profile"
-              style={{
-                ...round,
-                background: C.ivory,
-                color: C.plum,
-                fontWeight: 700,
-                fontSize: 14,
-                boxShadow: `0 0 0 2px ${C.gold}`,
-              }}
-            >
-              {initials || "B"}
-            </Link>
-          </div>
-        </div>
-        <h1 className="a-dsp" style={{ fontSize: 34, marginTop: 22 }}>
-          {greeting()},{" "}
-          <span className="a-scr" style={{ color: C.gold, fontSize: 46 }}>
-            {first}
-          </span>
-        </h1>
-      </header>
-
-      <div style={{ margin: "20px 16px 0" }}>
-        {hero ? <NextUp item={hero} light /> : <EmptyHome />}
-      </div>
-
-      {coming.length > 0 && (
-        <section style={{ padding: "30px 16px 0" }}>
-          <SectionHead
-            title="Coming up"
-            link={{ to: "/app/calendar", label: "Full calendar" }}
-            note={
-              next30.length
-                ? `${next30.filter((i) => i.sorted).length} of ${next30.length} sorted this month`
-                : undefined
-            }
-          />
-          <ComingList items={coming} />
-        </section>
-      )}
-
-      {peopleRow.length > 0 && PEOPLE_ROW}
-
-      {season && (
-        <div style={{ padding: "30px 16px 0" }}>
-          <SeasonCard item={season} />
-        </div>
-      )}
-
-      {heroPerson && hero && ideas.length > 0 && (
-        <div style={{ padding: "30px 16px 0" }}>
-          <Ideas person={heroPerson} hero={hero} ideas={ideas} />
-        </div>
-      )}
-      <div style={{ padding: "30px 16px 28px" }}>
-        <InviteCard />
-      </div>
-    </div>
-  );
-}
-
-function SectionHead({
-  title,
-  note,
-  link,
-}: {
-  title: string;
-  note?: string | undefined;
-  link?: { to: "/app/calendar" | "/app/people"; label: string };
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-end",
-        gap: 12,
-        padding: "0 6px",
-      }}
-    >
-      <div>
-        <div className="a-eye">{title}</div>
-        {note && <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>{note}</div>}
-      </div>
-      {link && (
-        <Link to={link.to} style={{ fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>
-          {link.label}
-        </Link>
-      )}
-    </div>
-  );
-}
-
-const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-/** One calm list of what's next: a date tile, the name, one line of detail. */
-function ComingList({ items }: { items: UpcomingItem[] }) {
-  return (
-    <div
-      style={{
-        marginTop: 12,
-        background: "#FFFFFF",
-        border: `1.5px solid ${C.line}`,
-        borderRadius: 22,
-        overflow: "hidden",
-      }}
-    >
-      {items.map((i, n) => {
-        const s = status(i);
-        const urgent = s.label === "Order today";
-        const isPerson = i.kind === "person" && i.personId;
-        const shopOcc = shopOccasionFor(i.occasionSlug);
-        const detail = isPerson
-          ? `${i.title.charAt(0).toUpperCase()}${i.title.slice(1)}${i.days <= 30 ? ` · ${whenText(i.days).toLowerCase()}` : ""}`
-          : i.tbc
-            ? "Date to be confirmed"
-            : i.orderBy && i.orderBy >= todayIso() && !urgent
-              ? `Order by ${shortDate(i.orderBy)}`
-              : i.publicHoliday
-                ? "Public holiday"
-                : whenText(i.days);
-        const row = (
-          <>
-            <span
-              style={{
-                width: 48,
-                height: 52,
-                borderRadius: 14,
-                background: "#F4EFE5",
-                color: C.plum,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <span className="a-dsp" style={{ fontSize: 22, lineHeight: 1, color: C.plum }}>
-                {Number(i.date.slice(8, 10))}
-              </span>
-              <span style={{ fontSize: 10.5, letterSpacing: ".12em", marginTop: 3 }}>
-                {MON[Number(i.date.slice(5, 7)) - 1]!.toUpperCase()}
-              </span>
-            </span>
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <strong
-                style={{
-                  display: "block",
-                  fontSize: 15,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {isPerson ? `${i.name}` : i.name}
-              </strong>
-              <span
-                style={{
-                  fontSize: 12.5,
-                  color: urgent ? C.plum : C.muted,
-                  fontWeight: urgent ? 700 : 400,
-                }}
-              >
-                {urgent ? "Order today" : detail}
-              </span>
-            </span>
-            <IconBack
-              style={{
-                width: 18,
-                height: 18,
-                color: C.muted,
-                flexShrink: 0,
-                transform: "scaleX(-1)",
-              }}
-            />
-          </>
-        );
-        const style = {
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          padding: "12px 16px",
-          borderTop: n ? `1px solid ${C.line}` : 0,
-        } as const;
-        return isPerson ? (
-          <Link
-            key={i.key}
-            to="/app/people/$personId"
-            params={{ personId: i.personId! }}
-            style={style}
-          >
-            {row}
-          </Link>
-        ) : (
-          <Link
-            key={i.key}
-            to="/app/shop"
-            search={shopOcc ? { occasion: shopOcc } : {}}
-            style={style}
-          >
-            {row}
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
-
-/** The next big holiday, on the guide's Oxblood pattern. */
-function SeasonCard({ item }: { item: UpcomingItem }) {
-  const shopOcc = shopOccasionFor(item.occasionSlug);
-  return (
-    <div
-      style={{
-        background: C.plum,
-        borderRadius: 24,
-        padding: 20,
-        color: "#FFFFFF",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span className="a-eye" style={{ color: C.gold }}>
-          The season
-        </span>
-        {item.publicHoliday && (
-          <span
-            className="a-pill"
-            style={{
-              background: "rgba(255,255,255,.14)",
-              color: "#FFFFFF",
-              minHeight: 22,
-              fontSize: 11,
-            }}
-          >
-            Public holiday
-          </span>
-        )}
-      </div>
-      <div className="a-dsp" style={{ fontSize: 32, marginTop: 10, maxWidth: 240 }}>
-        {item.name}
-      </div>
-      <div style={{ fontSize: 13, color: "rgba(255,255,255,.82)", marginTop: 6 }}>
-        {longDate(item.date)}
-        {item.tbc ? " · date to be confirmed" : ""}
-        {item.orderBy && !item.tbc && item.orderBy >= todayIso()
-          ? ` · order by ${shortDate(item.orderBy)}`
-          : ""}
-      </div>
-      <div style={{ display: "flex", gap: 8, marginTop: 16, position: "relative", maxWidth: 260 }}>
-        <Link
-          to="/app/shop"
-          search={shopOcc ? { occasion: shopOcc } : {}}
-          className="a-abtn a-gold"
-          style={{ flex: 1 }}
-        >
-          Shop the season
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-/** Closing band: the tagline on Plum with the guide's colour strip. */
-function SignOff() {
-  return (
-    <footer
-      className="a-pat-plum"
-      style={{ marginTop: 28, color: "#FFFFFF", textAlign: "center", padding: "28px 22px 24px" }}
-    >
-      <img src="/brand/logo-on-dark.svg" alt="" style={{ height: 22, width: "auto" }} />
-      <div className="a-dsp" style={{ fontSize: 26, marginTop: 12 }}>
-        We exist for the love of <span style={{ color: C.gold }}>gifting.</span>
-      </div>
-      <BrandStrip style={{ marginTop: 18 }} />
-    </footer>
-  );
+  return <LookCountdown name={name} items={items} people={people} />;
 }
 
 function Ideas({
@@ -1148,84 +691,6 @@ function NextUp({
         </Link>
       </div>
     </div>
-  );
-}
-
-function UpCard({ item, peopleCount }: { item: UpcomingItem; peopleCount: number }) {
-  const s = status(item);
-  const urgent = s.label === "Order today";
-  const isPerson = item.kind === "person";
-  const av =
-    isPerson && item.personId ? avatarColour(item.personId) : { background: C.nero, color: C.gold };
-  const body = (
-    <>
-      <div
-        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}
-      >
-        <span
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: "50%",
-            ...av,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: isPerson ? 700 : 500,
-            fontFamily: isPerson ? undefined : "'EB Garamond',Georgia,serif",
-            fontSize: isPerson ? 15 : 18,
-            flexShrink: 0,
-          }}
-        >
-          {item.initial}
-        </span>
-        {isPerson
-          ? s.label && (
-              <span className="a-pill" style={{ background: s.bg, color: s.fg }}>
-                {s.label}
-              </span>
-            )
-          : peopleCount > 0 && (
-              <span className="a-pill" style={{ background: C.gold }}>
-                {peopleCount} {peopleCount === 1 ? "person" : "people"}
-              </span>
-            )}
-      </div>
-      <strong
-        style={{ fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-      >
-        {item.name}
-      </strong>
-      <span style={{ fontSize: 12, color: C.muted }}>
-        {isPerson
-          ? `${item.title.charAt(0).toUpperCase()}${item.title.slice(1)} · ${shortDate(item.date)}`
-          : item.orderBy && item.orderBy >= todayIso()
-            ? `Order by ${shortDate(item.orderBy)}`
-            : dayMonth(item.date)}
-      </span>
-    </>
-  );
-  const style = {
-    flexShrink: 0,
-    width: 152,
-    borderRadius: 20,
-    padding: 14,
-    boxSizing: "border-box" as const,
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 8,
-    background: "#FFFFFF",
-    border: `1.5px solid ${urgent ? C.oxblood : C.line}`,
-  };
-  const shopOcc = shopOccasionFor(item.occasionSlug);
-  return isPerson && item.personId ? (
-    <Link to="/app/people/$personId" params={{ personId: item.personId }} style={style}>
-      {body}
-    </Link>
-  ) : (
-    <Link to="/app/shop" search={shopOcc ? { occasion: shopOcc } : {}} style={style}>
-      {body}
-    </Link>
   );
 }
 
