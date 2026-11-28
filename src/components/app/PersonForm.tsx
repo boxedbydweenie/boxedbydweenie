@@ -1,10 +1,31 @@
-import { useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 import { addPerson, nextOccurrence, todayIso, updatePerson } from "@/services/calendar";
-import type { Person, PersonalDateType, Relationship } from "@/types/calendar";
-import { C, chip, defaultLeadStore, isMilestone, longDate, occasionTitle } from "./kit";
+import type { Person, PersonalDate, PersonalDateType, Relationship } from "@/types/calendar";
+import {
+  C,
+  LEAD_CHOICES,
+  NativeDate,
+  chip,
+  defaultLeadStore,
+  isMilestone,
+  leadLabel,
+  longDate,
+  occasionTitle,
+} from "./kit";
 
-/** 1.5 Add a person and date. Also used to edit someone already saved. */
+/**
+ * 1.5 Add a person and their dates, in two short screens.
+ * Screen 1: name, who they are, the first occasion (phone date picker, any number of reminders).
+ * Screen 2 (optional): more occasions and what they love. Editing opens straight on screen 2.
+ */
 
 const RELS: [string, Relationship][] = [
   ["Mum", "Parent"],
@@ -16,44 +37,109 @@ const RELS: [string, Relationship][] = [
   ["Colleague", "Colleague"],
   ["Client", "Client"],
 ];
-const KINDS: [string, PersonalDateType, string][] = [
-  ["Birthday", "birthday", "Birthday"],
-  ["Wedding anniversary", "anniversary", "Wedding anniversary"],
-  ["Work anniversary", "custom", "Work anniversary"],
-  ["Other", "custom", ""],
+
+type Kind = "birthday" | "anniversary" | "other";
+type Sub = "wedding" | "work" | "else";
+const KINDS: [Kind, string][] = [
+  ["birthday", "Birthday"],
+  ["anniversary", "Anniversary"],
+  ["other", "Something else"],
 ];
-const LEADS: [number, string, string][] = [
-  [3, "3 days", "Best for vouchers and same-week Lagos delivery."],
-  [7, "1 week", "Enough time for most boxes in Lagos and Abuja."],
-  [14, "2 weeks", "Recommended. Time to choose, personalise and deliver."],
-  [30, "1 month", "Ideal for branded or custom boxes."],
+const SUBS: [Sub, string][] = [
+  ["wedding", "Wedding"],
+  ["work", "Work"],
+  ["else", "Other"],
 ];
-const MONTHS = Array.from({ length: 12 }, (_, i) =>
-  new Date(2026, i, 1).toLocaleDateString("en-GB", { month: "long" }),
-);
-const daysIn = (m: number, y?: number) => new Date(y ?? 2024, m, 0).getDate();
 
 interface Draft {
-  kind: number;
-  label: string;
-  day: number;
-  month: number;
-  year: number | null;
+  id: string;
+  kind: Kind;
+  sub: Sub;
+  text: string;
+  iso: string;
+  noYear: boolean;
+  leads: number[];
 }
+type SavedDate = Omit<PersonalDate, "personId">;
+
 const today = todayIso();
-const blank = (): Draft => ({
-  kind: 0,
-  label: "",
-  day: Number(today.slice(8, 10)),
-  month: Number(today.slice(5, 7)),
-  year: null,
+const thisYear = Number(today.slice(0, 4));
+const pad = (n: number) => String(n).padStart(2, "0");
+const newId = () => Math.random().toString(36).slice(2, 10);
+const blank = (leads: number[]): Draft => ({
+  id: newId(),
+  kind: "birthday",
+  sub: "wedding",
+  text: "",
+  iso: "",
+  noYear: false,
+  leads,
 });
+
+function labelOf(d: Draft) {
+  if (d.kind === "birthday") return "Birthday";
+  if (d.kind === "other") return d.text.trim();
+  if (d.sub === "wedding") return "Wedding anniversary";
+  if (d.sub === "work") return "Work anniversary";
+  const t = d.text.trim();
+  return !t ? "" : /anniversary$/i.test(t) ? t : `${t} anniversary`;
+}
+
+/** Check a draft and turn it into a saved date, or return what's missing. */
+function toDate(d: Draft): SavedDate | string {
+  const label = labelOf(d);
+  if (!label) return d.kind === "other" ? "Name the occasion." : "Say what the anniversary is for.";
+  if (!d.iso) return "Pick the date.";
+  if (!d.leads.length) return "Choose at least one reminder.";
+  const year = Number(d.iso.slice(0, 4));
+  const keepYear = d.kind !== "other" && !d.noYear;
+  if (keepYear && year > thisYear) return "That year is still to come. Check the date.";
+  const type: PersonalDateType =
+    d.kind === "birthday" ? "birthday" : d.kind === "anniversary" ? "anniversary" : "custom";
+  return {
+    id: d.id,
+    type,
+    label,
+    day: Number(d.iso.slice(8, 10)),
+    month: Number(d.iso.slice(5, 7)),
+    ...(keepYear ? { year } : {}),
+    daysBefore: [...d.leads].sort((a, b) => b - a),
+  };
+}
+
+function fromDate(d: PersonalDate, fallbackLeads: number[]): Draft {
+  const anniv = d.type === "anniversary" || /anniversary$/i.test(d.label);
+  const kind: Kind = d.type === "birthday" ? "birthday" : anniv ? "anniversary" : "other";
+  const sub: Sub = /^wedding anniversary$|^anniversary$/i.test(d.label)
+    ? "wedding"
+    : /^work anniversary$/i.test(d.label)
+      ? "work"
+      : "else";
+  return {
+    id: d.id,
+    kind,
+    sub,
+    text:
+      kind === "other" ? d.label : sub === "else" ? d.label.replace(/\s*anniversary$/i, "") : "",
+    iso: `${d.year ?? thisYear}-${pad(d.month)}-${pad(d.day)}`,
+    noYear: !d.year,
+    leads: d.daysBefore?.length ? d.daysBefore : fallbackLeads,
+  };
+}
+
+const titleFor = (d: SavedDate) => {
+  const t = occasionTitle(d.label, d.type, d.year, nextOccurrence(d, today));
+  return t.charAt(0).toUpperCase() + t.slice(1);
+};
 
 export function PersonForm({
   editing,
+  startAdding,
   onSaved,
 }: {
   editing?: Person | undefined;
+  /** Open with a fresh occasion ready to fill (from "+ Add occasion" on the person page). */
+  startAdding?: boolean;
   onSaved: (p: Person) => void;
 }) {
   const defaultLead = useSyncExternalStore(
@@ -61,32 +147,26 @@ export function PersonForm({
     defaultLeadStore.get,
     defaultLeadStore.server,
   );
+  const personLeads = editing?.reminder.daysBefore.length
+    ? editing.reminder.daysBefore
+    : [defaultLead];
+
+  const [step, setStep] = useState<1 | 2>(editing ? 2 : 1);
   const [name, setName] = useState(editing?.name ?? "");
   const [photo, setPhoto] = useState<string | undefined>(editing?.photo);
   const [rel, setRel] = useState<string>(() =>
     editing ? (RELS.find(([, r]) => r === editing.relationship)?.[0] ?? "Friend") : "",
   );
-  const [saved, setSaved] = useState<Person["dates"]>(editing?.dates.slice(1) ?? []);
-  const [draft, setDraft] = useState<Draft>(() => {
-    const d = editing?.dates[0];
-    if (!d) return blank();
-    const k =
-      d.type === "birthday"
-        ? 0
-        : d.type === "anniversary"
-          ? 1
-          : d.label === "Work anniversary"
-            ? 2
-            : 3;
-    return {
-      kind: k,
-      label: k === 3 ? d.label : "",
-      day: d.day,
-      month: d.month,
-      year: d.year ?? null,
-    };
-  });
-  const [lead, setLead] = useState(editing?.reminder.daysBefore[0] ?? defaultLead);
+  const [dates, setDates] = useState<SavedDate[]>(() =>
+    (editing?.dates ?? []).map(({ personId: _p, ...d }) => ({
+      ...d,
+      daysBefore: d.daysBefore?.length ? d.daysBefore : personLeads,
+    })),
+  );
+  /** The occasion being filled in. On screen 2 it is null until "+ Add another occasion" or Edit. */
+  const [draft, setDraft] = useState<Draft | null>(() =>
+    !editing || startAdding ? blank([defaultLead]) : null,
+  );
   const [likes, setLikes] = useState<string[]>(() =>
     (editing?.notes.likes ?? "")
       .split(",")
@@ -97,36 +177,89 @@ export function PersonForm({
   const [addingLike, setAddingLike] = useState(false);
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
+  // Coming from "+ Add an occasion": bring the new occasion into view.
+  useEffect(() => {
+    if (editing && startAdding)
+      setTimeout(
+        () => editorRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }),
+        150,
+      );
+  }, [editing, startAdding]);
 
   const first = name.trim().split(" ")[0] || "them";
-  const kind = KINDS[draft.kind]!;
-  const label = draft.kind === 3 ? draft.label.trim() : kind[2];
-  const on = nextOccurrence({ day: draft.day, month: draft.month }, today);
-  const title = occasionTitle(label || "Date", kind[1], draft.year ?? undefined, on);
-  const milestone = draft.year && isMilestone(title) ? title.split(" ")[0] : null;
-  const leadNote = LEADS.find(([d]) => d === lead)?.[2] ?? "";
+  const who = name.trim() ? first : "them";
 
-  const currentDate = (): Omit<Person["dates"][number], "personId"> | null =>
-    label
-      ? {
-          id: crypto.randomUUID(),
-          type: kind[1],
-          label,
-          day: draft.day,
-          month: draft.month,
-          ...(draft.year ? { year: draft.year } : {}),
-        }
-      : null;
+  const checkPerson = () => {
+    if (!name.trim()) return (toast.error("Add their name."), false);
+    if (!rel) return (toast.error(`Choose who ${first} is to you.`), false);
+    return true;
+  };
 
-  const addAnother = () => {
-    const d = currentDate();
-    if (!d) {
-      toast.error("Name the occasion first.");
+  /** Put the draft into the list. Returns the updated list, or null if something is missing. */
+  const commitDraft = (): SavedDate[] | null => {
+    if (!draft) return dates;
+    const d = toDate(draft);
+    if (typeof d === "string") {
+      toast.error(d);
+      return null;
+    }
+    const next = dates.some((x) => x.id === d.id)
+      ? dates.map((x) => (x.id === d.id ? d : x))
+      : [...dates, d];
+    setDates(next);
+    setDraft(null);
+    return next;
+  };
+
+  const save = async (list: SavedDate[]) => {
+    if (!checkPerson()) return;
+    if (!list.length) {
+      toast.error("Add at least one occasion.");
       return;
     }
-    setSaved((s) => [...s, { ...d, personId: editing?.id ?? "" }]);
-    setDraft(blank());
-    toast.success(`${label} saved. Add the next date.`);
+    setBusy(true);
+    const relationship = RELS.find(([l]) => l === rel)![1];
+    const notes = {
+      likes: likes.join(", "),
+      dislikes: editing?.notes.dislikes ?? "",
+      sizes: editing?.notes.sizes ?? "",
+      noAlcohol: editing?.notes.noAlcohol ?? false,
+      budget: editing?.notes.budget ?? 0,
+    };
+    // Every lead time in use, kept on the person too so older reminder emails still work.
+    const reminder = {
+      daysBefore: [...new Set(list.flatMap((d) => d.daysBefore ?? []))].sort((a, b) => b - a),
+      channels: editing?.reminder.channels ?? (["email"] as const).slice(),
+    };
+    try {
+      if (editing) {
+        const p: Person = {
+          ...editing,
+          name: name.trim(),
+          relationship,
+          ...(photo ? { photo } : {}),
+          notes,
+          reminder,
+          dates: list.map((x) => ({ ...x, personId: editing.id })),
+        };
+        await updatePerson(p);
+        onSaved(p);
+      } else {
+        const p = await addPerson({
+          name: name.trim(),
+          relationship,
+          ...(photo ? { photo } : {}),
+          notes,
+          reminder,
+          dates: list.map(({ id: _i, ...x }) => x),
+        });
+        onSaved(p);
+      }
+    } catch {
+      toast.error("We couldn't save that. Please try again.");
+      setBusy(false);
+    }
   };
 
   const pickPhoto = (file: File) => {
@@ -161,65 +294,7 @@ export function PersonForm({
     setAddingLike(false);
   };
 
-  const save = async () => {
-    if (!name.trim()) {
-      toast.error("Add their name.");
-      return;
-    }
-    if (!rel) {
-      toast.error(`Choose who ${first} is to you.`);
-      return;
-    }
-    const d = currentDate();
-    if (!d && saved.length === 0) {
-      toast.error("Name the occasion.");
-      return;
-    }
-    setBusy(true);
-    const dates = [...saved, ...(d ? [{ ...d, personId: editing?.id ?? "" }] : [])];
-    const relationship = RELS.find(([l]) => l === rel)![1];
-    const notes = {
-      likes: likes.join(", "),
-      dislikes: editing?.notes.dislikes ?? "",
-      sizes: editing?.notes.sizes ?? "",
-      noAlcohol: editing?.notes.noAlcohol ?? false,
-      budget: editing?.notes.budget ?? 0,
-    };
-    const reminder = {
-      daysBefore: [lead],
-      channels: editing?.reminder.channels ?? (["email"] as const).slice(),
-    };
-    try {
-      if (editing) {
-        const p: Person = {
-          ...editing,
-          name: name.trim(),
-          relationship,
-          ...(photo ? { photo } : {}),
-          notes,
-          reminder,
-          dates: dates.map((x) => ({ ...x, personId: editing.id })),
-        };
-        await updatePerson(p);
-        onSaved(p);
-      } else {
-        const p = await addPerson({
-          name: name.trim(),
-          relationship,
-          ...(photo ? { photo } : {}),
-          notes,
-          reminder,
-          dates: dates.map(({ personId: _p, ...x }) => x),
-        });
-        onSaved(p);
-      }
-    } catch {
-      toast.error("We couldn't save that. Please try again.");
-      setBusy(false);
-    }
-  };
-
-  return (
+  const personFields = (
     <>
       <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 20 }}>
         <button
@@ -322,195 +397,152 @@ export function PersonForm({
           ))}
         </div>
       </Section>
+    </>
+  );
 
-      <Section title="The occasion">
-        <div
-          role="group"
-          aria-label="Occasion"
-          style={{ display: "flex", gap: 4, background: C.line, borderRadius: 16, padding: 4 }}
-        >
-          {KINDS.map(([l], i) => {
-            const onK = draft.kind === i;
-            return (
-              <button
-                key={l}
-                type="button"
-                aria-pressed={onK}
-                onClick={() => setDraft((d) => ({ ...d, kind: i }))}
-                style={{
-                  flex: 1,
-                  minHeight: 46,
-                  border: 0,
-                  borderRadius: 12,
-                  background: onK ? "#FFFFFF" : "transparent",
-                  boxShadow: onK ? "0 2px 8px rgba(41,40,40,.12)" : "none",
-                  color: C.nero,
-                  font: `${onK ? 700 : 500} 13px 'Parkinsans',system-ui,sans-serif`,
-                  cursor: "pointer",
-                  padding: "6px 4px",
-                  lineHeight: 1.2,
-                }}
-              >
-                {l}
-              </button>
-            );
-          })}
-        </div>
-        {draft.kind === 3 && (
-          <input
-            aria-label="Name the occasion"
-            value={draft.label}
-            onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
-            placeholder="e.g. Graduation, Naming ceremony"
-            style={{ ...input, marginTop: 4 }}
-          />
-        )}
-      </Section>
-
-      <div
-        style={{
-          marginTop: 18,
-          background: "#FFFFFF",
-          borderRadius: 20,
-          border: `1.5px solid ${C.line}`,
-          padding: "16px 14px",
-          position: "relative",
-        }}
-      >
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            left: 12,
-            right: 12,
-            top: 62,
-            height: 46,
-            borderRadius: 12,
-            background: C.ivory,
+  /* ---------- Screen 1 ---------- */
+  if (step === 1) {
+    return (
+      <>
+        <StepDots step={1} />
+        {personFields}
+        {draft && <OccasionEditor draft={draft} setDraft={setDraft} who={who} />}
+        <div style={{ flex: 1, minHeight: 24 }} />
+        <button
+          type="button"
+          className="a-abtn a-lg a-ink"
+          disabled={busy}
+          style={{ marginTop: 24, opacity: busy ? 0.6 : 1 }}
+          onClick={() => {
+            if (!checkPerson()) return;
+            const list = commitDraft();
+            if (list) void save(list);
           }}
-        />
-        <div style={{ display: "flex", position: "relative" }}>
-          <Wheel
-            label="Day"
-            values={Array.from(
-              { length: daysIn(draft.month, draft.year ?? undefined) },
-              (_, i) => i + 1,
-            )}
-            value={draft.day}
-            onChange={(day) => setDraft((d) => ({ ...d, day }))}
-          />
-          <Wheel
-            wide
-            label="Month"
-            values={MONTHS.map((_, i) => i + 1)}
-            value={draft.month}
-            format={(m) => MONTHS[m - 1]!}
-            onChange={(month) =>
-              setDraft((d) => ({
-                ...d,
-                month,
-                day: Math.min(d.day, daysIn(month, d.year ?? undefined)),
-              }))
+        >
+          Save {name.trim() ? first : "person"}
+        </button>
+        <button
+          type="button"
+          className="a-abtn a-lg a-line"
+          style={{ marginTop: 10 }}
+          onClick={() => {
+            if (!checkPerson()) return;
+            if (commitDraft()) {
+              setStep(2);
+              window.scrollTo({ top: 0 });
             }
-          />
-          <Wheel
-            label="Year"
-            values={[0, ...Array.from({ length: 101 }, (_, i) => Number(today.slice(0, 4)) - i)]}
-            value={draft.year ?? 0}
-            format={(y) => (y ? String(y) : "—")}
-            onChange={(y) => setDraft((d) => ({ ...d, year: y || null }))}
-          />
-        </div>
-        {milestone && (
-          <div
-            style={{
-              marginTop: 14,
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              border: `1.5px solid ${C.gold}`,
-              borderRadius: 14,
-              padding: "12px 14px",
-              position: "relative",
-            }}
-          >
-            <span
+          }}
+        >
+          + Add another occasion or what {who} loves
+        </button>
+      </>
+    );
+  }
+
+  /* ---------- Screen 2 ---------- */
+  return (
+    <>
+      {!editing && <StepDots step={2} />}
+      {editing && personFields}
+
+      <Section title={`${name.trim() ? first + "'s" : "Their"} occasions`}>
+        {dates.length === 0 && !draft && (
+          <p style={{ margin: 0, fontSize: 13, color: C.muted }}>
+            No occasions yet. Add one below.
+          </p>
+        )}
+        {dates.map((d) =>
+          draft?.id === d.id ? null : (
+            <div
+              key={d.id}
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                background: C.gold,
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                fontFamily: "'EB Garamond',Georgia,serif",
-                fontSize: 18,
-                fontWeight: 500,
-                flexShrink: 0,
+                gap: 12,
+                background: "#FFFFFF",
+                border: `1.5px solid ${C.line}`,
+                borderRadius: 16,
+                padding: "12px 14px",
               }}
             >
-              {parseInt(milestone, 10)}
-            </span>
-            <span style={{ fontSize: 13, lineHeight: 1.45 }}>
-              {kind[1] === "birthday"
-                ? `${first} turns ${parseInt(milestone, 10)} on ${longDate(on)}. A milestone worth marking.`
-                : `${parseInt(milestone, 10)} years on ${longDate(on)}. A milestone worth marking.`}
-            </span>
-          </div>
-        )}
-        <div
-          style={{
-            marginTop: 10,
-            fontSize: 12,
-            color: C.muted,
-            textAlign: "center",
-            position: "relative",
-          }}
-        >
-          The year is optional. It helps us spot milestones.
-        </div>
-      </div>
-
-      {saved.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-          {saved.map((d) => (
-            <span key={d.id} className="a-pill" style={{ background: C.sage, gap: 6 }}>
-              {d.label} · {d.day} {MONTHS[d.month - 1]!.slice(0, 3)}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <strong style={{ fontSize: 15 }}>{titleFor(d)}</strong>
+                <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
+                  {longDate(nextOccurrence(d, today)).replace(/^\w+ /, "")}
+                  {" · "}
+                  {(d.daysBefore ?? []).length === 1 ? "Reminder " : "Reminders "}
+                  {(d.daysBefore ?? []).map(leadLabel).join(", ")} before
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (draft && !commitDraft()) return;
+                  setDraft(fromDate({ ...d, personId: "" }, personLeads));
+                }}
+                style={smallBtn}
+              >
+                Edit
+              </button>
               <button
                 type="button"
                 aria-label={`Remove ${d.label}`}
-                onClick={() => setSaved((s) => s.filter((x) => x.id !== d.id))}
-                style={{
-                  border: 0,
-                  background: "none",
-                  cursor: "pointer",
-                  fontSize: 14,
-                  padding: 0,
-                  color: C.nero,
-                }}
+                onClick={() => setDates((x) => x.filter((y) => y.id !== d.id))}
+                style={{ ...smallBtn, width: 36, padding: 0 }}
               >
                 ×
               </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      <Section title="Remind me">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {LEADS.map(([d, l]) => (
-            <button
-              key={d}
-              type="button"
-              aria-pressed={lead === d}
-              onClick={() => setLead(d)}
-              style={chip(lead === d)}
-            >
-              {l}
-            </button>
-          ))}
-        </div>
-        <div style={{ fontSize: 12, color: C.muted }}>{leadNote}</div>
+            </div>
+          ),
+        )}
+        {draft ? (
+          <div
+            ref={editorRef}
+            style={{
+              scrollMarginTop: 16,
+              background: "#FFFFFF",
+              border: `1.5px solid ${C.gold}`,
+              borderRadius: 20,
+              padding: "4px 14px 14px",
+            }}
+          >
+            <OccasionEditor draft={draft} setDraft={setDraft} who={who} />
+            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+              <button
+                type="button"
+                className="a-abtn a-line"
+                style={{ flex: 1 }}
+                onClick={() => setDraft(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="a-abtn a-ink"
+                style={{ flex: 2 }}
+                onClick={() => commitDraft()}
+              >
+                {dates.some((x) => x.id === draft.id) ? "Update occasion" : "Add occasion"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setDraft(blank([defaultLead]))}
+            style={{
+              minHeight: 52,
+              borderRadius: 16,
+              border: `1.5px dashed ${C.goldText}`,
+              background: "transparent",
+              font: "600 14px 'Parkinsans',system-ui,sans-serif",
+              color: C.nero,
+              cursor: "pointer",
+            }}
+          >
+            + Add another occasion for {who}
+          </button>
+        )}
       </Section>
 
       <Section title={`What ${name.trim() ? first : "they"} love${name.trim() ? "s" : ""}`}>
@@ -549,12 +581,12 @@ export function PersonForm({
               }}
               placeholder="Tea, lace, gold…"
               style={{
-                height: 32,
+                height: 36,
                 borderRadius: 999,
                 border: `1.5px solid ${C.nero}`,
                 padding: "0 12px",
-                font: "500 13px 'Parkinsans',sans-serif",
-                width: 150,
+                font: "500 16px 'Parkinsans',sans-serif",
+                width: 170,
                 outline: "none",
               }}
             />
@@ -576,41 +608,320 @@ export function PersonForm({
           )}
         </div>
         <div style={{ fontSize: 12, color: C.muted }}>
-          We use this to suggest boxes {name.trim() ? first : "they"}&rsquo;ll love.
+          Optional. We use this to suggest boxes {who}&rsquo;ll love.
         </div>
       </Section>
 
-      <div style={{ flex: 1, minHeight: 20 }} />
-      <button
-        type="button"
-        onClick={addAnother}
-        style={{
-          textAlign: "center",
-          fontSize: 14,
-          fontWeight: 600,
-          margin: "22px 0 14px",
-          background: "none",
-          border: 0,
-          cursor: "pointer",
-          color: C.nero,
-        }}
-      >
-        + Add another date for {name.trim() ? first : "them"}
-      </button>
+      <div style={{ flex: 1, minHeight: 24 }} />
       <button
         type="button"
         className="a-abtn a-lg a-ink"
         disabled={busy}
-        onClick={save}
-        style={{ opacity: busy ? 0.6 : 1 }}
+        style={{ marginTop: 24, opacity: busy ? 0.6 : 1 }}
+        onClick={() => {
+          // An open occasion with nothing picked yet is simply dropped.
+          if (draft && !draft.iso && !draft.text.trim()) {
+            setDraft(null);
+            void save(dates);
+            return;
+          }
+          const list = commitDraft();
+          if (list) void save(list);
+        }}
       >
-        {editing ? "Save changes" : `Save ${name.trim() ? first : "person"}`}
+        {editing ? "Save changes" : "Done"}
       </button>
+      {!editing && (
+        <button
+          type="button"
+          onClick={() => setStep(1)}
+          style={{
+            margin: "14px auto 0",
+            background: "none",
+            border: 0,
+            font: "500 14px 'Parkinsans',sans-serif",
+            color: C.muted,
+            cursor: "pointer",
+          }}
+        >
+          Back
+        </button>
+      )}
     </>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+/* ---------- One occasion: kind, date, reminders ---------- */
+function OccasionEditor({
+  draft,
+  setDraft,
+  who,
+}: {
+  draft: Draft;
+  setDraft: (d: Draft) => void;
+  who: string;
+}) {
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customDays, setCustomDays] = useState("");
+  const set = (p: Partial<Draft>) => setDraft({ ...draft, ...p });
+  const label = labelOf(draft);
+  const preview = (() => {
+    if (!draft.iso) return null;
+    const on = nextOccurrence(
+      { day: Number(draft.iso.slice(8, 10)), month: Number(draft.iso.slice(5, 7)) },
+      today,
+    );
+    const keepYear = draft.kind !== "other" && !draft.noYear;
+    const type: PersonalDateType =
+      draft.kind === "birthday"
+        ? "birthday"
+        : draft.kind === "anniversary"
+          ? "anniversary"
+          : "custom";
+    const title = occasionTitle(
+      label || "Occasion",
+      type,
+      keepYear ? Number(draft.iso.slice(0, 4)) : undefined,
+      on,
+    );
+    return { on, title, milestone: isMilestone(title) };
+  })();
+  const toggleLead = (n: number) =>
+    set({
+      leads: draft.leads.includes(n) ? draft.leads.filter((x) => x !== n) : [...draft.leads, n],
+    });
+  const extraLeads = draft.leads.filter((n) => !LEAD_CHOICES.some(([d]) => d === n));
+
+  return (
+    <>
+      <Section title="The occasion">
+        <div
+          role="group"
+          aria-label="Occasion"
+          style={{ display: "flex", gap: 4, background: C.line, borderRadius: 16, padding: 4 }}
+        >
+          {KINDS.map(([k, l]) => {
+            const on = draft.kind === k;
+            return (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={on}
+                onClick={() => set({ kind: k, text: "" })}
+                style={{
+                  flex: 1,
+                  minHeight: 46,
+                  border: 0,
+                  borderRadius: 12,
+                  background: on ? "#FFFFFF" : "transparent",
+                  boxShadow: on ? "0 2px 8px rgba(41,40,40,.12)" : "none",
+                  color: C.nero,
+                  font: `${on ? 700 : 500} 13px 'Parkinsans',system-ui,sans-serif`,
+                  cursor: "pointer",
+                  padding: "6px 4px",
+                  lineHeight: 1.2,
+                }}
+              >
+                {l}
+              </button>
+            );
+          })}
+        </div>
+        {draft.kind === "anniversary" && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {SUBS.map(([s, l]) => (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={draft.sub === s}
+                onClick={() => set({ sub: s, text: "" })}
+                style={chip(draft.sub === s)}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        )}
+        {(draft.kind === "other" || (draft.kind === "anniversary" && draft.sub === "else")) && (
+          <input
+            aria-label={
+              draft.kind === "other" ? "Name the occasion" : "What is the anniversary for?"
+            }
+            value={draft.text}
+            onChange={(e) => set({ text: e.target.value })}
+            placeholder={
+              draft.kind === "other"
+                ? "Graduation, naming ceremony…"
+                : "Business launch, first date…"
+            }
+            style={input}
+          />
+        )}
+      </Section>
+
+      <Section title="The date">
+        <NativeDate
+          value={draft.iso}
+          onChange={(iso) => set({ iso })}
+          label="The date"
+          {...(draft.kind === "other" || draft.noYear ? {} : { max: today })}
+          showYear={draft.kind !== "other" && !draft.noYear}
+        />
+        {draft.kind !== "other" && (
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              fontSize: 13,
+              color: C.muted,
+              cursor: "pointer",
+              minHeight: 32,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={draft.noYear}
+              onChange={(e) => set({ noYear: e.target.checked })}
+              style={{ width: 20, height: 20, accentColor: C.plum }}
+            />
+            I don&rsquo;t know the year
+          </label>
+        )}
+        {preview && (
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              alignItems: "center",
+              border: `1.5px solid ${preview.milestone ? C.gold : C.line}`,
+              background: preview.milestone ? "rgba(231,185,59,.10)" : "transparent",
+              borderRadius: 14,
+              padding: "10px 14px",
+              fontSize: 13,
+              lineHeight: 1.45,
+            }}
+          >
+            <span>
+              Next:{" "}
+              <strong>{preview.title.charAt(0).toUpperCase() + preview.title.slice(1)}</strong> on{" "}
+              {longDate(preview.on)}
+              {preview.milestone ? ". A milestone worth marking." : ""}
+            </span>
+          </div>
+        )}
+      </Section>
+
+      <Section title="Remind me">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {LEAD_CHOICES.map(([d, l]) => (
+            <button
+              key={d}
+              type="button"
+              aria-pressed={draft.leads.includes(d)}
+              onClick={() => toggleLead(d)}
+              style={chip(draft.leads.includes(d))}
+            >
+              {l}
+            </button>
+          ))}
+          {extraLeads.map((d) => (
+            <button
+              key={d}
+              type="button"
+              aria-pressed
+              onClick={() => toggleLead(d)}
+              style={chip(true)}
+            >
+              {leadLabel(d)} ×
+            </button>
+          ))}
+          {customOpen ? (
+            <span style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+              <input
+                autoFocus
+                inputMode="numeric"
+                aria-label="Days before"
+                value={customDays}
+                onChange={(e) => setCustomDays(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                placeholder="10"
+                style={{ ...input, width: 70, height: 44, textAlign: "center" }}
+              />
+              <span style={{ fontSize: 13 }}>days</span>
+              <button
+                type="button"
+                style={chip(false)}
+                onClick={() => {
+                  const n = Number(customDays);
+                  if (n >= 1 && n <= 365 && !draft.leads.includes(n))
+                    set({ leads: [...draft.leads, n] });
+                  setCustomDays("");
+                  setCustomOpen(false);
+                }}
+              >
+                Add
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCustomOpen(true)}
+              style={{
+                ...chip(false),
+                border: `1.5px dashed ${C.muted}`,
+                background: "transparent",
+              }}
+            >
+              + Other
+            </button>
+          )}
+        </div>
+        <div style={{ fontSize: 12, color: C.muted }}>
+          {draft.leads.length
+            ? `We'll email you ${[...draft.leads]
+                .sort((a, b) => b - a)
+                .map(leadLabel)
+                .join(", ")} before, so there's time to choose a box for ${who}.`
+            : "Tap as many as you like."}
+        </div>
+      </Section>
+    </>
+  );
+}
+
+function StepDots({ step }: { step: 1 | 2 }) {
+  return (
+    <div
+      aria-label={`Step ${step} of 2`}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        marginTop: 14,
+        fontSize: 12,
+        color: C.muted,
+      }}
+    >
+      {[1, 2].map((n) => (
+        <span
+          key={n}
+          style={{
+            width: n === step ? 22 : 8,
+            height: 8,
+            borderRadius: 999,
+            background: n <= step ? C.plum : C.line,
+            transition: "width .2s",
+          }}
+        />
+      ))}
+      <span style={{ marginLeft: 4 }}>
+        {step === 1 ? "Step 1 of 2 · the essentials" : "Step 2 of 2 · optional"}
+      </span>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 10 }}>
       <div className="a-eye">{title}</div>
@@ -619,94 +930,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-/** A three-row date wheel: tap the row above or below (or use the arrow keys) to change the value. */
-function Wheel({
-  label,
-  values,
-  value,
-  onChange,
-  format = String,
-  wide,
-}: {
-  label: string;
-  values: number[];
-  value: number;
-  onChange: (v: number) => void;
-  format?: (v: number) => string;
-  wide?: boolean;
-}) {
-  const i = Math.max(0, values.indexOf(value));
-  const prev = values[i - 1],
-    next = values[i + 1];
-  const step = (d: number) => {
-    const v = values[i + d];
-    if (v !== undefined) onChange(v);
-  };
-  return (
-    <div
-      role="spinbutton"
-      tabIndex={0}
-      aria-label={label}
-      aria-valuenow={value}
-      aria-valuetext={format(value)}
-      onKeyDown={(e) => {
-        if (e.key === "ArrowUp") {
-          e.preventDefault();
-          step(-1);
-        }
-        if (e.key === "ArrowDown") {
-          e.preventDefault();
-          step(1);
-        }
-      }}
-      onWheel={(e) => step(e.deltaY > 0 ? 1 : -1)}
-      style={{
-        flex: wide ? 1.7 : 1,
-        minWidth: 0,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 8,
-        fontVariantNumeric: "tabular-nums",
-        outlineOffset: 2,
-        borderRadius: 12,
-      }}
-    >
-      <span style={{ fontSize: 11, letterSpacing: ".2em", color: C.goldText, fontWeight: 600 }}>
-        {label.toUpperCase()}
-      </span>
-      <button type="button" tabIndex={-1} onClick={() => step(-1)} style={wheelBtn}>
-        {prev !== undefined ? format(prev) : " "}
-      </button>
-      <strong
-        style={{
-          fontFamily: "'EB Garamond',Georgia,serif",
-          fontSize: 26,
-          fontWeight: 500,
-          lineHeight: 1,
-          minHeight: 28,
-          whiteSpace: "nowrap",
-        }}
-      >
-        {format(value)}
-      </strong>
-      <button type="button" tabIndex={-1} onClick={() => step(1)} style={wheelBtn}>
-        {next !== undefined ? format(next) : " "}
-      </button>
-    </div>
-  );
-}
-
-const wheelBtn = {
-  fontSize: 15,
-  color: C.muted,
-  background: "none",
-  border: 0,
+const smallBtn = {
+  minHeight: 36,
+  padding: "0 12px",
+  borderRadius: 999,
+  border: `1.5px solid ${C.line}`,
+  background: "#FFFFFF",
+  font: "600 13px 'Parkinsans',system-ui,sans-serif",
+  color: C.nero,
   cursor: "pointer",
-  minHeight: 22,
-  padding: 0,
-  font: "400 15px 'Parkinsans',sans-serif",
-  whiteSpace: "nowrap",
 } as const;
 const input = {
   width: "100%",

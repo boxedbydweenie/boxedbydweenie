@@ -1,6 +1,6 @@
 import { customerClient } from "@/lib/supabase";
 import { recipientsStore, toUser, userStore, wishlistStore } from "@/services/account";
-import { momentsStore, peopleStore, scheduledStore } from "@/services/calendar";
+import { customMomentsStore, momentsStore, peopleStore, scheduledStore } from "@/services/calendar";
 import { mergeOrder, ordersStore, type ServerOrder } from "@/services/orders";
 
 type Syncable = {
@@ -14,6 +14,7 @@ const KEYS: [string, Syncable, unknown][] = [
   ["people", peopleStore as unknown as Syncable, []],
   ["scheduled", scheduledStore as unknown as Syncable, []],
   ["moments", momentsStore as unknown as Syncable, []],
+  ["custom_moments", customMomentsStore as unknown as Syncable, []],
 ];
 let started = false;
 

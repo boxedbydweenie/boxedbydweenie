@@ -8,6 +8,7 @@ import {
   IconPlus,
   Ring,
   greeting,
+  celebrationLine,
   longDate,
   shortDate,
   status,
@@ -39,6 +40,9 @@ const initialsOf = (n: string) =>
     .join("");
 const titleOf = (i: UpcomingItem) =>
   i.kind === "person" ? `${first(i.name)}'s ${i.title}` : i.name;
+/** The day itself: "Happy 2nd birthday, Ayomikun" or "Happy Christmas Day". */
+const happyOf = (i: UpcomingItem) =>
+  i.kind === "person" ? `${celebrationLine(i.title)}, ${first(i.name)}` : celebrationLine(i.name);
 const detailOf = (i: UpcomingItem) => {
   if (i.tbc) return "Date to be confirmed";
   if (status(i).label === "Order today") return "Order today";
@@ -192,12 +196,21 @@ export function LookCountdown({ name, items, people }: LookProps) {
                   boxShadow: "0 0 0 5px #FFFFFF",
                 }}
               >
-                <span
-                  className="a-dsp"
-                  style={{ fontSize: hero.days > 99 ? 72 : 96, lineHeight: 0.9, color: C.gold }}
-                >
-                  {hero.days}
-                </span>
+                {hero.days === 0 ? (
+                  <span
+                    className="a-scr"
+                    style={{ fontSize: 64, lineHeight: 1, color: C.gold, marginTop: 6 }}
+                  >
+                    Today
+                  </span>
+                ) : (
+                  <span
+                    className="a-dsp"
+                    style={{ fontSize: hero.days > 99 ? 72 : 96, lineHeight: 0.9, color: C.gold }}
+                  >
+                    {hero.days}
+                  </span>
+                )}
                 <span
                   style={{
                     fontSize: 12,
@@ -207,19 +220,19 @@ export function LookCountdown({ name, items, people }: LookProps) {
                     fontWeight: 600,
                   }}
                 >
-                  {hero.days === 1 ? "DAY" : "DAYS"}
+                  {hero.days === 0 ? "IT'S THE DAY" : hero.days === 1 ? "DAY" : "DAYS"}
                 </span>
               </span>
             </Ring>
           </div>
           <div style={{ fontSize: 12, letterSpacing: ".24em", color: C.muted, marginTop: 22 }}>
-            UNTIL
+            {hero.days === 0 ? "CELEBRATE" : "UNTIL"}
           </div>
           <h1
             className="a-dsp"
             style={{ fontSize: 34, color: C.plum, marginTop: 6, lineHeight: 1.08 }}
           >
-            {titleOf(hero)}
+            {hero.days === 0 ? happyOf(hero) : titleOf(hero)}
           </h1>
           <p style={{ margin: "8px 0 0", fontSize: 14, color: C.muted }}>
             {longDate(hero.date)}

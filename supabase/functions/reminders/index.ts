@@ -51,11 +51,15 @@ Deno.serve(async (req) => {
       let email: string | null = null, name = "there";
       for (const person of people) {
         const rem = person?.reminder;
-        if (!rem?.channels?.includes("email") || !Array.isArray(rem.daysBefore)) continue;
+        if (!rem?.channels?.includes("email")) continue;
         for (const d of Array.isArray(person.dates) ? person.dates : []) {
           if (!d?.day || !d?.month) continue;
           const n = daysUntil(Number(d.day), Number(d.month), today);
-          if (!rem.daysBefore.includes(n)) continue;
+          // Each date can carry its own reminders; older data uses the person's list.
+          const leads = Array.isArray(d.daysBefore) && d.daysBefore.length
+            ? d.daysBefore
+            : Array.isArray(rem.daysBefore) ? rem.daysBefore : [];
+          if (!leads.map(Number).includes(n)) continue;
           const key = `${person.id}:${d.id}:${today.slice(0, 4)}:${n}`;
           const { error } = await db.from("reminder_log").insert({ user_id: r.user_id, key });
           if (error) continue; // already sent

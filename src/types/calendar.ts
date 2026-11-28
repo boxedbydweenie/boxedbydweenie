@@ -63,6 +63,16 @@ export interface PersonalDate {
   day: number;
   month: number;
   year?: number;
+  /** Reminder lead times for this date (days before). Falls back to the person's reminder when missing. */
+  daysBefore?: number[];
+}
+
+/** An occasion a customer added for themselves (e.g. "Bicycle Day"). Private to their account. */
+export interface CustomMoment {
+  id: string;
+  name: string;
+  month: number;
+  day: number;
 }
 
 export interface Reminder {

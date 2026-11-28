@@ -8,6 +8,7 @@ import {
   IconBack,
   Ring,
   isMilestone,
+  leadLabel,
   longDate,
   occasionTitle,
   shortDate,
@@ -229,6 +230,15 @@ function AppPerson() {
                   {days <= 1 ? (days === 0 ? "Today" : "Tomorrow") : `${longDate(on)}`}
                   {!sorted && orderBy >= today ? ` · order by ${shortDate(orderBy)}` : ""}
                 </div>
+                <div style={{ fontSize: 12, color: C.muted }}>
+                  Reminders{" "}
+                  {(d.daysBefore?.length ? d.daysBefore : person.reminder.daysBefore)
+                    .slice()
+                    .sort((a, b) => b - a)
+                    .map(leadLabel)
+                    .join(", ")}{" "}
+                  before
+                </div>
               </div>
               {sorted ? (
                 <span className="a-pill" style={{ background: C.sage }}>
@@ -249,6 +259,25 @@ function AppPerson() {
             </div>
           );
         })}
+      </div>
+
+      <div style={{ padding: "12px 16px 0" }}>
+        <Link
+          to="/app/people/new"
+          search={{ edit: person.id, add: true }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 52,
+            borderRadius: 16,
+            border: `1.5px dashed ${C.goldText}`,
+            fontSize: 14,
+            fontWeight: 600,
+          }}
+        >
+          + Add an occasion for {first}
+        </Link>
       </div>
 
       <div style={{ padding: "20px 22px 0", display: "flex", flexDirection: "column", gap: 12 }}>

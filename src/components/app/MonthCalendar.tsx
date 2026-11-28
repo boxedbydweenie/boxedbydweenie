@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useMoments, usePeople } from "@/hooks/use-calendar";
+import { useCustomMoments, useMoments, usePeople } from "@/hooks/use-calendar";
 import { addDays, getOccasionsForYear, isoDate } from "@/services/calendar";
 import type { OccasionInstance } from "@/types/calendar";
 import { C, IconBack, PERSON_ORDER_LEAD_DAYS, followed, longDate, occasionTitle } from "./kit";
@@ -30,6 +30,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 export function useCalendarEvents(year: number) {
   const people = usePeople();
   const moments = useMoments();
+  const custom = useCustomMoments();
   const [festivals, setFestivals] = useState<OccasionInstance[]>([]);
   useEffect(() => {
     void Promise.all([
@@ -37,7 +38,7 @@ export function useCalendarEvents(year: number) {
       getOccasionsForYear(year),
       getOccasionsForYear(year + 1),
     ]).then((a) => setFestivals(a.flat()));
-  }, [year]);
+  }, [year, custom]);
   return useMemo(() => {
     const map = new Map<string, DayEvent[]>();
     const add = (e: DayEvent) => map.set(e.date, [...(map.get(e.date) ?? []), e]);

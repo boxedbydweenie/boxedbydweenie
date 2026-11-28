@@ -5,12 +5,15 @@ import { BackButton, C } from "@/components/app/kit";
 import { PersonForm } from "@/components/app/PersonForm";
 
 export const Route = createFileRoute("/app/people/new")({
-  validateSearch: z.object({ edit: z.string().optional().catch(undefined) }),
+  validateSearch: z.object({
+    edit: z.string().optional().catch(undefined),
+    add: z.coerce.boolean().optional().catch(undefined),
+  }),
   component: NewPerson,
 });
 
 function NewPerson() {
-  const { edit } = Route.useSearch();
+  const { edit, add } = Route.useSearch();
   const editing = usePeople().find((p) => p.id === edit);
   const navigate = useNavigate();
   const router = useRouter();
@@ -37,7 +40,12 @@ function NewPerson() {
         <span style={{ width: 44 }} />
       </div>
       <h1 className="a-dsp" style={{ fontSize: 38, marginTop: 24 }}>
-        {editing ? (
+        {editing && add ? (
+          <>
+            Add an occasion for{" "}
+            <span style={{ color: C.goldText }}>{editing.name.split(" ")[0]}.</span>
+          </>
+        ) : editing ? (
           <>
             Edit <span style={{ color: C.goldText }}>{editing.name.split(" ")[0]}.</span>
           </>
@@ -50,6 +58,7 @@ function NewPerson() {
       <PersonForm
         key={editing?.id ?? "new"}
         editing={editing}
+        startAdding={Boolean(add)}
         onSaved={(p) =>
           void navigate({ to: "/app/people/$personId", params: { personId: p.id }, replace: true })
         }

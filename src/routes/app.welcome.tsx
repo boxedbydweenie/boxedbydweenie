@@ -4,13 +4,21 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { OCCASIONS } from "@/data/occasions";
 import { customerClient } from "@/lib/supabase";
-import { useMoments, usePeople, useScheduledGifts } from "@/hooks/use-calendar";
+import { useCustomMoments, useMoments, usePeople, useScheduledGifts } from "@/hooks/use-calendar";
 import { useUser } from "@/hooks/use-shop";
-import { addPerson, getOccasionsForYear, momentsStore, todayIso } from "@/services/calendar";
+import {
+  addCustomMoment,
+  addPerson,
+  getOccasionsForYear,
+  momentsStore,
+  removeCustomMoment,
+  todayIso,
+} from "@/services/calendar";
 import type { OccasionInstance, PersonalDateType } from "@/types/calendar";
 import {
   C,
   IconCheck,
+  NativeDate,
   StepHeader,
   canInstall,
   chip,
@@ -398,6 +406,7 @@ function Moments({
   standalone: boolean;
 }) {
   const saved = useMoments();
+  const own = useCustomMoments();
   const [on, setOn] = useState<Set<string>>(() => new Set(saved.length ? saved : DEFAULT_MOMENTS));
   const dated = OCCASIONS.filter(
     (o) => !["work-anniversaries", "new-starter-onboarding"].includes(o.slug),
@@ -467,6 +476,7 @@ function Moments({
             </div>
           );
         })}
+        <OwnMoments />
       </div>
       <div style={{ flex: 1, minHeight: 24 }} />
       <div
@@ -494,7 +504,8 @@ function Moments({
             flexShrink: 0,
           }}
         >
-          {new Set([...on, ...dated.filter((o) => o.publicHoliday).map((o) => o.slug)]).size}
+          {new Set([...on, ...dated.filter((o) => o.publicHoliday).map((o) => o.slug)]).size +
+            own.length}
         </span>
         moments on your calendar. Change them any time.
       </div>
@@ -511,6 +522,138 @@ function Moments({
     </>
   );
 }
+
+/** "Your own": occasions the customer adds for themselves. They stay private to their account. */
+function OwnMoments() {
+  const own = useCustomMoments();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [iso, setIso] = useState("");
+  const [err, setErr] = useState("");
+  const add = () => {
+    if (!name.trim()) return setErr("Give it a name.");
+    if (!iso) return setErr("Pick the date.");
+    addCustomMoment({
+      name: name.trim().slice(0, 40),
+      month: Number(iso.slice(5, 7)),
+      day: Number(iso.slice(8, 10)),
+    });
+    toast.success(`${name.trim()} added to your calendar.`);
+    setName("");
+    setIso("");
+    setErr("");
+    setOpen(false);
+  };
+  const dm = (m: { day: number; month: number }) =>
+    new Date(2024, m.month - 1, m.day).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+    });
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="a-eye">Your own</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {own.map((m) => (
+          <span key={m.id} style={{ ...chip(true), cursor: "default", paddingRight: 6 }}>
+            <IconCheck style={{ width: 16, height: 16, stroke: C.gold, strokeWidth: 2.6 }} />
+            {m.name}
+            <span style={{ fontSize: 11, opacity: 0.75 }}>{dm(m)}</span>
+            <button
+              type="button"
+              aria-label={`Remove ${m.name}`}
+              onClick={() => removeCustomMoment(m.id)}
+              style={{
+                border: 0,
+                background: "rgba(255,255,255,.14)",
+                color: "#FFFFFF",
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                cursor: "pointer",
+                fontSize: 16,
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        {!open && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            style={{ ...chip(false), border: `1.5px dashed ${C.muted}`, background: "transparent" }}
+          >
+            + Add your own
+          </button>
+        )}
+      </div>
+      {open && (
+        <div
+          style={{
+            background: "#FFFFFF",
+            border: `1.5px solid ${C.line}`,
+            borderRadius: 18,
+            padding: 14,
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          }}
+        >
+          <input
+            autoFocus
+            aria-label="Name of the occasion"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setErr("");
+            }}
+            placeholder="Bicycle Day, Family reunion…"
+            style={ownInput}
+          />
+          <NativeDate
+            value={iso}
+            onChange={(v) => {
+              setIso(v);
+              setErr("");
+            }}
+            label="Date of the occasion"
+          />
+          <div style={{ fontSize: 12, color: err ? C.oxblood : C.muted }}>
+            {err || "It repeats every year and only you can see it."}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              className="a-abtn a-line"
+              style={{ flex: 1 }}
+              onClick={() => {
+                setOpen(false);
+                setErr("");
+              }}
+            >
+              Cancel
+            </button>
+            <button type="button" className="a-abtn a-ink" style={{ flex: 2 }} onClick={add}>
+              Add to my calendar
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+const ownInput = {
+  width: "100%",
+  boxSizing: "border-box",
+  height: 52,
+  border: `1.5px solid ${C.line}`,
+  borderRadius: 14,
+  background: "#FFFFFF",
+  padding: "0 14px",
+  font: "500 16px 'Parkinsans','Segoe UI',system-ui,sans-serif",
+  color: C.nero,
+} as const;
 
 /* ---------- 1.6 Bring everyone in ---------- */
 interface Row {
