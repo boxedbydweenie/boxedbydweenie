@@ -24,26 +24,35 @@ import {
   status,
   upcomingItems,
   useWide,
+  useEntered,
+  enterApp,
   whenText,
   type UpcomingItem,
 } from "@/components/app/kit";
+import { LookAgenda, LookCountdown } from "@/components/app/HomeLooks";
 import { MonthGrid, useCalendarEvents } from "@/components/app/MonthCalendar";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/")({
-  validateSearch: z.object({ from: z.string().max(40).optional().catch(undefined) }),
+  validateSearch: z.object({
+    from: z.string().max(40).optional().catch(undefined),
+    look: z.enum(["a", "b"]).optional().catch(undefined),
+  }),
   component: AppHome,
 });
 
 /** Visitors see the splash; signed-in customers see Home. */
 function AppHome() {
   const user = useUser();
-  const { from } = Route.useSearch();
-  return user ? <Home name={user.name} /> : <Splash from={from} />;
+  const entered = useEntered();
+  const { from, look } = Route.useSearch();
+  if (!user) return <Splash from={from} />;
+  if (!entered) return <Splash name={user.name} />;
+  return <Home name={user.name} look={look} />;
 }
 
 /* ---------- 1.1 Splash ---------- */
-function Splash({ from }: { from?: string | undefined }) {
+function Splash({ from, name }: { from?: string | undefined; name?: string }) {
   return (
     <section
       className="a-pat-green"
@@ -129,9 +138,11 @@ function Splash({ from }: { from?: string | undefined }) {
             margin: "16px 0 0",
           }}
         >
-          {from
-            ? `${from} uses the Gift Calendar to remember birthdays and anniversaries, and send a beautiful gift in time. It's free.`
-            : "Birthdays, anniversaries and every festive season, with a box on its way before the day."}
+          {name
+            ? "Your dates, your people and every festive season, all in one place."
+            : from
+              ? `${from} uses the Gift Calendar to remember birthdays and anniversaries, and send a beautiful gift in time. It's free.`
+              : "Birthdays, anniversaries and every festive season, with a box on its way before the day."}
         </p>
         {from && (
           <div style={{ marginTop: 22 }}>
@@ -139,36 +150,60 @@ function Splash({ from }: { from?: string | undefined }) {
           </div>
         )}
         <div style={{ flex: 1, minHeight: 28 }} />
-        <Link to="/app/signin" search={{ mode: "up" }} className="a-abtn a-lg a-gold">
-          Create my calendar
-        </Link>
-        <Link
-          to="/app/signin"
-          search={{ mode: "in" }}
-          className="a-abtn a-lg a-white-line"
-          style={{ marginTop: 10 }}
-        >
-          I already have an account
-        </Link>
-        <Link
-          to="/app/shop"
-          style={{
-            textAlign: "center",
-            fontSize: 14,
-            fontWeight: 600,
-            marginTop: 16,
-            color: "#FFFFFF",
-            textDecoration: "underline",
-          }}
-        >
-          Just browsing? Visit the shop
-        </Link>
-        <div
-          className="a-dsp"
-          style={{ textAlign: "center", fontSize: 18, color: C.gold, marginTop: 18 }}
-        >
-          We exist for the love of gifting.
-        </div>
+        {name ? (
+          <>
+            <div style={{ textAlign: "center", fontSize: 15, color: "rgba(255,255,255,.8)" }}>
+              Welcome back, {name.trim().split(/\s+/)[0]}
+            </div>
+            <button
+              type="button"
+              className="a-abtn a-lg a-gold"
+              style={{ marginTop: 14 }}
+              onClick={enterApp}
+            >
+              Open my calendar
+            </button>
+            <div
+              className="a-dsp"
+              style={{ textAlign: "center", fontSize: 18, color: C.gold, marginTop: 22 }}
+            >
+              We exist for the love of gifting.
+            </div>
+          </>
+        ) : (
+          <>
+            <Link to="/app/signin" search={{ mode: "up" }} className="a-abtn a-lg a-gold">
+              Create my calendar
+            </Link>
+            <Link
+              to="/app/signin"
+              search={{ mode: "in" }}
+              className="a-abtn a-lg a-white-line"
+              style={{ marginTop: 10 }}
+            >
+              I already have an account
+            </Link>
+            <Link
+              to="/app/shop"
+              style={{
+                textAlign: "center",
+                fontSize: 14,
+                fontWeight: 600,
+                marginTop: 16,
+                color: "#FFFFFF",
+                textDecoration: "underline",
+              }}
+            >
+              Just browsing? Visit the shop
+            </Link>
+            <div
+              className="a-dsp"
+              style={{ textAlign: "center", fontSize: 18, color: C.gold, marginTop: 18 }}
+            >
+              We exist for the love of gifting.
+            </div>
+          </>
+        )}
       </div>
     </section>
   );
@@ -178,7 +213,7 @@ const shopOccasionFor = (slug?: string) =>
   slug ? OCCASIONS.find((o) => o.slug === slug)?.shop.occasion : undefined;
 
 /* ---------- 2.1 Home ---------- */
-function Home({ name }: { name: string }) {
+function Home({ name, look }: { name: string; look?: "a" | "b" | undefined }) {
   const wide = useWide();
   const people = usePeople();
   const scheduled = useScheduledGifts();
@@ -300,6 +335,8 @@ function Home({ name }: { name: string }) {
     );
   }
 
+  if (look === "a") return <LookCountdown name={name} items={items} people={people} />;
+  if (look === "b") return <LookAgenda name={name} items={items} people={people} />;
   const season = items.find(
     (i) => i.kind === "festival" && i !== hero && i.days <= 75 && i.publicHoliday,
   );

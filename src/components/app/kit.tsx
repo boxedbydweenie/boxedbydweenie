@@ -817,3 +817,36 @@ export function BrandStrip({ style }: { style?: React.CSSProperties }) {
     </div>
   );
 }
+
+/* ---------- Splash on every launch ---------- */
+const ENTER_KEY = "bbd-app-entered";
+let entered = (() => {
+  try {
+    return typeof window !== "undefined" && sessionStorage.getItem(ENTER_KEY) === "1";
+  } catch {
+    return false;
+  }
+})();
+const enterSubs = new Set<() => void>();
+/** True once the person has tapped past the splash in this launch of the app. */
+export function useEntered() {
+  const [v, setV] = useState(entered);
+  useEffect(() => {
+    const f = () => setV(entered);
+    enterSubs.add(f);
+    f();
+    return () => {
+      enterSubs.delete(f);
+    };
+  }, []);
+  return v;
+}
+export function enterApp() {
+  entered = true;
+  try {
+    sessionStorage.setItem(ENTER_KEY, "1");
+  } catch {
+    /* private mode: stays in memory */
+  }
+  enterSubs.forEach((f) => f());
+}
