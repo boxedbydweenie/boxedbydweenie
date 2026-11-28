@@ -303,7 +303,7 @@ function Home({ name }: { name: string }) {
   const season = items.find(
     (i) => i.kind === "festival" && i !== hero && i.days <= 75 && i.publicHoliday,
   );
-  const coming = items.filter((i) => i !== hero && i !== season).slice(0, 4);
+  const coming = items.filter((i) => i !== hero && i !== season).slice(0, 3);
   const peopleRow = people
     .map((p) => ({ p, next: items.find((i) => i.personId === p.id) }))
     .sort((a, b) => (a.next?.date ?? "9999").localeCompare(b.next?.date ?? "9999"))
@@ -360,7 +360,8 @@ function Home({ name }: { name: string }) {
                   style={{
                     width: "100%",
                     height: "100%",
-                    ...avatarColour(p.id),
+                    background: "#E9E1EA",
+                    color: C.plum,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -389,7 +390,7 @@ function Home({ name }: { name: string }) {
               <span
                 style={{
                   fontSize: 11,
-                  color: next.days <= 7 ? C.oxblood : C.muted,
+                  color: next.days <= 7 ? C.plum : C.muted,
                   fontWeight: next.days <= 7 ? 700 : 400,
                   marginTop: -4,
                 }}
@@ -434,8 +435,11 @@ function Home({ name }: { name: string }) {
     <div style={{ display: "flex", flexDirection: "column", paddingBottom: 8 }}>
       {/* Plum header, from the guide's Plum pattern and the LinkedIn banner treatment */}
       <header
-        className="a-pat-plum"
-        style={{ color: "#FFFFFF", padding: "calc(env(safe-area-inset-top,0px) + 20px) 22px 30px" }}
+        style={{
+          background: C.plum,
+          color: "#FFFFFF",
+          padding: "calc(env(safe-area-inset-top,0px) + 20px) 22px 30px",
+        }}
       >
         <div
           style={{
@@ -588,8 +592,8 @@ function ComingList({ items }: { items: UpcomingItem[] }) {
                 width: 48,
                 height: 52,
                 borderRadius: 14,
-                background: urgent ? C.gold : C.plum,
-                color: urgent ? C.nero : "#FFFFFF",
+                background: "#F4EFE5",
+                color: C.plum,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -597,10 +601,7 @@ function ComingList({ items }: { items: UpcomingItem[] }) {
                 flexShrink: 0,
               }}
             >
-              <span
-                className="a-dsp"
-                style={{ fontSize: 22, lineHeight: 1, color: urgent ? C.nero : C.gold }}
-              >
+              <span className="a-dsp" style={{ fontSize: 22, lineHeight: 1, color: C.plum }}>
                 {Number(i.date.slice(8, 10))}
               </span>
               <span style={{ fontSize: 10.5, letterSpacing: ".12em", marginTop: 3 }}>
@@ -622,7 +623,7 @@ function ComingList({ items }: { items: UpcomingItem[] }) {
               <span
                 style={{
                   fontSize: 12.5,
-                  color: urgent ? C.goldText : C.muted,
+                  color: urgent ? C.plum : C.muted,
                   fontWeight: urgent ? 700 : 400,
                 }}
               >
@@ -676,8 +677,8 @@ function SeasonCard({ item }: { item: UpcomingItem }) {
   const shopOcc = shopOccasionFor(item.occasionSlug);
   return (
     <div
-      className="a-pat-plum"
       style={{
+        background: C.plum,
         borderRadius: 24,
         padding: 20,
         color: "#FFFFFF",
@@ -713,19 +714,6 @@ function SeasonCard({ item }: { item: UpcomingItem }) {
           ? ` · order by ${shortDate(item.orderBy)}`
           : ""}
       </div>
-      <img
-        src="/brand/bow-gold.svg"
-        alt=""
-        style={{
-          position: "absolute",
-          right: -14,
-          bottom: -18,
-          width: 130,
-          height: "auto",
-          opacity: 0.95,
-          filter: "drop-shadow(0 12px 16px rgba(0,0,0,.35))",
-        }}
-      />
       <div style={{ display: "flex", gap: 8, marginTop: 16, position: "relative", maxWidth: 260 }}>
         <Link
           to="/app/shop"
@@ -978,26 +966,33 @@ function NextUp({
         overflow: "hidden",
       }}
     >
-      <img
-        src="/brand/bow-gold.svg"
-        alt=""
-        style={{
-          position: "absolute",
-          right: 14,
-          top: 40,
-          width: compact ? 104 : 122,
-          height: "auto",
-          filter: light
-            ? "drop-shadow(0 8px 10px rgba(57,36,63,.25))"
-            : "drop-shadow(0 12px 16px rgba(0,0,0,.35))",
-        }}
-      />
+      {!light && (
+        <img
+          src="/brand/bow-gold.svg"
+          alt=""
+          style={{
+            position: "absolute",
+            right: 14,
+            top: 40,
+            width: compact ? 104 : 122,
+            height: "auto",
+            filter: light
+              ? "drop-shadow(0 8px 10px rgba(57,36,63,.25))"
+              : "drop-shadow(0 12px 16px rgba(0,0,0,.35))",
+          }}
+        />
+      )}
       <div className="a-eye" style={{ color: light ? C.goldText : C.gold, position: "relative" }}>
         Next up
       </div>
       <div
         className="a-dsp"
-        style={{ fontSize: compact ? 30 : 34, marginTop: 10, position: "relative", maxWidth: 190 }}
+        style={{
+          fontSize: compact ? 30 : 34,
+          marginTop: 10,
+          position: "relative",
+          maxWidth: light ? 320 : 190,
+        }}
       >
         {possessive}
         {item.title && (
@@ -1005,7 +1000,7 @@ function NextUp({
             className="a-scr"
             style={{
               display: "block",
-              color: light ? C.goldText : C.gold,
+              color: light ? C.plum : C.gold,
               fontSize: item.title.length > 14 ? 32 : compact ? 40 : 46,
               marginTop: 2,
             }}
@@ -1060,7 +1055,12 @@ function NextUp({
         }}
       >
         {s.label && (
-          <span className="a-pill" style={{ background: s.bg, color: s.fg }}>
+          <span
+            className="a-pill"
+            style={
+              light ? { background: "#F4EFE5", color: C.plum } : { background: s.bg, color: s.fg }
+            }
+          >
             {s.label}
           </span>
         )}
@@ -1088,8 +1088,11 @@ function NextUp({
                 ? { occasion: shopOcc }
                 : {}
           }
-          className="a-abtn a-gold"
-          style={{ flex: 1 }}
+          className={light ? "a-abtn" : "a-abtn a-gold"}
+          style={{
+            flex: 1,
+            ...(light ? { background: C.plum, color: "#FFFFFF" } : {}),
+          }}
         >
           {isPerson ? "Choose a gift" : "See gift ideas"}
         </Link>
@@ -1100,7 +1103,7 @@ function NextUp({
           style={{
             flex: 1,
             ...(light
-              ? { border: `1.5px solid ${C.plum}`, color: C.plum, background: "transparent" }
+              ? { border: `1.5px solid ${C.line}`, color: C.plum, background: "transparent" }
               : {}),
           }}
         >
@@ -1247,14 +1250,13 @@ function InviteCard() {
         color: C.plum,
       }}
     >
-      <img src="/brand/bow-gold.svg" alt="" style={{ width: 48, height: "auto", flexShrink: 0 }} />
       <span style={{ flex: 1, minWidth: 0 }}>
-        <strong className="a-dsp" style={{ display: "block", fontSize: 21 }}>
+        <strong className="a-dsp" style={{ display: "block", fontSize: 19 }}>
           Know someone who always forgets?
         </strong>
         <span style={{ fontSize: 13, color: C.muted }}>Invite them to the Gift Calendar.</span>
       </span>
-      <span className="a-pill" style={{ background: C.gold }}>
+      <span className="a-pill" style={{ background: "#E9E1EA", color: C.plum }}>
         Invite
       </span>
     </Link>

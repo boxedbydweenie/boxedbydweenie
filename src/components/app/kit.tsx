@@ -74,7 +74,7 @@ html:has(.bbd-app),body:has(.bbd-app){background:${C.ivory};overscroll-behavior-
 .a-main.a-tabs-on{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
 .a-screen{flex:1;display:flex;flex-direction:column;animation:a-in .22s ease both}
 @keyframes a-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.a-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:${C.nero} url("/brand/pattern-black.png");background-size:72px 68px;border-top:1px solid rgba(231,185,59,.45);box-shadow:0 -10px 30px rgba(41,40,40,.22);display:flex;align-items:stretch;padding:0 max(4px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(4px,env(safe-area-inset-left,0px));height:calc(68px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+.a-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;background:${C.nero};border-top:1px solid rgba(231,185,59,.45);display:flex;align-items:stretch;padding:0 max(4px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(4px,env(safe-area-inset-left,0px));height:calc(68px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
 .bbd-app .a-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:500;letter-spacing:.02em;color:rgba(244,239,229,.62);position:relative;-webkit-user-select:none;user-select:none;min-width:0;transition:color .2s ease}
 .a-tab>*{position:relative;z-index:1}
 .bbd-app .a-tab[aria-current=page]{color:${C.gold};font-weight:700}
