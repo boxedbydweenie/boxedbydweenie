@@ -9,12 +9,8 @@ import { formatNaira } from "@/lib/format";
 import type { OccasionInstance, Person } from "@/types/calendar";
 import type { ShopProduct } from "@/types/shop";
 import {
-  BrandStrip,
   C,
   InstallHelp,
-  Ring,
-  IconBell,
-  IconPlus,
   avatarColour,
   dayMonth,
   greeting,
@@ -23,26 +19,34 @@ import {
   status,
   upcomingItems,
   useWide,
+  useEntered,
+  enterApp,
   whenText,
   type UpcomingItem,
 } from "@/components/app/kit";
+import { LookCountdown } from "@/components/app/HomeLooks";
 import { MonthGrid, useCalendarEvents } from "@/components/app/MonthCalendar";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/")({
-  validateSearch: z.object({ from: z.string().max(40).optional().catch(undefined) }),
+  validateSearch: z.object({
+    from: z.string().max(40).optional().catch(undefined),
+  }),
   component: AppHome,
 });
 
 /** Visitors see the splash; signed-in customers see Home. */
 function AppHome() {
   const user = useUser();
+  const entered = useEntered();
   const { from } = Route.useSearch();
-  return user ? <Home name={user.name} /> : <Splash from={from} />;
+  if (!user) return <Splash from={from} />;
+  if (!entered) return <Splash name={user.name} />;
+  return <Home name={user.name} />;
 }
 
 /* ---------- 1.1 Splash ---------- */
-function Splash({ from }: { from?: string | undefined }) {
+function Splash({ from, name }: { from?: string | undefined; name?: string }) {
   return (
     <section
       className="a-pat-green"
@@ -128,9 +132,11 @@ function Splash({ from }: { from?: string | undefined }) {
             margin: "16px 0 0",
           }}
         >
-          {from
-            ? `${from} uses the Gift Calendar to remember birthdays and anniversaries, and send a beautiful gift in time. It's free.`
-            : "Birthdays, anniversaries and every festive season, with a box on its way before the day."}
+          {name
+            ? "Your dates, your people and every festive season, all in one place."
+            : from
+              ? `${from} uses the Gift Calendar to remember birthdays and anniversaries, and send a beautiful gift in time. It's free.`
+              : "Birthdays, anniversaries and every festive season, with a box on its way before the day."}
         </p>
         {from && (
           <div style={{ marginTop: 22 }}>
@@ -138,36 +144,60 @@ function Splash({ from }: { from?: string | undefined }) {
           </div>
         )}
         <div style={{ flex: 1, minHeight: 28 }} />
-        <Link to="/app/signin" search={{ mode: "up" }} className="a-abtn a-lg a-gold">
-          Create my calendar
-        </Link>
-        <Link
-          to="/app/signin"
-          search={{ mode: "in" }}
-          className="a-abtn a-lg a-white-line"
-          style={{ marginTop: 10 }}
-        >
-          I already have an account
-        </Link>
-        <Link
-          to="/app/shop"
-          style={{
-            textAlign: "center",
-            fontSize: 14,
-            fontWeight: 600,
-            marginTop: 16,
-            color: "#FFFFFF",
-            textDecoration: "underline",
-          }}
-        >
-          Just browsing? Visit the shop
-        </Link>
-        <div
-          className="a-dsp"
-          style={{ textAlign: "center", fontSize: 18, color: C.gold, marginTop: 18 }}
-        >
-          We exist for the love of gifting.
-        </div>
+        {name ? (
+          <>
+            <div style={{ textAlign: "center", fontSize: 15, color: "rgba(255,255,255,.8)" }}>
+              Welcome back, {name.trim().split(/\s+/)[0]}
+            </div>
+            <button
+              type="button"
+              className="a-abtn a-lg a-gold"
+              style={{ marginTop: 14 }}
+              onClick={enterApp}
+            >
+              Open my calendar
+            </button>
+            <div
+              className="a-dsp"
+              style={{ textAlign: "center", fontSize: 18, color: C.gold, marginTop: 22 }}
+            >
+              We exist for the love of gifting.
+            </div>
+          </>
+        ) : (
+          <>
+            <Link to="/app/signin" search={{ mode: "up" }} className="a-abtn a-lg a-gold">
+              Create my calendar
+            </Link>
+            <Link
+              to="/app/signin"
+              search={{ mode: "in" }}
+              className="a-abtn a-lg a-white-line"
+              style={{ marginTop: 10 }}
+            >
+              I already have an account
+            </Link>
+            <Link
+              to="/app/shop"
+              style={{
+                textAlign: "center",
+                fontSize: 14,
+                fontWeight: 600,
+                marginTop: 16,
+                color: "#FFFFFF",
+                textDecoration: "underline",
+              }}
+            >
+              Just browsing? Visit the shop
+            </Link>
+            <div
+              className="a-dsp"
+              style={{ textAlign: "center", fontSize: 18, color: C.gold, marginTop: 18 }}
+            >
+              We exist for the love of gifting.
+            </div>
+          </>
+        )}
       </div>
     </section>
   );
@@ -194,24 +224,16 @@ function Home({ name }: { name: string }) {
   }, []);
 
   const first = name.trim().split(/\s+/)[0] ?? "";
-  const initials = name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase())
-    .join("");
-  const items = upcomingItems(people, scheduled, festivals);
-  const hero = items.find((i) => i.kind === "person") ?? items[0];
-  const next30 = items.filter((i) => i.days <= 30);
-  const rest = items.filter((i) => i !== hero).slice(0, 6);
-  const heroPerson = hero?.personId ? people.find((p) => p.id === hero.personId) : undefined;
-  const ideas = heroPerson ? giftIdeas(heroPerson, 4) : [];
   const todayText = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
     day: "numeric",
     month: "long",
   });
-  const urgent = next30.some((i) => status(i).label === "Order today");
+  const items = upcomingItems(people, scheduled, festivals);
+  const hero = items.find((i) => i.kind === "person") ?? items[0];
+  const next30 = items.filter((i) => i.days <= 30);
+  const heroPerson = hero?.personId ? people.find((p) => p.id === hero.personId) : undefined;
+  const ideas = heroPerson ? giftIdeas(heroPerson, 4) : [];
 
   const greetingBlock = (
     <div style={{ minWidth: 0 }}>
@@ -299,364 +321,7 @@ function Home({ name }: { name: string }) {
     );
   }
 
-  const season = items.find(
-    (i) =>
-      i.kind === "festival" &&
-      i !== hero &&
-      i.days <= 75 &&
-      (i.publicHoliday || i.occasionSlug === "year-end-staff-gifts"),
-  );
-  const peopleRow = people
-    .map((p) => ({ p, next: items.find((i) => i.personId === p.id) }))
-    .sort((a, b) => (a.next?.date ?? "9999").localeCompare(b.next?.date ?? "9999"))
-    .slice(0, 10);
-  const round = {
-    width: 44,
-    height: 44,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  } as const;
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", paddingBottom: 8 }}>
-      {/* Plum header, from the guide's Plum pattern and the LinkedIn banner treatment */}
-      <header
-        className="a-pat-plum"
-        style={{ color: "#FFFFFF", padding: "calc(env(safe-area-inset-top,0px) + 22px) 22px 76px" }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 10,
-          }}
-        >
-          <img
-            src="/brand/logo-on-dark.svg"
-            alt="Boxed by Dweenie"
-            style={{ height: 22, width: "auto" }}
-          />
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <Link
-              to="/app/people/new"
-              aria-label="Add a date"
-              style={{ ...round, background: C.gold, color: C.nero }}
-            >
-              <IconPlus style={{ width: 22, height: 22, strokeWidth: 2.2 }} />
-            </Link>
-            <Link
-              to="/app/calendar"
-              aria-label="Upcoming reminders"
-              style={{
-                ...round,
-                background: "rgba(255,255,255,.1)",
-                border: "1px solid rgba(255,255,255,.22)",
-                color: "#FFFFFF",
-                position: "relative",
-              }}
-            >
-              <IconBell />
-              {urgent && (
-                <span
-                  style={{
-                    position: "absolute",
-                    right: 9,
-                    top: 9,
-                    width: 9,
-                    height: 9,
-                    borderRadius: "50%",
-                    background: C.coral,
-                    border: `2px solid ${C.plum}`,
-                  }}
-                />
-              )}
-            </Link>
-            <Link
-              to="/app/account"
-              aria-label="Profile"
-              style={{
-                ...round,
-                background: C.ivory,
-                color: C.plum,
-                fontWeight: 700,
-                fontSize: 14,
-                boxShadow: `0 0 0 2px ${C.gold}`,
-              }}
-            >
-              {initials || "B"}
-            </Link>
-          </div>
-        </div>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,.72)", marginTop: 26 }}>
-          {todayText}
-        </div>
-        <h1 className="a-dsp" style={{ fontSize: 34, marginTop: 4 }}>
-          {greeting()},{" "}
-          <span className="a-scr" style={{ color: C.gold, fontSize: 46 }}>
-            {first}
-          </span>
-        </h1>
-      </header>
-
-      <div
-        style={{
-          margin: "-58px 16px 0",
-          position: "relative",
-          zIndex: 1,
-          boxShadow: "0 24px 40px -26px rgba(41,40,40,.55)",
-          borderRadius: 24,
-        }}
-      >
-        {hero ? <NextUp item={hero} /> : <EmptyHome />}
-      </div>
-
-      {peopleRow.length > 0 && (
-        <section style={{ padding: "24px 16px 0" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              padding: "0 6px",
-            }}
-          >
-            <div className="a-eye">Your people</div>
-            <Link to="/app/people" style={{ fontSize: 13, fontWeight: 600 }}>
-              See all
-            </Link>
-          </div>
-          <div className="a-hscroll" style={{ gap: 14, marginTop: 12 }}>
-            {peopleRow.map(({ p, next }) => (
-              <Link
-                key={p.id}
-                to="/app/people/$personId"
-                params={{ personId: p.id }}
-                style={{
-                  flexShrink: 0,
-                  width: 68,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 6,
-                }}
-              >
-                <Ring size={64} days={next?.days ?? 60}>
-                  {p.photo ? (
-                    <img
-                      src={p.photo}
-                      alt=""
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <span
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        ...avatarColour(p.id),
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontFamily: "'EB Garamond',Georgia,serif",
-                        fontSize: 22,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {p.name.slice(0, 1).toUpperCase()}
-                    </span>
-                  )}
-                </Ring>
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    maxWidth: 68,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {p.name.split(" ")[0]}
-                </span>
-                {next && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      color: next.days <= 7 ? C.oxblood : C.muted,
-                      fontWeight: next.days <= 7 ? 700 : 400,
-                      marginTop: -4,
-                    }}
-                  >
-                    {next.days === 0 ? "Today" : `${next.days}d`}
-                  </span>
-                )}
-              </Link>
-            ))}
-            <Link
-              to="/app/people/new"
-              style={{
-                flexShrink: 0,
-                width: 68,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              <span
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: "50%",
-                  border: `1.5px dashed ${C.muted}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: C.nero,
-                }}
-              >
-                <IconPlus style={{ width: 22, height: 22 }} />
-              </span>
-              <span style={{ fontSize: 12, fontWeight: 600 }}>Add</span>
-            </Link>
-          </div>
-        </section>
-      )}
-
-      {next30.length > 0 && (
-        <div style={{ margin: "22px 16px 0" }}>
-          <Next30 items={next30} />
-        </div>
-      )}
-
-      {rest.length > 0 && (
-        <div style={{ padding: "22px 16px 0", display: "flex", flexDirection: "column", gap: 12 }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              padding: "0 6px",
-            }}
-          >
-            <div className="a-eye">Coming up</div>
-            <Link to="/app/calendar" style={{ fontSize: 13, fontWeight: 600 }}>
-              Calendar
-            </Link>
-          </div>
-          <div className="a-hscroll">
-            {rest.map((i) => (
-              <UpCard key={i.key} item={i} peopleCount={people.length} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {season && (
-        <div style={{ padding: "22px 16px 0" }}>
-          <SeasonCard item={season} />
-        </div>
-      )}
-
-      {heroPerson && hero && ideas.length > 0 && (
-        <div style={{ padding: "22px 16px 0" }}>
-          <Ideas person={heroPerson} hero={hero} ideas={ideas} />
-        </div>
-      )}
-      <div style={{ padding: "22px 16px 0" }}>
-        <InviteCard />
-      </div>
-      <SignOff />
-    </div>
-  );
-}
-
-/** The next big holiday, on the guide's Oxblood pattern. */
-function SeasonCard({ item }: { item: UpcomingItem }) {
-  const shopOcc = shopOccasionFor(item.occasionSlug);
-  return (
-    <div
-      className="a-pat-oxblood"
-      style={{
-        borderRadius: 24,
-        padding: 20,
-        color: "#FFFFFF",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span className="a-eye" style={{ color: C.gold }}>
-          The season
-        </span>
-        {item.publicHoliday && (
-          <span
-            className="a-pill"
-            style={{
-              background: "rgba(255,255,255,.14)",
-              color: "#FFFFFF",
-              minHeight: 22,
-              fontSize: 11,
-            }}
-          >
-            Public holiday
-          </span>
-        )}
-      </div>
-      <div className="a-dsp" style={{ fontSize: 32, marginTop: 10, maxWidth: 240 }}>
-        {item.name}
-      </div>
-      <div style={{ fontSize: 13, color: "rgba(255,255,255,.82)", marginTop: 6 }}>
-        {longDate(item.date)}
-        {item.tbc ? " · date to be confirmed" : ""}
-        {item.orderBy && !item.tbc && item.orderBy >= todayIso()
-          ? ` · order by ${shortDate(item.orderBy)}`
-          : ""}
-      </div>
-      <img
-        src="/brand/bow-gold.svg"
-        alt=""
-        style={{
-          position: "absolute",
-          right: -14,
-          bottom: -18,
-          width: 130,
-          height: "auto",
-          opacity: 0.95,
-          filter: "drop-shadow(0 12px 16px rgba(0,0,0,.35))",
-        }}
-      />
-      <div style={{ display: "flex", gap: 8, marginTop: 16, position: "relative", maxWidth: 260 }}>
-        <Link
-          to="/app/shop"
-          search={shopOcc ? { occasion: shopOcc } : {}}
-          className="a-abtn a-gold"
-          style={{ flex: 1 }}
-        >
-          Shop the season
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-/** Closing band: the tagline on Plum with the guide's colour strip. */
-function SignOff() {
-  return (
-    <footer
-      className="a-pat-plum"
-      style={{ marginTop: 28, color: "#FFFFFF", textAlign: "center", padding: "28px 22px 24px" }}
-    >
-      <img src="/brand/logo-on-dark.svg" alt="" style={{ height: 22, width: "auto" }} />
-      <div className="a-dsp" style={{ fontSize: 26, marginTop: 12 }}>
-        We exist for the love of <span style={{ color: C.gold }}>gifting.</span>
-      </div>
-      <BrandStrip style={{ marginTop: 18 }} />
-    </footer>
-  );
+  return <LookCountdown name={name} items={items} people={people} />;
 }
 
 function Ideas({
@@ -856,40 +521,58 @@ function Next30({ items, rows }: { items: UpcomingItem[]; rows?: boolean }) {
   );
 }
 
-function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
+function NextUp({
+  item,
+  compact,
+  light,
+}: {
+  item: UpcomingItem;
+  compact?: boolean;
+  light?: boolean;
+}) {
   const s = status(item);
   const isPerson = item.kind === "person";
   const possessive = isPerson ? `${item.name.split(" ")[0]}'s` : item.name;
   const shopOcc = shopOccasionFor(item.occasionSlug);
   return (
     <div
-      className="a-pat-green"
+      className={light ? "" : "a-pat-green"}
       style={{
-        color: "#FFFFFF",
+        ...(light ? { background: "#FFFFFF", border: `1.5px solid ${C.line}` } : {}),
+        color: light ? C.plum : "#FFFFFF",
         borderRadius: 24,
         padding: 22,
         position: "relative",
         overflow: "hidden",
       }}
     >
-      <img
-        src="/brand/bow-gold.svg"
-        alt=""
-        style={{
-          position: "absolute",
-          right: 14,
-          top: 40,
-          width: compact ? 104 : 122,
-          height: "auto",
-          filter: "drop-shadow(0 12px 16px rgba(0,0,0,.35))",
-        }}
-      />
-      <div className="a-eye" style={{ color: C.gold, position: "relative" }}>
+      {!light && (
+        <img
+          src="/brand/bow-gold.svg"
+          alt=""
+          style={{
+            position: "absolute",
+            right: 14,
+            top: 40,
+            width: compact ? 104 : 122,
+            height: "auto",
+            filter: light
+              ? "drop-shadow(0 8px 10px rgba(57,36,63,.25))"
+              : "drop-shadow(0 12px 16px rgba(0,0,0,.35))",
+          }}
+        />
+      )}
+      <div className="a-eye" style={{ color: light ? C.goldText : C.gold, position: "relative" }}>
         Next up
       </div>
       <div
         className="a-dsp"
-        style={{ fontSize: compact ? 30 : 34, marginTop: 10, position: "relative", maxWidth: 190 }}
+        style={{
+          fontSize: compact ? 30 : 34,
+          marginTop: 10,
+          position: "relative",
+          maxWidth: light ? 320 : 190,
+        }}
       >
         {possessive}
         {item.title && (
@@ -897,7 +580,7 @@ function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
             className="a-scr"
             style={{
               display: "block",
-              color: C.gold,
+              color: light ? C.plum : C.gold,
               fontSize: item.title.length > 14 ? 32 : compact ? 40 : 46,
               marginTop: 2,
             }}
@@ -923,7 +606,13 @@ function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
             >
               {item.days}
             </span>
-            <span style={{ fontSize: 13, lineHeight: 1.35, color: "rgba(255,255,255,.82)" }}>
+            <span
+              style={{
+                fontSize: 13,
+                lineHeight: 1.35,
+                color: light ? C.muted : "rgba(255,255,255,.82)",
+              }}
+            >
               days to go
               <br />
               {longDate(item.date)}
@@ -946,12 +635,17 @@ function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
         }}
       >
         {s.label && (
-          <span className="a-pill" style={{ background: s.bg, color: s.fg }}>
+          <span
+            className="a-pill"
+            style={
+              light ? { background: "#F4EFE5", color: C.plum } : { background: s.bg, color: s.fg }
+            }
+          >
             {s.label}
           </span>
         )}
-        {item.orderBy && !item.sorted && (
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,.86)" }}>
+        {item.orderBy && !item.sorted && s.label !== "Order today" && (
+          <span style={{ fontSize: 13, color: light ? C.muted : "rgba(255,255,255,.86)" }}>
             Order by {shortDate(item.orderBy)}
           </span>
         )}
@@ -974,99 +668,29 @@ function NextUp({ item, compact }: { item: UpcomingItem; compact?: boolean }) {
                 ? { occasion: shopOcc }
                 : {}
           }
-          className="a-abtn a-gold"
-          style={{ flex: 1 }}
+          className={light ? "a-abtn" : "a-abtn a-gold"}
+          style={{
+            flex: 1,
+            ...(light ? { background: C.plum, color: "#FFFFFF" } : {}),
+          }}
         >
           {isPerson ? "Choose a gift" : "See gift ideas"}
         </Link>
         <Link
           to="/app/vouchers"
           search={item.personId ? { for: item.personId } : {}}
-          className="a-abtn a-white-line"
-          style={{ flex: 1 }}
+          className={light ? "a-abtn" : "a-abtn a-white-line"}
+          style={{
+            flex: 1,
+            ...(light
+              ? { border: `1.5px solid ${C.line}`, color: C.plum, background: "transparent" }
+              : {}),
+          }}
         >
           Send a voucher
         </Link>
       </div>
     </div>
-  );
-}
-
-function UpCard({ item, peopleCount }: { item: UpcomingItem; peopleCount: number }) {
-  const s = status(item);
-  const urgent = s.label === "Order today";
-  const isPerson = item.kind === "person";
-  const av =
-    isPerson && item.personId ? avatarColour(item.personId) : { background: C.nero, color: C.gold };
-  const body = (
-    <>
-      <div
-        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}
-      >
-        <span
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: "50%",
-            ...av,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: isPerson ? 700 : 500,
-            fontFamily: isPerson ? undefined : "'EB Garamond',Georgia,serif",
-            fontSize: isPerson ? 15 : 18,
-            flexShrink: 0,
-          }}
-        >
-          {item.initial}
-        </span>
-        {isPerson
-          ? s.label && (
-              <span className="a-pill" style={{ background: s.bg, color: s.fg }}>
-                {s.label}
-              </span>
-            )
-          : peopleCount > 0 && (
-              <span className="a-pill" style={{ background: C.gold }}>
-                {peopleCount} {peopleCount === 1 ? "person" : "people"}
-              </span>
-            )}
-      </div>
-      <strong
-        style={{ fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-      >
-        {item.name}
-      </strong>
-      <span style={{ fontSize: 12, color: C.muted }}>
-        {isPerson
-          ? `${item.title.charAt(0).toUpperCase()}${item.title.slice(1)} · ${shortDate(item.date)}`
-          : item.orderBy && item.orderBy >= todayIso()
-            ? `Order by ${shortDate(item.orderBy)}`
-            : dayMonth(item.date)}
-      </span>
-    </>
-  );
-  const style = {
-    flexShrink: 0,
-    width: 152,
-    borderRadius: 20,
-    padding: 14,
-    boxSizing: "border-box" as const,
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 8,
-    background: "#FFFFFF",
-    border: `1.5px solid ${urgent ? C.oxblood : C.line}`,
-  };
-  const shopOcc = shopOccasionFor(item.occasionSlug);
-  return isPerson && item.personId ? (
-    <Link to="/app/people/$personId" params={{ personId: item.personId }} style={style}>
-      {body}
-    </Link>
-  ) : (
-    <Link to="/app/shop" search={shopOcc ? { occasion: shopOcc } : {}} style={style}>
-      {body}
-    </Link>
   );
 }
 
@@ -1116,26 +740,25 @@ function InviteCard() {
   return (
     <Link
       to="/app/invite"
-      className="a-pat-nero"
+
       style={{
         display: "flex",
         alignItems: "center",
         gap: 14,
         borderRadius: 20,
         padding: 16,
-        color: "#FFFFFF",
+        background: "#FFFFFF",
+        border: `1.5px solid ${C.line}`,
+        color: C.plum,
       }}
     >
-      <img src="/brand/bow-gold.svg" alt="" style={{ width: 48, height: "auto", flexShrink: 0 }} />
       <span style={{ flex: 1, minWidth: 0 }}>
-        <strong className="a-dsp" style={{ display: "block", fontSize: 21 }}>
+        <strong className="a-dsp" style={{ display: "block", fontSize: 19 }}>
           Know someone who always forgets?
         </strong>
-        <span style={{ fontSize: 13, color: "rgba(255,255,255,.8)" }}>
-          Invite them to the Gift Calendar.
-        </span>
+        <span style={{ fontSize: 13, color: C.muted }}>Invite them to the Gift Calendar.</span>
       </span>
-      <span className="a-pill" style={{ background: C.gold }}>
+      <span className="a-pill" style={{ background: "#E9E1EA", color: C.plum }}>
         Invite
       </span>
     </Link>

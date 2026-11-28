@@ -13,6 +13,7 @@ import {
   IconPeople,
   IconShop,
   VIEWPORT_SCRIPT,
+  useEntered,
   viewportFor,
 } from "@/components/app/kit";
 
@@ -95,7 +96,8 @@ function AppLayout() {
     navigator.serviceWorker.register("/app-sw.js", { scope: "/app" }).catch(() => {});
   }, []);
 
-  const signedOutSplash = !user && path === "/app";
+  const entered = useEntered();
+  const signedOutSplash = path === "/app" && (!user || !entered);
   const locked = !user && !OPEN.test(path);
   const showChrome = !signedOutSplash && !FOCUSED.test(path);
 
