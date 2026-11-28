@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useUser } from "@/hooks/use-shop";
 import { signIn, signUp } from "@/services/account";
@@ -21,9 +21,12 @@ function AppSignIn() {
   const [pw, setPw] = useState("");
 
   // Already signed in (and not in the middle of signing up): go straight to the calendar.
+  // Only while this screen is really showing: after sign-up the app moves on to the
+  // "Check your inbox" step, and this screen can briefly re-appear during that move.
+  const onThisScreen = useLocation({ select: (l) => l.pathname.replace(/\/$/, "") === "/app/signin" });
   useEffect(() => {
-    if (user && !busy) void navigate({ to: "/app", replace: true });
-  }, [user, busy, navigate]);
+    if (user && !busy && onThisScreen) void navigate({ to: "/app", replace: true });
+  }, [user, busy, onThisScreen, navigate]);
 
   const strength = [
     pw.length >= 8,
