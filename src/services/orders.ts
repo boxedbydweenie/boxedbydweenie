@@ -55,7 +55,7 @@ export interface CheckoutInput {
 /** Creates the order on the server and returns the Paystack page to send the customer to. */
 export async function startCheckout(input: CheckoutInput & { giftCardCode?: string }): Promise<{ ref: string; authorizationUrl: string | null }> {
   const r = await callShop<{ order: ServerOrder; authorizationUrl: string | null; reference: string }>("create-order", {
-    items: input.items.map((i) => ({ productId: i.kind === "gift-card" ? "prd-gift-card" : i.productId, quantity: i.quantity, packaging: i.packaging, note: i.note, handwritten: i.handwritten, price: i.price, giftCard: i.giftCard ? { amount: i.price, toName: i.giftCard.recipientName, toEmail: i.giftCard.recipientContact, message: i.giftCard.message, sendOn: i.giftCard.sendOn ?? "" } : undefined })),
+    items: input.items.map((i) => ({ productId: i.kind === "gift-card" ? "prd-gift-card" : i.productId, quantity: i.quantity, packaging: i.packaging, note: i.note, handwritten: i.handwritten, price: i.price, giftCard: i.giftCard ? { amount: i.price, toName: i.giftCard.recipientName, toEmail: i.giftCard.recipientContact, message: i.giftCard.message, design: i.giftCard.design, sendOn: i.giftCard.sendOn ?? "" } : undefined })),
     sendTo: input.sendTo, recipient: input.recipient, customer: input.customer, promoCode: input.promoCode, giftCardCode: input.giftCardCode ?? "",
   });
   const local: Order = {

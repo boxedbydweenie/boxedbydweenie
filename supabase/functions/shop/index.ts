@@ -16,6 +16,7 @@ const ALLOWED = [
   ...(Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
 ];
 
+const DESIGNS = ["white-ribbon", "black-leaf", "ivory-bow", "plum-bow", "oxblood-bow"];
 const GIFT_CARD_MIN = 5000, GIFT_CARD_MAX = 1000000, MAX_QTY = 1000, NOTE_LIMIT = 250;
 const PACKAGING = new Set(["signature-black", "ivory"]);
 
@@ -103,7 +104,7 @@ async function createOrder(body: Record<string, any>, origin: string | null) {
       const amount = Math.floor(Number(i.giftCard?.amount ?? i.price));
       if (!(amount >= GIFT_CARD_MIN && amount <= GIFT_CARD_MAX)) return { error: "Gift card amounts must be between ₦5,000 and ₦1,000,000.", status: 400 };
       price = amount;
-      giftCard = { amount, toName: str(i.giftCard?.toName, 120), toEmail: str(i.giftCard?.toEmail, 160), message: str(i.giftCard?.message, NOTE_LIMIT), sendOn: str(i.giftCard?.sendOn, 10) };
+      giftCard = { amount, toName: str(i.giftCard?.toName, 120), toEmail: str(i.giftCard?.toEmail, 160), message: str(i.giftCard?.message, NOTE_LIMIT), design: DESIGNS.includes(str(i.giftCard?.design, 20)) ? str(i.giftCard?.design, 20) : "black-leaf", sendOn: str(i.giftCard?.sendOn, 10) };
     }
     items.push({
       productId: p.id, slug: p.slug, name: p.name, price, quantity,
@@ -147,7 +148,7 @@ async function createOrder(body: Record<string, any>, origin: string | null) {
     return { error: "We could not save your order. Please try again.", status: 500 };
   }
   const cards: Record<string, unknown>[] = [];
-  for (const i of items) if (i.giftCard) for (let n = 0; n < i.quantity; n++) cards.push({ code: cardCode(), amount: i.price, balance: i.price, status: "pending", order_ref: ref, to_name: i.giftCard.toName || null, to_email: i.giftCard.toEmail || null, message: i.giftCard.message || null, send_on: /^\d{4}-\d{2}-\d{2}$/.test(i.giftCard.sendOn) ? i.giftCard.sendOn : null });
+  for (const i of items) if (i.giftCard) for (let n = 0; n < i.quantity; n++) cards.push({ code: cardCode(), amount: i.price, balance: i.price, status: "pending", order_ref: ref, to_name: i.giftCard.toName || null, to_email: i.giftCard.toEmail || null, message: i.giftCard.message || null, design: i.giftCard.design, send_on: /^\d{4}-\d{2}-\d{2}$/.test(i.giftCard.sendOn) ? i.giftCard.sendOn : null });
   if (cards.length) await db.from("gift_cards").insert(cards);
   if (payable === 0) { await db.from("gift_cards").update({ status: "active" }).eq("order_ref", ref).eq("status", "pending"); await afterPaid(db, order); return { order: publicOrder(order), authorizationUrl: null, reference: ref }; }
 

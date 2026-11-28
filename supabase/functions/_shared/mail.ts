@@ -69,6 +69,21 @@ export async function sendOrderEmails(db: any, order: Record<string, any>) {
   });
 }
 
+/** Card colours for each voucher design: background, amount, code, border. */
+const CARD_LOOK: Record<string, [string, string, string, string]> = {
+  "black-leaf": ["#292828", "#E7B93B", "#F4EFE5", "#292828"],
+  "white-ribbon": ["#FFFFFF", "#292828", "#6B6560", "#E4DCCD"],
+  "ivory-bow": ["#F4EFE5", "#292828", "#6B6560", "#E4DCCD"],
+  "plum-bow": ["#39243F", "#E7B93B", "#F4EFE5", "#39243F"],
+  "oxblood-bow": ["#83252C", "#F4EFE5", "#E7B93B", "#83252C"],
+};
+// deno-lint-ignore no-explicit-any
+function cardBlock(card: Record<string, any>) {
+  const [bg, fg, sub, line] = CARD_LOOK[String(card.design ?? "")] ?? CARD_LOOK["black-leaf"]!;
+  const to = card.to_name ? `<div style="margin-top:4px;font-family:Georgia,serif;font-style:italic;font-size:16px;color:${fg}">for ${esc(String(card.to_name).split(" ")[0])}</div>` : "";
+  return `<table width="100%" style="background:${bg};border:1px solid ${line};border-radius:14px"><tr><td align="center" style="padding:24px 12px;color:${fg};font-family:Georgia,serif"><div style="font-family:Arial,sans-serif;font-size:11px;letter-spacing:.22em;color:${sub}">BOXED BY DWEENIE</div><div style="margin-top:10px;font-size:32px">${naira(card.amount)}</div>${to}<div style="margin-top:12px;font-family:Arial,sans-serif;font-size:13px;letter-spacing:.12em;color:${sub}">${esc(card.code)}</div></td></tr></table>`;
+}
+
 /** Gift card email to the recipient (or to the buyer if no recipient email was given). Marks the card sent. */
 // deno-lint-ignore no-explicit-any
 export async function sendGiftCardEmail(db: any, card: Record<string, any>, buyerName: string, buyerEmail: string) {
@@ -83,7 +98,7 @@ export async function sendGiftCardEmail(db: any, card: Record<string, any>, buye
     html: layout({ preheader: `A gift card worth ${naira(card.amount)}`, heading: toSelf ? "Your gift card is ready" : `A gift for you, ${name}`, cta: { label: "Choose your gift", url: `${SITE_URL}/shop` },
       body: p(toSelf ? `Here is the gift card${card.to_name ? " for " + esc(card.to_name) : ""} you bought. Forward this email to the lucky person, or hand it over yourself.` : `<b>${esc(buyerName)}</b> has sent you a gift card.`) +
         (card.message ? `<p style="margin:0 0 16px;padding:14px 16px;background:#F4EFE5;border-radius:12px;font-family:Georgia,serif;font-style:italic">&ldquo;${esc(card.message)}&rdquo;</p>` : "") +
-        `<table width="100%" style="background:#292828;border-radius:14px"><tr><td align="center" style="padding:22px 12px;color:#E7B93B;font-family:Georgia,serif"><div style="font-size:30px">${naira(card.amount)}</div><div style="margin-top:8px;font-family:Arial,sans-serif;font-size:13px;letter-spacing:.12em;color:#F4EFE5">${esc(card.code)}</div></td></tr></table>` +
+        cardBlock(card) +
         p(`<span style="display:block;margin-top:14px">Enter this code at checkout on our site to pay for any gift. Any balance stays on the card.</span>`) }),
   });
   if (!res.ok) await db.from("gift_cards").update({ sent_at: null }).eq("code", card.code); // retry on the next run

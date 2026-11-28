@@ -32,7 +32,7 @@ function GiftCardsPage() {
             <Eyebrow>Gift cards</Eyebrow>
             <h1 className="mt-3 text-3xl md:text-5xl">Let them choose their wow</h1>
             <p className="mt-3 max-w-xl text-muted-foreground">
-              Delivered by email or SMS, valid for 12 months across the shop.
+              Delivered by email, valid for 12 months across the shop.
             </p>
           </div>
         </div>
