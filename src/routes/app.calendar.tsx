@@ -318,7 +318,12 @@ function AppCalendar() {
             {row}
           </Link>
         ) : (
-          <Link key={i.key} to="/app/shop" style={style}>
+          <Link
+            key={i.key}
+            to="/app/occasion/$slug"
+            params={{ slug: i.occasionSlug ?? "" }}
+            style={style}
+          >
             {row}
           </Link>
         );
@@ -487,8 +492,13 @@ function DayCard({ e, today }: { e: DayEvent; today: string }) {
               >
                 Shop gifts
               </Link>
-              <Link to="/app/vouchers" className="a-abtn a-line" style={{ flex: 1 }}>
-                Send a voucher
+              <Link
+                to="/app/occasion/$slug"
+                params={{ slug: e.occasionSlug ?? "" }}
+                className="a-abtn a-line"
+                style={{ flex: 1 }}
+              >
+                What is it?
               </Link>
             </>
           )}

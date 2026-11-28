@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useCart, useUser } from "@/hooks/use-shop";
 import { cartCount } from "@/services/cart";
+import { PullToRefresh } from "@/components/app/PullToRefresh";
 import {
   AppStyles,
   C,
@@ -61,12 +62,13 @@ export const Route = createFileRoute("/app")({
 });
 
 /** Screens anyone can see. Everything else needs a BBD account. */
-const OPEN = /^\/app(\/signin|\/shop(\/.*)?|\/bag|\/checkout|\/order\/.*)?$/;
+const OPEN =
+  /^\/app(\/signin|\/shop(\/.*)?|\/bag|\/checkout|\/order\/.*|\/occasion\/.*|\/add\/.*)?$/;
 /** Screens laid out as one centred column on laptops. */
 const NARROW =
-  /^\/app\/(people|send|vouchers|account|welcome|signin|bag|checkout|orders|order|invite)/;
+  /^\/app\/(people|send|vouchers|account|welcome|signin|bag|checkout|orders|order|invite|occasion|add|share)/;
 /** Focused, full-screen steps: no tab bar. */
-const FOCUSED = /^\/app\/(signin|welcome|send|checkout)/;
+const FOCUSED = /^\/app\/(signin|welcome|send|checkout|add)/;
 
 function AppLayout() {
   const path = useLocation({ select: (l) => l.pathname.replace(/\/$/, "") || "/" });
@@ -100,6 +102,8 @@ function AppLayout() {
   const signedOutSplash = path === "/app" && (!user || !entered);
   const locked = !user && !OPEN.test(path);
   const showChrome = !signedOutSplash && !FOCUSED.test(path);
+  const [refreshes, setRefreshes] = useState(0);
+  const onRefreshed = useCallback(() => setRefreshes((n) => n + 1), []);
 
   return (
     <div className="bbd-app">
@@ -109,7 +113,7 @@ function AppLayout() {
           <Sidebar path={path} bag={bag} name={user?.name ?? ""} signedIn={Boolean(user)} />
         )}
         <main className={`a-main${showChrome ? " a-tabs-on" : ""}`}>
-          <div key={path} className="a-screen">
+          <div key={`${path}#${refreshes}`} className="a-screen">
             {locked ? (
               <Locked />
             ) : NARROW.test(path) ? (
@@ -123,6 +127,7 @@ function AppLayout() {
         </main>
       </div>
       {showChrome && <TabBar path={path} bag={bag} />}
+      {showChrome && <PullToRefresh onRefreshed={onRefreshed} />}
     </div>
   );
 }

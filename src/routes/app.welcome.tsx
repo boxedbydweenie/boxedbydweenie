@@ -229,8 +229,8 @@ function Verify({ onBack, onDone }: { onBack: () => void; onDone: () => void }) 
         Check your <span style={{ color: C.goldText }}>inbox.</span>
       </h1>
       <p style={{ fontSize: 15, lineHeight: 1.6, color: C.muted, margin: "10px 0 0" }}>
-        We sent your {CODE_LEN}-digit code to <strong style={{ color: C.nero }}>{email}</strong>. It keeps your
-        calendar and reminders safe.
+        We sent your {CODE_LEN}-digit code to <strong style={{ color: C.nero }}>{email}</strong>. It
+        keeps your calendar and reminders safe.
       </p>
       <div
         role="group"
@@ -407,6 +407,7 @@ function Moments({
 }) {
   const saved = useMoments();
   const own = useCustomMoments();
+  const navigate = useNavigate();
   const [on, setOn] = useState<Set<string>>(() => new Set(saved.length ? saved : DEFAULT_MOMENTS));
   const dated = OCCASIONS.filter(
     (o) => !["work-anniversaries", "new-starter-onboarding"].includes(o.slug),
@@ -426,7 +427,7 @@ function Moments({
       </h1>
       <p style={{ fontSize: 14, lineHeight: 1.55, color: C.muted, margin: "8px 0 0" }}>
         We&rsquo;ll add each one with an order-by date, so the box always arrives on time. Public
-        holidays (marked PH) are always on your calendar.
+        holidays (marked PH) are always on your calendar: tap one to learn what it&rsquo;s about.
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 20 }}>
         {GROUPS.map(([cat, name]) => {
@@ -443,12 +444,18 @@ function Moments({
                       key={o.slug}
                       type="button"
                       aria-pressed={isOn}
-                      aria-disabled={o.publicHoliday ? true : undefined}
                       title={
-                        o.publicHoliday ? "Public holiday, always on your calendar" : undefined
+                        o.publicHoliday
+                          ? "Public holiday, always on your calendar. Tap to learn more."
+                          : undefined
                       }
-                      onClick={() => !o.publicHoliday && toggle(o.slug)}
-                      style={{ ...chip(isOn), cursor: o.publicHoliday ? "default" : "pointer" }}
+                      onClick={() =>
+                        o.publicHoliday
+                          ? (momentsStore.set([...on]),
+                            void navigate({ to: "/app/occasion/$slug", params: { slug: o.slug } }))
+                          : toggle(o.slug)
+                      }
+                      style={{ ...chip(isOn), cursor: "pointer" }}
                     >
                       {isOn && (
                         <IconCheck
@@ -1557,8 +1564,8 @@ function Ready() {
         Your calendar is ready,
         {first && (
           <span
-            className="a-scr"
-            style={{ display: "block", color: C.gold, fontSize: 60, marginTop: 6 }}
+            className="a-name"
+            style={{ display: "block", color: C.gold, fontSize: 48, marginTop: 6 }}
           >
             {first}.
           </span>

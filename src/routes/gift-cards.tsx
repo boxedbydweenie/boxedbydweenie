@@ -9,12 +9,12 @@ export const Route = createFileRoute("/gift-cards")({
       {
         name: "description",
         content:
-          "Send a Boxed by Dweenie gift card from ₦10,000. Choose a design, add a message and send now or on the day.",
+          "Send a Boxed by Dweenie gift card from ₦50,000, or any amount you choose. Choose a design, add a message and send now or on the day.",
       },
       { property: "og:title", content: "Gift Cards — Boxed by Dweenie" },
       {
         property: "og:description",
-        content: "Let them choose their wow. Gift cards from ₦10,000.",
+        content: "Let them choose their wow. Gift cards from ₦50,000, or any amount.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

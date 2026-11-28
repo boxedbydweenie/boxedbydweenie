@@ -46,6 +46,7 @@ import { Route as AppCalendarRouteImport } from './routes/app.calendar'
 import { Route as AppCheckoutRouteImport } from './routes/app.checkout'
 import { Route as AppInviteRouteImport } from './routes/app.invite'
 import { Route as AppOrdersRouteImport } from './routes/app.orders'
+import { Route as AppShareRouteImport } from './routes/app.share'
 import { Route as AppSigninRouteImport } from './routes/app.signin'
 import { Route as AppVouchersRouteImport } from './routes/app.vouchers'
 import { Route as AppWelcomeRouteImport } from './routes/app.welcome'
@@ -62,6 +63,8 @@ import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as AdminCampaignsIndexRouteImport } from './routes/admin.campaigns.index'
 import { Route as AdminCampaignsIdRouteImport } from './routes/admin.campaigns.$id'
 import { Route as AdminSoonSlugRouteImport } from './routes/admin.soon.$slug'
+import { Route as AppAddCodeRouteImport } from './routes/app.add.$code'
+import { Route as AppOccasionSlugRouteImport } from './routes/app.occasion.$slug'
 import { Route as AppOrderIdRouteImport } from './routes/app.order.$id'
 import { Route as AppPeopleIndexRouteImport } from './routes/app.people.index'
 import { Route as AppPeoplePersonIdRouteImport } from './routes/app.people.$personId'
@@ -262,6 +265,11 @@ const AppOrdersRoute = AppOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => AppRoute,
 } as any)
+const AppShareRoute = AppShareRouteImport.update({
+  id: '/share',
+  path: '/share',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSigninRoute = AppSigninRouteImport.update({
   id: '/signin',
   path: '/signin',
@@ -341,6 +349,16 @@ const AdminSoonSlugRoute = AdminSoonSlugRouteImport.update({
   id: '/soon/$slug',
   path: '/soon/$slug',
   getParentRoute: () => AdminRoute,
+} as any)
+const AppAddCodeRoute = AppAddCodeRouteImport.update({
+  id: '/add/$code',
+  path: '/add/$code',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOccasionSlugRoute = AppOccasionSlugRouteImport.update({
+  id: '/occasion/$slug',
+  path: '/occasion/$slug',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppOrderIdRoute = AppOrderIdRouteImport.update({
   id: '/order/$id',
@@ -449,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/app/checkout': typeof AppCheckoutRoute
   '/app/invite': typeof AppInviteRoute
   '/app/orders': typeof AppOrdersRoute
+  '/app/share': typeof AppShareRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
   '/app/welcome': typeof AppWelcomeRoute
@@ -466,6 +485,8 @@ export interface FileRoutesByFullPath {
   '/shop/': typeof ShopIndexRoute
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/admin/soon/$slug': typeof AdminSoonSlugRoute
+  '/app/add/$code': typeof AppAddCodeRoute
+  '/app/occasion/$slug': typeof AppOccasionSlugRoute
   '/app/order/$id': typeof AppOrderIdRoute
   '/app/people/$personId': typeof AppPeoplePersonIdRoute
   '/app/people/new': typeof AppPeopleNewRoute
@@ -516,6 +537,7 @@ export interface FileRoutesByTo {
   '/app/checkout': typeof AppCheckoutRoute
   '/app/invite': typeof AppInviteRoute
   '/app/orders': typeof AppOrdersRoute
+  '/app/share': typeof AppShareRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
   '/app/welcome': typeof AppWelcomeRoute
@@ -533,6 +555,8 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopIndexRoute
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/admin/soon/$slug': typeof AdminSoonSlugRoute
+  '/app/add/$code': typeof AppAddCodeRoute
+  '/app/occasion/$slug': typeof AppOccasionSlugRoute
   '/app/order/$id': typeof AppOrderIdRoute
   '/app/people/$personId': typeof AppPeoplePersonIdRoute
   '/app/people/new': typeof AppPeopleNewRoute
@@ -586,6 +610,7 @@ export interface FileRoutesById {
   '/app/checkout': typeof AppCheckoutRoute
   '/app/invite': typeof AppInviteRoute
   '/app/orders': typeof AppOrdersRoute
+  '/app/share': typeof AppShareRoute
   '/app/signin': typeof AppSigninRoute
   '/app/vouchers': typeof AppVouchersRoute
   '/app/welcome': typeof AppWelcomeRoute
@@ -603,6 +628,8 @@ export interface FileRoutesById {
   '/shop/': typeof ShopIndexRoute
   '/admin/campaigns/$id': typeof AdminCampaignsIdRoute
   '/admin/soon/$slug': typeof AdminSoonSlugRoute
+  '/app/add/$code': typeof AppAddCodeRoute
+  '/app/occasion/$slug': typeof AppOccasionSlugRoute
   '/app/order/$id': typeof AppOrderIdRoute
   '/app/people/$personId': typeof AppPeoplePersonIdRoute
   '/app/people/new': typeof AppPeopleNewRoute
@@ -657,6 +684,7 @@ export interface FileRouteTypes {
     | '/app/checkout'
     | '/app/invite'
     | '/app/orders'
+    | '/app/share'
     | '/app/signin'
     | '/app/vouchers'
     | '/app/welcome'
@@ -674,6 +702,8 @@ export interface FileRouteTypes {
     | '/shop/'
     | '/admin/campaigns/$id'
     | '/admin/soon/$slug'
+    | '/app/add/$code'
+    | '/app/occasion/$slug'
     | '/app/order/$id'
     | '/app/people/$personId'
     | '/app/people/new'
@@ -724,6 +754,7 @@ export interface FileRouteTypes {
     | '/app/checkout'
     | '/app/invite'
     | '/app/orders'
+    | '/app/share'
     | '/app/signin'
     | '/app/vouchers'
     | '/app/welcome'
@@ -741,6 +772,8 @@ export interface FileRouteTypes {
     | '/shop'
     | '/admin/campaigns/$id'
     | '/admin/soon/$slug'
+    | '/app/add/$code'
+    | '/app/occasion/$slug'
     | '/app/order/$id'
     | '/app/people/$personId'
     | '/app/people/new'
@@ -793,6 +826,7 @@ export interface FileRouteTypes {
     | '/app/checkout'
     | '/app/invite'
     | '/app/orders'
+    | '/app/share'
     | '/app/signin'
     | '/app/vouchers'
     | '/app/welcome'
@@ -810,6 +844,8 @@ export interface FileRouteTypes {
     | '/shop/'
     | '/admin/campaigns/$id'
     | '/admin/soon/$slug'
+    | '/app/add/$code'
+    | '/app/occasion/$slug'
     | '/app/order/$id'
     | '/app/people/$personId'
     | '/app/people/new'
@@ -1123,6 +1159,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOrdersRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/share': {
+      id: '/app/share'
+      path: '/share'
+      fullPath: '/app/share'
+      preLoaderRoute: typeof AppShareRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/signin': {
       id: '/app/signin'
       path: '/signin'
@@ -1234,6 +1277,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/soon/$slug'
       preLoaderRoute: typeof AdminSoonSlugRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/app/add/$code': {
+      id: '/app/add/$code'
+      path: '/add/$code'
+      fullPath: '/app/add/$code'
+      preLoaderRoute: typeof AppAddCodeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/occasion/$slug': {
+      id: '/app/occasion/$slug'
+      path: '/occasion/$slug'
+      fullPath: '/app/occasion/$slug'
+      preLoaderRoute: typeof AppOccasionSlugRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/order/$id': {
       id: '/app/order/$id'
@@ -1387,10 +1444,13 @@ interface AppRouteChildren {
   AppCheckoutRoute: typeof AppCheckoutRoute
   AppInviteRoute: typeof AppInviteRoute
   AppOrdersRoute: typeof AppOrdersRoute
+  AppShareRoute: typeof AppShareRoute
   AppSigninRoute: typeof AppSigninRoute
   AppVouchersRoute: typeof AppVouchersRoute
   AppWelcomeRoute: typeof AppWelcomeRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppAddCodeRoute: typeof AppAddCodeRoute
+  AppOccasionSlugRoute: typeof AppOccasionSlugRoute
   AppOrderIdRoute: typeof AppOrderIdRoute
   AppPeoplePersonIdRoute: typeof AppPeoplePersonIdRoute
   AppPeopleNewRoute: typeof AppPeopleNewRoute
@@ -1407,10 +1467,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppCheckoutRoute: AppCheckoutRoute,
   AppInviteRoute: AppInviteRoute,
   AppOrdersRoute: AppOrdersRoute,
+  AppShareRoute: AppShareRoute,
   AppSigninRoute: AppSigninRoute,
   AppVouchersRoute: AppVouchersRoute,
   AppWelcomeRoute: AppWelcomeRoute,
   AppIndexRoute: AppIndexRoute,
+  AppAddCodeRoute: AppAddCodeRoute,
+  AppOccasionSlugRoute: AppOccasionSlugRoute,
   AppOrderIdRoute: AppOrderIdRoute,
   AppPeoplePersonIdRoute: AppPeoplePersonIdRoute,
   AppPeopleNewRoute: AppPeopleNewRoute,

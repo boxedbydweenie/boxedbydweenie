@@ -243,7 +243,7 @@ function Home({ name }: { name: string }) {
       </div>
       <h1 className="a-dsp" style={{ fontSize: wide ? 40 : 30, marginTop: 4 }}>
         {greeting()},{" "}
-        <span className="a-scr" style={{ color: C.goldText, fontSize: wide ? 52 : 38 }}>
+        <span className="a-name" style={{ color: C.goldText, fontSize: wide ? 42 : 30 }}>
           {first}
         </span>
       </h1>
@@ -578,11 +578,11 @@ function NextUp({
         {possessive}
         {item.title && (
           <span
-            className="a-scr"
+            className="a-name"
             style={{
               display: "block",
               color: light ? C.plum : C.gold,
-              fontSize: item.title.length > 14 ? 32 : compact ? 40 : 46,
+              fontSize: item.title.length > 14 ? 28 : compact ? 34 : 38,
               marginTop: 2,
             }}
           >

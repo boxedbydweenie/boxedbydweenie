@@ -51,7 +51,7 @@ export const PACKAGING: { slug: PackagingChoice; name: string; line: string }[] 
 export const GIFT_NOTE_LIMIT = 250;
 export const BULK_THRESHOLD = 25;
 export const SAME_DAY_CUTOFF_HOUR = 12;
-export const GIFT_CARD_AMOUNTS = [10000, 25000, 50000, 100000];
+export const GIFT_CARD_AMOUNTS = [50000, 100000, 200000, 500000];
 export const GIFT_CARD_MIN = 5000;
 export const GIFT_CARD_MAX = 1000000;
 
